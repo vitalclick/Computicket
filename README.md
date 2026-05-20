@@ -2,7 +2,7 @@
 
 > Nigeria's All-in-One Ticketing Platform — book events, travel, and experiences in seconds.
 
-Computicket Nigeria is a modern digital booking and ticketing platform that unifies entertainment, travel, accommodation, and vouchers into a single mobile-first experience optimized for Nigerian payments, trust, and connectivity.
+Computicket Nigeria is a **multi-vendor** digital booking and ticketing platform that unifies entertainment, travel, accommodation, and vouchers into a single mobile-first experience optimized for Nigerian payments, trust, and connectivity. Organizers run their entire ticketing operation on Computicket — create events, design and manage tickets, take payments, scan at the door, settle payouts — and embed the same engine into their own websites and apps via a first-class public API.
 
 ## What you can book
 
@@ -28,6 +28,8 @@ Customers, event organizers, travel operators, bus companies, hotels, entertainm
 
 - [Roadmap](./docs/ROADMAP.md) — phased launch plan
 - [Architecture](./docs/ARCHITECTURE.md) — tech stack, system design, security
+- [Organizers](./docs/ORGANIZERS.md) — multi-vendor model, dashboard, tooling
+- [Public API](./docs/API.md) — REST + webhooks, embeddable widgets, SDKs
 - [Payments](./docs/PAYMENTS.md) — Paystack integration plan and Nigerian payment landscape
 - [Revenue Model](./docs/REVENUE.md) — commissions, subscriptions, ads, corporate
 - [Brand](./docs/BRAND.md) — tone, taglines, positioning
