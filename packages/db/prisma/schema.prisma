@@ -192,6 +192,36 @@ model Organizer {
   affiliateLinks   AffiliateLink[]
   hotels           Hotel[]
   flights          Flight[]
+  voucherBatches   VoucherBatch[]
+}
+
+model VoucherBatch {
+  id            String    @id @default(cuid())
+  organizerId   String
+  name          String
+  denominationKobo Int
+  totalCount    Int
+  redeemedCount Int       @default(0)
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  organizer Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  vouchers  Voucher[]
+
+  @@index([organizerId])
+}
+
+model Voucher {
+  id            String   @id @default(cuid())
+  batchId       String
+  code          String   @unique
+  redeemedById  String?
+  redeemedAt    DateTime?
+  createdAt     DateTime @default(now())
+
+  batch VoucherBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
 }
 
 model Hotel {
