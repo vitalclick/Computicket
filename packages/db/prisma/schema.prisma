@@ -283,9 +283,37 @@ model Hotel {
   active          Boolean  @default(true)
   createdAt       DateTime @default(now())
 
-  organizer Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  organizer Organizer       @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  bookings  HotelBooking[]
 
   @@index([city, active])
+}
+
+enum LodgingBookingStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+model HotelBooking {
+  id            String               @id @default(cuid())
+  hotelId       String
+  userId        String?
+  guestEmail    String
+  guestName     String?
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int                  @default(1)
+  totalKobo     Int
+  status        LodgingBookingStatus @default(PENDING)
+  paystackRef   String?              @unique
+  paidAt        DateTime?
+  createdAt     DateTime             @default(now())
+
+  hotel Hotel @relation(fields: [hotelId], references: [id])
+
+  @@index([hotelId, checkIn])
 }
 
 model Flight {
@@ -303,10 +331,30 @@ model Flight {
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
 
-  organizer Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  organizer Organizer        @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  bookings  FlightBooking[]
 
   @@index([fromAirport, toAirport, departsAt])
   @@index([organizerId])
+}
+
+model FlightBooking {
+  id              String               @id @default(cuid())
+  flightId        String
+  userId          String?
+  passengerName   String
+  passengerEmail  String
+  // Generated on issuance — same opaque code format as Ticket.code
+  pnr             String?              @unique
+  priceKobo       Int
+  status          LodgingBookingStatus @default(PENDING)
+  paystackRef     String?              @unique
+  paidAt          DateTime?
+  createdAt       DateTime             @default(now())
+
+  flight Flight @relation(fields: [flightId], references: [id])
+
+  @@index([flightId])
 }
 
 model AffiliateLink {

@@ -8,6 +8,7 @@ import { WebhookDispatcher } from '../developers/webhook-dispatcher.service';
 import { RefundsService } from '../refunds/refunds.service';
 import { WalletService } from '../wallet/wallet.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { BookingsService } from '../lodging/bookings.service';
 
 interface PaystackChargeSuccess {
   event: 'charge.success';
@@ -31,6 +32,7 @@ export class WebhooksService {
     private readonly wallet: WalletService,
     private readonly sms: SmsService,
     private readonly loyalty: LoyaltyService,
+    private readonly bookings: BookingsService,
   ) {}
 
   verifyPaystackSignature(rawBody: Buffer, signature: string | undefined): boolean {
@@ -66,6 +68,12 @@ export class WebhooksService {
     if (await this.wallet.referenceIsTopUp(reference)) {
       const r = await this.wallet.finaliseTopUp(reference, event.data.amount);
       return { handled: true, kind: 'wallet_top_up', credited: r.credited };
+    }
+
+    // Branch: hotel / flight bookings.
+    if (await this.bookings.referenceIsLodging(reference)) {
+      const r = await this.bookings.finaliseByReference(reference, event.data.amount);
+      return { handled: true, kind: `lodging_${r.kind}`, finalised: r.finalised };
     }
 
     const order = await this.prisma.order.findUnique({ where: { paystackRef: reference } });
