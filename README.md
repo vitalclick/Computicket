@@ -37,7 +37,7 @@ Customers, event organizers, travel operators, bus companies, hotels, entertainm
 
 ## Status
 
-**Phase 1 complete.** Multi-vendor ticketing end to end plus a second vertical (bus travel). Every slice was verified with an end-to-end script before being committed.
+**Phase 1 + Phase 2 complete.** Multi-vendor ticketing end to end across events, bus, theatre/cinema (add-ons), plus stubbed inventory for hotels and flights. Wallet, partial refunds, referrals, reserved seating, webhook retries, SMS, broadcasts, affiliate tracking, and an embeddable buy-button all ship in this repo.
 
 ## Quick start
 
@@ -130,11 +130,25 @@ docs/         Architecture, roadmap, payments, organizers, API, brand
 - Tests: webhook signature verification, order expiry race-loss case
 - CI: typecheck + build against Postgres
 
-## Next up (Phase 2)
+## What landed in Phase 2
 
+- **Partial refunds + async refund webhook** — Refund records, idempotent claims, sync + async Paystack paths
+- **Wallet** — atomic ledger, Paystack top-ups, pay-from-wallet at checkout, refunds-to-wallet
+- **Webhook delivery log + retry queue** — every dispatch persisted, exponential backoff up to 6 attempts, dashboard view + manual retry
+- **Reserved seating** — seat map editor, atomic seat holds, sold→Ticket linkage, refund/expiry release seats
+- **Add-ons** (concessions, parking, merch) attached to orders
+- **SMS** via Termii (dev fallback to stdout)
+- **Referrals** — auto-generated codes, attribution at signup, NGN 500 wallet credit on first paid order
+- **Broadcasts** — organizer-to-attendee emails per event with sent log
+- **Affiliate tracking** — codes attribute orders, revenue dashboard
+- **Hotels** (stub inventory) — public search, detail, organizer CRUD
+- **Flights** (stub inventory) — public search by route/date, organizer CRUD
+
+## Phase 3 candidates
+
+- Real GDS / NDC integration for flights
+- Hotel PMS integrations
 - Flutter port of the scanner for offline-first venue ops
-- Webhook delivery retry queue + a deliveries log table for observability
-- Termii SMS confirmations alongside email
-- Partial refunds + Paystack refund webhook for async finalisation
-- Flights and hotels verticals
-- Reserved seating editor (currently general admission only)
+- Hotel/flight checkout integration (PNR, passenger names, nights)
+- Wallet KYC for higher top-up tiers
+- WordPress / Shopify plugins for the embeddable widget

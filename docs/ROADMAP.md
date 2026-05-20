@@ -20,15 +20,28 @@ Shipped:
 - **Embeddable widget** — drop-in `<script src="/widget.js">` with a live demo at `/widget-demo`.
 - **Concurrency-safe inventory** — verified by `scripts/load-test-inventory.sh` at 200 buyers / 5 seats.
 
-## Phase 2 — Travel & Stays
+## Phase 2 — Travel & Stays + Dashboard v2 — ✅ Complete
 
-- **Flights** — domestic carriers first (Air Peace, Ibom Air, United Nigeria, Overland), international via GDS later
-- **Hotels & short-lets** — search, map, reviews, pay-now or pay-at-hotel
-- **Theatre & Cinema** — showtime + seat mapping, food combo add-ons
-- Wallet (top up, refunds, ticket purchases)
-- Referral program
-- Public API v1 GA — WordPress plugin, JS/PHP/Python/Flutter SDKs
-- Organizer dashboard v2 — reserved seating editor, affiliate tracking, broadcast emails
+Shipped:
+
+- **Partial refunds + async refund webhook** — Refund records, idempotent claims, separate sync (Paystack response) and async (`refund.processed` webhook) paths
+- **Wallet** — atomic ledger, Paystack top-ups, pay-from-wallet at checkout, refunds default to wallet for signed-in buyers
+- **Webhook delivery log + retry queue** — every dispatch persisted, exponential back-off (1m, 5m, 30m, 2h, 8h, 24h) up to 6 attempts, dashboard view with manual retry
+- **Reserved seating** — seat-map editor, atomic seat holds, SOLD→Ticket linkage, refund/expiry release seats
+- **Add-ons** (concessions, parking, merch) — event-scoped, capacity-tracked, attached to orders
+- **Termii SMS** confirmations alongside email
+- **Referral program** — auto-generated codes, attribution at signup, NGN 500 wallet credit on referee's first paid order
+- **Broadcasts** — organizer-to-attendee email per event, with sent log
+- **Affiliate tracking** — links per organizer, attribution stored on orders, revenue dashboard
+- **Hotels** (stub inventory) — schema, public search, organizer CRUD
+- **Flights** (stub inventory) — schema, public search by route/date, organizer CRUD
+
+Deferred (real provider integration required, Phase 3):
+
+- Flight checkout via GDS / NDC (Travelport, Sabre, direct airline APIs)
+- Hotel checkout via PMS integration
+- Flutter port of the scanner for offline-first venue ops
+- WordPress / Shopify plugins for the embeddable widget
 
 ## Phase 3 — Ecosystem
 
