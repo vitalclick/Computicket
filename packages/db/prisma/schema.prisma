@@ -216,6 +216,9 @@ model Organizer {
   description      String?
   logoUrl          String?
   website          String?
+  customDomain     String?  @unique
+  // Optional brand colour (hex) for the white-label landing page
+  brandColor       String?
   // Paystack split payout integration
   paystackSubaccountCode String?
   payoutBankCode         String?

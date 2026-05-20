@@ -31,6 +31,7 @@ import { ResaleModule } from './resale/resale.module';
 import { AgentsModule } from './agents/agents.module';
 import { CorporateModule } from './corporate/corporate.module';
 import { OAuthModule } from './oauth/oauth.module';
+import { WhitelabelModule } from './whitelabel/whitelabel.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { OAuthModule } from './oauth/oauth.module';
     AgentsModule,
     CorporateModule,
     OAuthModule,
+    WhitelabelModule,
   ],
 })
 export class AppModule {}

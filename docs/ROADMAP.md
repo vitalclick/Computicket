@@ -43,16 +43,27 @@ Deferred (real provider integration required, Phase 3):
 - Flutter port of the scanner for offline-first venue ops
 - WordPress / Shopify plugins for the embeddable widget
 
-## Phase 3 — Ecosystem
+## Phase 3 — Ecosystem — ✅ Complete
 
-- **Vouchers & Gift Cards** — restaurants, spa, travel, shopping, entertainment
-- **Loyalty points** across all verticals
-- **Corporate solutions** — enterprise booking, central billing
-- **Resale marketplace** — verified, fraud-resistant ticket resales
-- **Agent network** — offline agents across Nigeria with sub-accounts
-- **White-label checkout subdomain** for organizers (`tickets.organizer.com`)
-- **OAuth 2.0** for third-party apps acting on behalf of organizers
-- **Shopify app** and other marketplace integrations
+Shipped:
+
+- **Wallet KYC tiers** (NONE / BASIC / VERIFIED) with per-tier top-up caps and admin review queue
+- **Loyalty points** — earn 1 per NGN 100 spent, redeem at checkout (100 pts = NGN 100 off)
+- **Vouchers & gift cards** — organizer issues batches, buyer redeems to wallet
+- **Resale marketplace** — list a ticket, atomic wallet-debit + ownership transfer + 10% platform fee
+- **Agent network** — admin-issued codes, attribution at checkout, wallet-credited commission
+- **Corporate accounts** — credit-limited enterprise booking, per-employee limits, central-billed invoices
+- **Hotel & flight checkout** — bookings via Paystack with prefixed references, atomic flight seat claims, PNR on payment
+- **OAuth 2.0 (client_credentials)** — registered clients with hashed secrets, sha256-stored access tokens, scope narrowing at issuance
+- **White-label organizer pages** — `customDomain` field, Next.js middleware that rewrites `tickets.organizer.com` to the organizer's branded landing page
+
+Deferred to Phase 4 (real provider integration required):
+
+- GDS / NDC integration for flights (Travelport, Sabre, direct airline APIs)
+- Hotel PMS integrations
+- Flutter native scanner
+- WordPress / Shopify plugin packages
+- OAuth authorization_code grant (browser-mediated consent flow)
 
 ## Phase 4 — Future
 

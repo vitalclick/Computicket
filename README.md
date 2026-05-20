@@ -37,7 +37,7 @@ Customers, event organizers, travel operators, bus companies, hotels, entertainm
 
 ## Status
 
-**Phase 1 + Phase 2 complete.** Multi-vendor ticketing end to end across events, bus, theatre/cinema (add-ons), plus stubbed inventory for hotels and flights. Wallet, partial refunds, referrals, reserved seating, webhook retries, SMS, broadcasts, affiliate tracking, and an embeddable buy-button all ship in this repo.
+**Phases 1–3 complete.** Multi-vendor ticketing end to end across events, bus, theatre/cinema (add-ons), hotels, and flights. Wallet (with KYC tiers), loyalty points, gift-card vouchers, resale marketplace, agent network, corporate accounts, OAuth 2.0 for partners, and white-label organizer subdomains all ship in this repo.
 
 ## Quick start
 
