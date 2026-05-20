@@ -8,6 +8,8 @@ import { Prisma } from '@computicket/db';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaystackService } from '../payments/paystack.service';
 import { PromoCodesService } from '../promo-codes/promo-codes.service';
+import { WalletService } from '../wallet/wallet.service';
+import { TicketsService } from '../tickets/tickets.service';
 
 interface CreateOrderInput {
   eventSlug: string;
@@ -18,6 +20,7 @@ interface CreateOrderInput {
   callbackUrl?: string;
   userId?: string;
   promoCode?: string;
+  payFromWallet?: boolean;
 }
 
 const HOLD_MINUTES = 15;
@@ -28,6 +31,8 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly paystack: PaystackService,
     private readonly promos: PromoCodesService,
+    private readonly wallet: WalletService,
+    private readonly tickets: TicketsService,
   ) {}
 
   async create(input: CreateOrderInput) {
@@ -102,6 +107,7 @@ export class OrdersService {
           promoCode: promoCodeStored,
           feeKobo: fee,
           totalKobo: total,
+          paidFromWallet: input.payFromWallet ?? false,
           expiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
           paystackRef: reference,
           items: { create: items },
@@ -109,6 +115,51 @@ export class OrdersService {
         include: { items: true },
       });
     });
+
+    // Wallet-paid path: debit the user's wallet and finalise the order
+    // synchronously. Tickets are issued immediately; no Paystack roundtrip.
+    if (input.payFromWallet) {
+      if (!input.userId) {
+        throw new BadRequestException('payFromWallet requires an authenticated user');
+      }
+      const debit = await this.wallet.debit({
+        userId: input.userId,
+        amountKobo: order.totalKobo,
+        type: 'PURCHASE',
+        orderId: order.id,
+        note: `Order ${order.id}`,
+      });
+      if (!debit.ok) {
+        // Release the held inventory we just claimed.
+        await this.prisma.$transaction(async (tx) => {
+          await tx.order.updateMany({
+            where: { id: order.id, status: 'PENDING' },
+            data: { status: 'EXPIRED' },
+          });
+          for (const item of order.items) {
+            await tx.ticketType.update({
+              where: { id: item.ticketTypeId },
+              data: { held: { decrement: item.quantity } },
+            });
+          }
+        });
+        throw new BadRequestException('Insufficient wallet balance');
+      }
+      // Mark order paid and issue tickets through the same atomic
+      // path the webhook uses.
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { status: 'PAID', paidAt: new Date() },
+      });
+      // Inventory: webhook path uses TicketsService.issueForOrder which
+      // expects PENDING; we already flipped to PAID so we issue directly.
+      await this.tickets.issueAndReleaseHolds(order.id);
+      return {
+        order: { ...order, status: 'PAID' as const, paidFromWallet: true },
+        paidFromWallet: true,
+        walletBalanceAfterKobo: debit.balanceAfterKobo,
+      };
+    }
 
     const paystack = await this.paystack.initialize({
       email: input.buyerEmail,

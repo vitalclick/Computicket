@@ -5,6 +5,7 @@ import { TicketsService } from '../tickets/tickets.service';
 import { MailerService } from '../mail/mailer.service';
 import { WebhookDispatcher } from '../developers/webhook-dispatcher.service';
 import { RefundsService } from '../refunds/refunds.service';
+import { WalletService } from '../wallet/wallet.service';
 
 interface PaystackChargeSuccess {
   event: 'charge.success';
@@ -25,6 +26,7 @@ export class WebhooksService {
     private readonly mailer: MailerService,
     private readonly outbound: WebhookDispatcher,
     private readonly refunds: RefundsService,
+    private readonly wallet: WalletService,
   ) {}
 
   verifyPaystackSignature(rawBody: Buffer, signature: string | undefined): boolean {
@@ -54,6 +56,14 @@ export class WebhooksService {
 
   private async handleChargeSuccess(event: PaystackChargeSuccess) {
     const reference = event.data.reference;
+
+    // Branch: wallet top-up references credit the user's wallet rather
+    // than triggering ticket issuance.
+    if (await this.wallet.referenceIsTopUp(reference)) {
+      const r = await this.wallet.finaliseTopUp(reference, event.data.amount);
+      return { handled: true, kind: 'wallet_top_up', credited: r.credited };
+    }
+
     const order = await this.prisma.order.findUnique({ where: { paystackRef: reference } });
     if (!order) {
       this.logger.warn(`charge.success for unknown reference ${reference}`);

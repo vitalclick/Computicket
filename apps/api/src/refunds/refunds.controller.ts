@@ -1,6 +1,6 @@
 import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OrganizerMemberGuard } from '../auth/organizer-member.guard';
@@ -9,6 +9,7 @@ import { RefundsService } from './refunds.service';
 class RefundDto {
   @IsOptional() @IsInt() @Min(1) amountKobo?: number;
   @IsOptional() @IsString() reason?: string;
+  @IsOptional() @IsBoolean() toWallet?: boolean;
 }
 
 @ApiTags('refunds')
@@ -28,6 +29,7 @@ export class RefundsController {
       orderId,
       amountKobo: dto.amountKobo,
       reason: dto.reason,
+      toWallet: dto.toWallet,
       initiatedById: req.user!.id,
     });
   }

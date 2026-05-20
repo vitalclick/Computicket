@@ -20,6 +20,45 @@ export class TicketsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * Issue tickets for an order that has already been marked PAID (wallet
+   * path). Releases held inventory, increments sold, creates one ticket
+   * per quantity. Idempotent if tickets already exist.
+   */
+  async issueAndReleaseHolds(orderId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { items: true, tickets: true },
+      });
+      if (!order) throw new NotFoundException(`Order ${orderId} not found`);
+      if (order.tickets.length > 0) {
+        return { issued: false, tickets: order.tickets.map((t) => ({ id: t.id, code: t.code })) };
+      }
+      const created: { id: string; code: string }[] = [];
+      for (const item of order.items) {
+        await tx.ticketType.update({
+          where: { id: item.ticketTypeId },
+          data: {
+            sold: { increment: item.quantity },
+            held: { decrement: item.quantity },
+          },
+        });
+        for (let i = 0; i < item.quantity; i++) {
+          const ticket = await tx.ticket.create({
+            data: {
+              orderId: order.id,
+              ticketTypeId: item.ticketTypeId,
+              code: generateTicketCode(),
+            },
+          });
+          created.push({ id: ticket.id, code: ticket.code });
+        }
+      }
+      return { issued: true, tickets: created };
+    });
+  }
+
+  /**
    * Atomically mark an order as paid and issue tickets. Idempotent:
    * if the order is already PAID, returns the existing tickets and
    * does not double-issue or double-increment inventory.

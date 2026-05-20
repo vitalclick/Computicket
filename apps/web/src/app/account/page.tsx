@@ -51,6 +51,13 @@ export default function AccountPage() {
         </button>
       </div>
 
+      <Link
+        href="/account/wallet"
+        className="mt-6 inline-flex items-center gap-2 text-sm text-brand hover:underline"
+      >
+        Manage wallet →
+      </Link>
+
       {paid.length === 0 ? (
         <div className="mt-10 rounded-lg border border-dashed border-gray-300 p-8 text-center">
           <p className="text-gray-600">You haven&apos;t booked anything yet.</p>

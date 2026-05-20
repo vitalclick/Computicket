@@ -4,6 +4,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsEmail,
   IsInt,
   IsOptional,
@@ -26,6 +27,7 @@ class CreateOrderDto {
   @IsOptional() @IsString() buyerPhone?: string;
   @IsOptional() @IsString() callbackUrl?: string;
   @IsOptional() @IsString() promoCode?: string;
+  @IsOptional() @IsBoolean() payFromWallet?: boolean;
   @IsArray() @ArrayMinSize(1) @ValidateNested({ each: true }) @Type(() => OrderItemDto)
   items!: OrderItemDto[];
 }

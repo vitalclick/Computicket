@@ -8,12 +8,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PaystackService } from '../payments/paystack.service';
 import { MailerService } from '../mail/mailer.service';
 import { WebhookDispatcher } from '../developers/webhook-dispatcher.service';
+import { WalletService } from '../wallet/wallet.service';
 
 interface RefundInput {
   orderId: string;
   amountKobo?: number; // omit for full refund of remaining balance
   reason?: string;
   initiatedById?: string;
+  toWallet?: boolean;
 }
 
 @Injectable()
@@ -25,6 +27,7 @@ export class RefundsService {
     private readonly paystack: PaystackService,
     private readonly mailer: MailerService,
     private readonly outbound: WebhookDispatcher,
+    private readonly wallet: WalletService,
   ) {}
 
   async refund(input: RefundInput) {
@@ -79,25 +82,46 @@ export class RefundsService {
       },
     });
 
-    try {
-      const result = await this.paystack.refund(order.paystackRef, amount);
-      await this.prisma.refund.update({
-        where: { id: refund.id },
-        data: {
-          status: result.status === 'failed' ? 'FAILED' : 'PROCESSED',
-          paystackRefundId: result.refundId,
-          processedAt: result.status === 'failed' ? null : new Date(),
-        },
-      });
-      if (result.status === 'failed') {
-        throw new BadRequestException('Refund declined by payment provider');
+    // Two refund destinations:
+    //   toWallet=true  -> credit the buyer's wallet, no Paystack call
+    //   toWallet=false -> call Paystack refund (default; reverses to card/bank)
+    if (input.toWallet) {
+      if (!order.userId) {
+        throw new BadRequestException('Cannot refund to wallet on a guest order');
       }
-    } catch (e) {
+      await this.wallet.credit({
+        userId: order.userId,
+        amountKobo: amount,
+        type: 'REFUND',
+        orderId: order.id,
+        refundId: refund.id,
+        note: 'Refund to wallet',
+      });
       await this.prisma.refund.update({
         where: { id: refund.id },
-        data: { status: 'FAILED' },
+        data: { status: 'PROCESSED', processedAt: new Date() },
       });
-      throw e;
+    } else {
+      try {
+        const result = await this.paystack.refund(order.paystackRef, amount);
+        await this.prisma.refund.update({
+          where: { id: refund.id },
+          data: {
+            status: result.status === 'failed' ? 'FAILED' : 'PROCESSED',
+            paystackRefundId: result.refundId,
+            processedAt: result.status === 'failed' ? null : new Date(),
+          },
+        });
+        if (result.status === 'failed') {
+          throw new BadRequestException('Refund declined by payment provider');
+        }
+      } catch (e) {
+        await this.prisma.refund.update({
+          where: { id: refund.id },
+          data: { status: 'FAILED' },
+        });
+        throw e;
+      }
     }
 
     // Apply state changes atomically.

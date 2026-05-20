@@ -69,10 +69,22 @@ export interface Order {
   tickets: Ticket[];
 }
 
-export interface CreateOrderResponse {
-  order: { id: string; paystackRef: string; totalKobo: number };
-  paystack: { reference: string; authorizationUrl: string; publicKey: string };
-}
+export type CreateOrderResponse =
+  | {
+      order: { id: string; paystackRef: string; totalKobo: number };
+      paystack: { reference: string; authorizationUrl: string; publicKey: string };
+    }
+  | {
+      order: {
+        id: string;
+        paystackRef: string;
+        totalKobo: number;
+        status: 'PAID';
+        paidFromWallet: true;
+      };
+      paidFromWallet: true;
+      walletBalanceAfterKobo: number;
+    };
 
 export interface AuthResponse {
   token: string;
@@ -178,6 +190,7 @@ export const api = {
     buyerPhone?: string;
     callbackUrl?: string;
     promoCode?: string;
+    payFromWallet?: boolean;
     items: Array<{ ticketTypeId: string; quantity: number }>;
   }, token?: string) =>
     request<CreateOrderResponse>('/orders', {
@@ -193,6 +206,24 @@ export const api = {
   signin: (body: { email: string; password: string }) =>
     request<AuthResponse>('/auth/signin', { method: 'POST', body: JSON.stringify(body) }),
   me: (token: string) => request<Me>('/auth/me', { token }),
+
+  walletOverview: (token: string) =>
+    request<{
+      balanceKobo: number;
+      transactions: Array<{
+        id: string;
+        amountKobo: number;
+        type: 'TOP_UP' | 'PURCHASE' | 'REFUND' | 'ADJUSTMENT';
+        balanceAfterKobo: number;
+        note: string | null;
+        createdAt: string;
+      }>;
+    }>('/me/wallet', { token }),
+  walletTopUp: (token: string, body: { amountKobo: number; callbackUrl?: string }) =>
+    request<{
+      topUp: { id: string; amountKobo: number; paystackRef: string };
+      paystack: { reference: string; authorizationUrl: string; publicKey: string };
+    }>('/me/wallet/top-ups', { method: 'POST', token, body: JSON.stringify(body) }),
 
   myOrders: (token: string) =>
     request<Array<{

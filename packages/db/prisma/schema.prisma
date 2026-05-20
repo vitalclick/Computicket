@@ -14,17 +14,68 @@ datasource db {
 // ---------- Identity ----------
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  phone        String?  @unique
-  name         String?
-  passwordHash String?
-  isAdmin      Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                String   @id @default(cuid())
+  email             String   @unique
+  phone             String?  @unique
+  name              String?
+  passwordHash      String?
+  isAdmin           Boolean  @default(false)
+  // Cached wallet balance. Source of truth is sum(WalletTransaction.amountKobo).
+  walletBalanceKobo Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  memberships OrganizerMember[]
-  orders      Order[]
+  memberships       OrganizerMember[]
+  orders            Order[]
+  walletTransactions WalletTransaction[]
+  walletTopUps      WalletTopUp[]
+}
+
+enum WalletTxType {
+  TOP_UP
+  PURCHASE
+  REFUND
+  ADJUSTMENT
+}
+
+model WalletTransaction {
+  id                 String       @id @default(cuid())
+  userId             String
+  // Positive = credit, negative = debit. Always non-zero.
+  amountKobo         Int
+  type               WalletTxType
+  // Wallet balance after applying this transaction; computed at insert.
+  balanceAfterKobo   Int
+  // Optional references for traceability.
+  orderId            String?
+  walletTopUpId      String?
+  refundId           String?
+  note               String?
+  createdAt          DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+enum WalletTopUpStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+model WalletTopUp {
+  id          String            @id @default(cuid())
+  userId      String
+  amountKobo  Int
+  paystackRef String            @unique
+  status      WalletTopUpStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+  processedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 // ---------- Organizers (multi-vendor) ----------
@@ -251,6 +302,7 @@ model Order {
   feeKobo         Int         @default(0)
   totalKobo       Int
   refundedKobo    Int         @default(0)
+  paidFromWallet  Boolean     @default(false)
   paystackRef     String?     @unique
   paidAt          DateTime?
   expiresAt       DateTime

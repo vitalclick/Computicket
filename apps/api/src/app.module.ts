@@ -20,6 +20,7 @@ import { AdminModule } from './admin/admin.module';
 import { TeamModule } from './team/team.module';
 import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { BusesModule } from './buses/buses.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { BusesModule } from './buses/buses.module';
     TeamModule,
     PromoCodesModule,
     BusesModule,
+    WalletModule,
   ],
 })
 export class AppModule {}

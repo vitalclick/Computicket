@@ -14,6 +14,8 @@ export function BuyForm({ event }: Props) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [promoCode, setPromoCode] = useState('');
+  const [payFromWallet, setPayFromWallet] = useState(false);
+  const [walletBalanceKobo, setWalletBalanceKobo] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState(false);
@@ -27,6 +29,9 @@ export function BuyForm({ event }: Props) {
         setEmail((curr) => curr || me.email);
         setName((curr) => curr || me.name || '');
       })
+      .catch(() => undefined);
+    api.walletOverview(token)
+      .then((w) => setWalletBalanceKobo(w.balanceKobo))
       .catch(() => undefined);
   }, []);
 
@@ -58,12 +63,17 @@ export function BuyForm({ event }: Props) {
           buyerEmail: email,
           buyerName: name || undefined,
           promoCode: promoCode.trim() || undefined,
+          payFromWallet,
           callbackUrl: `${origin}/checkout/return`,
           items: items.map((i) => ({ ticketTypeId: i.tt.id, quantity: i.qty })),
         },
         token,
       );
-      window.location.href = res.paystack.authorizationUrl;
+      if ('paidFromWallet' in res && res.paidFromWallet) {
+        window.location.href = `/checkout/return?reference=${res.order.paystackRef}`;
+      } else if ('paystack' in res) {
+        window.location.href = res.paystack.authorizationUrl;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       setSubmitting(false);
@@ -143,6 +153,23 @@ export function BuyForm({ event }: Props) {
         onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
         className="mt-3 w-full border border-gray-300 rounded-md px-3 py-2 font-mono text-sm uppercase"
       />
+
+      {signedIn && walletBalanceKobo !== null && (
+        <label className="mt-3 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={payFromWallet}
+            disabled={walletBalanceKobo < total}
+            onChange={(e) => setPayFromWallet(e.target.checked)}
+          />
+          <span>
+            Pay from wallet ({formatNgn(walletBalanceKobo)} available)
+            {walletBalanceKobo < total && (
+              <span className="text-amber-700 ml-1">— insufficient for this purchase</span>
+            )}
+          </span>
+        </label>
+      )}
 
       {signedIn && (
         <p className="mt-3 text-xs text-gray-500">
