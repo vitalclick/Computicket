@@ -1,0 +1,191 @@
+// Computicket Nigeria — Phase 1 schema
+// Covers: identity, organizers, events, ticket types, orders, tickets.
+// Travel/hotels/vouchers land in later phases.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Identity ----------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  phone     String?  @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships OrganizerMember[]
+  orders      Order[]
+}
+
+// ---------- Organizers (multi-vendor) ----------
+
+enum OrganizerStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum OrganizerRole {
+  OWNER
+  MANAGER
+  FINANCE
+  MARKETING
+  SCANNER
+  READ_ONLY
+}
+
+model Organizer {
+  id               String          @id @default(cuid())
+  slug             String          @unique
+  name             String
+  status           OrganizerStatus @default(PENDING)
+  description      String?
+  logoUrl          String?
+  website          String?
+  // Paystack split payout integration
+  paystackSubaccountCode String?
+  commissionBps    Int             @default(800) // 8% default
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  members OrganizerMember[]
+  events  Event[]
+}
+
+model OrganizerMember {
+  id          String        @id @default(cuid())
+  organizerId String
+  userId      String
+  role        OrganizerRole
+  createdAt   DateTime      @default(now())
+
+  organizer Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizerId, userId])
+}
+
+// ---------- Catalog: Events ----------
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  organizerId String
+  slug        String      @unique
+  title       String
+  description String?
+  venue       String
+  city        String
+  startsAt    DateTime
+  endsAt      DateTime
+  coverUrl    String?
+  status      EventStatus @default(DRAFT)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  organizer   Organizer    @relation(fields: [organizerId], references: [id])
+  ticketTypes TicketType[]
+  orders      Order[]
+
+  @@index([status, startsAt])
+  @@index([organizerId])
+}
+
+model TicketType {
+  id          String   @id @default(cuid())
+  eventId     String
+  name        String
+  description String?
+  // Prices stored in kobo (NGN minor units) to avoid float
+  priceKobo   Int
+  capacity    Int
+  sold        Int      @default(0)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event       Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+}
+
+// ---------- Orders & Tickets ----------
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  EXPIRED
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String?
+  eventId         String
+  buyerEmail      String
+  buyerPhone      String?
+  buyerName       String?
+  status          OrderStatus @default(PENDING)
+  subtotalKobo    Int
+  feeKobo         Int         @default(0)
+  totalKobo       Int
+  paystackRef     String?     @unique
+  paidAt          DateTime?
+  expiresAt       DateTime
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user    User?       @relation(fields: [userId], references: [id])
+  event   Event       @relation(fields: [eventId], references: [id])
+  items   OrderItem[]
+  tickets Ticket[]
+
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id           String @id @default(cuid())
+  orderId      String
+  ticketTypeId String
+  quantity     Int
+  unitPriceKobo Int
+
+  order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
+}
+
+enum TicketStatus {
+  ISSUED
+  SCANNED
+  VOIDED
+}
+
+model Ticket {
+  id           String       @id @default(cuid())
+  orderId      String
+  ticketTypeId String
+  // Opaque code embedded in the QR; full ticket data resolves server-side
+  code         String       @unique
+  status       TicketStatus @default(ISSUED)
+  scannedAt    DateTime?
+  scannedBy    String?
+  createdAt    DateTime     @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}

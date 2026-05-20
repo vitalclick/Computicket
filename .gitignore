@@ -32,3 +32,8 @@ yarn-error.log*
 coverage/
 .cache/
 .turbo/
+*.tsbuildinfo
+
+# Prisma generated client
+packages/db/src/generated/
+

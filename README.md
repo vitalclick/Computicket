@@ -37,4 +37,52 @@ Customers, event organizers, travel operators, bus companies, hotels, entertainm
 
 ## Status
 
-Pre-development. This repository currently holds the platform vision and planning docs. Implementation begins with Phase 1 (Events + Bus booking) — see [ROADMAP.md](./docs/ROADMAP.md).
+Phase 1 development kicked off. The repo contains a working monorepo skeleton: NestJS API, Next.js marketplace, Prisma schema, Docker dev environment, CI.
+
+## Quick start
+
+Prerequisites: Node 20+, pnpm 9+, Docker.
+
+```bash
+cp .env.example .env
+pnpm install
+pnpm docker:up          # Postgres + Redis
+pnpm db:generate
+pnpm --filter @computicket/db exec prisma migrate dev --name init
+pnpm db:seed            # demo organizer + 2 events
+pnpm dev                # API on :4000, web on :3000
+```
+
+- Marketplace: http://localhost:3000
+- API docs (Swagger): http://localhost:4000/docs
+- API base: http://localhost:4000/v1
+
+## Monorepo layout
+
+```
+apps/
+  api/        NestJS API (events, orders, tickets, organizers, health)
+  web/        Next.js marketplace (App Router + Tailwind)
+packages/
+  db/         Prisma schema + client
+infra/        docker-compose for local Postgres + Redis
+docs/         Architecture, roadmap, payments, organizers, API, brand
+.github/      CI workflow
+```
+
+## What's working in Phase 1 so far
+
+- Multi-vendor data model: organizers with members + roles, events, ticket types, orders, tickets
+- Public REST endpoints for events (list, detail, publish) and organizers (create, list, get)
+- Order creation with inventory check and 15-minute holds; Paystack init stubbed
+- Ticket scan endpoint with replay protection
+- Marketplace home + event listing + event detail pages
+- Swagger docs auto-generated at `/docs`
+- CI: typecheck + build against Postgres
+
+## Next up
+
+- Paystack initialize + webhook + signed QR ticket issuance
+- Organizer dashboard UI (sign in, create event, view sales)
+- Scanner app (Flutter) — offline cache + replay protection
+- Public API auth (API keys), webhook delivery, embeddable checkout widget
