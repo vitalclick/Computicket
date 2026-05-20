@@ -118,6 +118,10 @@ export default function DevelopersPage() {
         ← {params.slug}
       </Link>
       <h1 className="mt-2 text-2xl font-bold">Developers</h1>
+      <p className="mt-2 text-sm text-gray-600">
+        Build server-to-server integrations with API keys, get notified of events with webhooks,
+        or drop a <a href="/widget-demo" target="_blank" rel="noreferrer" className="text-brand hover:underline">buy button</a> on your own website.
+      </p>
 
       <section className="mt-10">
         <h2 className="text-lg font-semibold">API keys</h2>
