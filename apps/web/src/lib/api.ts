@@ -88,7 +88,37 @@ export interface Me {
   id: string;
   email: string;
   name: string | null;
+  isAdmin: boolean;
   memberships: Membership[];
+}
+
+export interface AdminOrganizer {
+  id: string;
+  slug: string;
+  name: string;
+  status: 'PENDING' | 'APPROVED' | 'SUSPENDED';
+  description: string | null;
+  createdAt: string;
+  approvedAt: string | null;
+  commissionBps: number;
+  eventCount: number;
+  owner: { email: string; name: string | null } | null;
+  payout: {
+    bankCode: string | null;
+    accountNumber: string | null;
+    accountName: string | null;
+    subaccountCode: string | null;
+  };
+  kycNotes: string | null;
+}
+
+export interface AdminStats {
+  organizers: number;
+  events: number;
+  paidOrders: number;
+  refundedOrders: number;
+  grossKobo: number;
+  buyerFeesKobo: number;
 }
 
 export interface DashboardEvent {
@@ -308,6 +338,28 @@ export const api = {
     request<{ id: string; deleted: true }>(
       `/dashboard/organizers/${organizerSlug}/webhook-endpoints/${id}`,
       { method: 'DELETE', token },
+    ),
+
+  adminStats: (token: string) => request<AdminStats>('/admin/stats', { token }),
+  adminListOrganizers: (token: string) =>
+    request<AdminOrganizer[]>('/admin/organizers', { token }),
+  adminApprove: (token: string, slug: string) =>
+    request<{ slug: string; status: string; approvedAt: string }>(
+      `/admin/organizers/${slug}/approve`, { method: 'POST', token },
+    ),
+  adminSuspend: (token: string, slug: string) =>
+    request<{ slug: string; status: string }>(
+      `/admin/organizers/${slug}/suspend`, { method: 'POST', token },
+    ),
+  adminSetCommission: (token: string, slug: string, bps: number) =>
+    request<{ slug: string; commissionBps: number }>(
+      `/admin/organizers/${slug}/commission`,
+      { method: 'PATCH', token, body: JSON.stringify({ bps }) },
+    ),
+  adminSetKycNotes: (token: string, slug: string, notes: string) =>
+    request<{ slug: string; kycNotes: string }>(
+      `/admin/organizers/${slug}/kyc-notes`,
+      { method: 'PATCH', token, body: JSON.stringify({ notes }) },
     ),
 
   refundOrder: (token: string, orderId: string) =>

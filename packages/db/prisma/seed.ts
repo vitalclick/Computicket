@@ -5,6 +5,19 @@ const prisma = new PrismaClient();
 
 async function main() {
   const passwordHash = await bcrypt.hash('Password123!', 12);
+  const adminHash = await bcrypt.hash('AdminPass123!', 12);
+
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@computicket.ng' },
+    update: { passwordHash: adminHash, isAdmin: true },
+    create: {
+      email: 'admin@computicket.ng',
+      name: 'Platform Admin',
+      passwordHash: adminHash,
+      isAdmin: true,
+    },
+  });
+
   const owner = await prisma.user.upsert({
     where: { email: 'owner@livenation.ng' },
     update: { passwordHash },
@@ -18,11 +31,13 @@ async function main() {
 
   const organizer = await prisma.organizer.upsert({
     where: { slug: 'livenation-ng' },
-    update: {},
+    update: { status: OrganizerStatus.APPROVED, approvedAt: new Date(), approvedById: admin.id },
     create: {
       slug: 'livenation-ng',
       name: 'LiveNation Nigeria',
       status: OrganizerStatus.APPROVED,
+      approvedAt: new Date(),
+      approvedById: admin.id,
       description: 'Premium concerts across Lagos, Abuja, and Port Harcourt.',
       members: {
         create: { userId: owner.id, role: 'OWNER' },

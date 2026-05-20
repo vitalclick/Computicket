@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EventStatus } from '@computicket/db';
 
@@ -72,6 +72,16 @@ export class EventsService {
   }
 
   async publish(slug: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { slug },
+      include: { organizer: { select: { status: true } } },
+    });
+    if (!event) throw new NotFoundException(`Event "${slug}" not found`);
+    if (event.organizer.status !== 'APPROVED') {
+      throw new ForbiddenException(
+        'Organizer must be APPROVED by platform admin before publishing events',
+      );
+    }
     return this.prisma.event.update({
       where: { slug },
       data: { status: EventStatus.PUBLISHED },
