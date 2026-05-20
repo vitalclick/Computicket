@@ -23,6 +23,7 @@ import { BusesModule } from './buses/buses.module';
 import { WalletModule } from './wallet/wallet.module';
 import { SeatingModule } from './seating/seating.module';
 import { AddOnsModule } from './add-ons/add-ons.module';
+import { MarketingModule } from './marketing/marketing.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AddOnsModule } from './add-ons/add-ons.module';
     WalletModule,
     SeatingModule,
     AddOnsModule,
+    MarketingModule,
   ],
 })
 export class AppModule {}

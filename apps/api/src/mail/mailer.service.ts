@@ -21,6 +21,13 @@ interface RefundNotificationInput {
   amountKobo: number;
 }
 
+interface BroadcastInput {
+  to: string;
+  subject: string;
+  bodyText: string;
+  eventTitle: string;
+}
+
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
@@ -69,6 +76,38 @@ export class MailerService {
       return;
     }
     this.logger.log(`Sent confirmation to ${input.to} for ${input.tickets.length} tickets`);
+  }
+
+  async sendBroadcast(input: BroadcastInput): Promise<void> {
+    const html = `<!doctype html><html><body style="font-family:ui-sans-serif,system-ui,Arial;background:#f9fafb;padding:24px">
+<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;padding:32px">
+<div style="font-weight:700;color:#008751">Computicket Nigeria · ${escapeHtml(input.eventTitle)}</div>
+<div style="margin-top:16px;white-space:pre-wrap;font-size:15px;line-height:1.5;color:#111827">${escapeHtml(input.bodyText)}</div>
+<div style="margin-top:24px;color:#9ca3af;font-size:12px">Sent because you have a ticket to ${escapeHtml(input.eventTitle)}.</div>
+</div></body></html>`;
+    if (!this.postmarkToken) {
+      this.logger.log(`[dev mail] to=${input.to} subject="${input.subject}" (broadcast)`);
+      return;
+    }
+    const res = await fetch(POSTMARK_URL, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'x-postmark-server-token': this.postmarkToken,
+      },
+      body: JSON.stringify({
+        From: this.fromAddress,
+        To: input.to,
+        Subject: input.subject,
+        HtmlBody: html,
+        TextBody: input.bodyText,
+        MessageStream: 'broadcast',
+      }),
+    });
+    if (!res.ok) {
+      this.logger.error(`Postmark broadcast send failed (${res.status}): ${await res.text()}`);
+    }
   }
 
   async sendRefundNotification(input: RefundNotificationInput): Promise<void> {

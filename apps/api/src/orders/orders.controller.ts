@@ -34,6 +34,7 @@ class CreateOrderDto {
   @IsOptional() @IsString() callbackUrl?: string;
   @IsOptional() @IsString() promoCode?: string;
   @IsOptional() @IsBoolean() payFromWallet?: boolean;
+  @IsOptional() @IsString() affiliateCode?: string;
   @IsArray() @ArrayMinSize(1) @ValidateNested({ each: true }) @Type(() => OrderItemDto)
   items!: OrderItemDto[];
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => OrderAddOnDto)

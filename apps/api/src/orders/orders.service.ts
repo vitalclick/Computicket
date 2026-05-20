@@ -11,6 +11,7 @@ import { PromoCodesService } from '../promo-codes/promo-codes.service';
 import { WalletService } from '../wallet/wallet.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { SeatingService } from '../seating/seating.service';
+import { AffiliateService } from '../marketing/affiliate.service';
 
 interface CreateOrderInput {
   eventSlug: string;
@@ -23,6 +24,7 @@ interface CreateOrderInput {
   userId?: string;
   promoCode?: string;
   payFromWallet?: boolean;
+  affiliateCode?: string;
 }
 
 const HOLD_MINUTES = 15;
@@ -36,6 +38,7 @@ export class OrdersService {
     private readonly wallet: WalletService,
     private readonly tickets: TicketsService,
     private readonly seating: SeatingService,
+    private readonly affiliate: AffiliateService,
   ) {}
 
   async create(input: CreateOrderInput) {
@@ -125,6 +128,13 @@ export class OrdersService {
         promoCodeStored = input.promoCode.trim().toUpperCase();
       }
 
+      // Affiliate attribution (best-effort; unknown codes are silently dropped).
+      let affiliateCodeStored: string | undefined;
+      if (input.affiliateCode) {
+        const link = await this.affiliate.resolveCode(input.affiliateCode);
+        if (link) affiliateCodeStored = link.code;
+      }
+
       const subtotalAfterDiscount = subtotal - discount;
       const fee = Math.round(subtotalAfterDiscount * 0.015);
       const total = subtotalAfterDiscount + fee;
@@ -142,6 +152,7 @@ export class OrdersService {
           feeKobo: fee,
           totalKobo: total,
           paidFromWallet: input.payFromWallet ?? false,
+          affiliateCode: affiliateCodeStored,
           expiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
           paystackRef: reference,
           items: { create: items },

@@ -150,6 +150,35 @@ model Organizer {
   webhookEndpoints WebhookEndpoint[]
   promoCodes       PromoCode[]
   busRoutes        BusRoute[]
+  affiliateLinks   AffiliateLink[]
+}
+
+model AffiliateLink {
+  id          String   @id @default(cuid())
+  organizerId String
+  code        String
+  name        String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  organizer Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+
+  @@unique([organizerId, code])
+  @@index([code])
+}
+
+model Broadcast {
+  id          String   @id @default(cuid())
+  eventId     String
+  sentById    String
+  subject     String
+  body        String   @db.Text
+  sentCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
 }
 
 model BusRoute {
@@ -310,6 +339,7 @@ model Event {
   orders      Order[]
   promoCodes  PromoCode[]
   addOns      AddOn[]
+  broadcasts  Broadcast[]
 
   @@index([status, startsAt])
   @@index([organizerId])
@@ -420,6 +450,7 @@ model Order {
   totalKobo       Int
   refundedKobo    Int         @default(0)
   paidFromWallet  Boolean     @default(false)
+  affiliateCode   String?
   paystackRef     String?     @unique
   paidAt          DateTime?
   expiresAt       DateTime
