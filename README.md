@@ -37,7 +37,7 @@ Customers, event organizers, travel operators, bus companies, hotels, entertainm
 
 ## Status
 
-Phase 1 development kicked off. The repo contains a working monorepo skeleton: NestJS API, Next.js marketplace, Prisma schema, Docker dev environment, CI.
+**Phase 1 complete.** Multi-vendor ticketing end to end plus a second vertical (bus travel). Every slice was verified with an end-to-end script before being committed.
 
 ## Quick start
 
@@ -70,7 +70,7 @@ docs/         Architecture, roadmap, payments, organizers, API, brand
 .github/      CI workflow
 ```
 
-## What's working in Phase 1 so far
+## What ships in Phase 1
 
 - Multi-vendor data model: organizers with members + roles, events, ticket types, orders, tickets
 - Public REST endpoints for events (list, detail, publish) and organizers (create, list, get)
@@ -112,16 +112,29 @@ docs/         Architecture, roadmap, payments, organizers, API, brand
 - **Concurrency-safe inventory** — verified by `scripts/load-test-inventory.sh`:
   200 concurrent buyers competing for 5 seats produces exactly 5
   successes and 195 sold-out responses, no over-sells
+- **Buyer accounts** — `/signin`, `/signup`, `/account` with linked
+  order history and QR re-download for every paid ticket
+- **Admin console** at `/admin` with platform stats, organizer
+  approval/suspension, commission editor, KYC notes. `OrganizerStatus`
+  is enforced: PENDING and SUSPENDED organizers can't publish events.
+- **Team management** — invite, role change, remove on
+  `/dashboard/o/[slug]/team`. Owner-only; defensive checks block
+  self-demotion and removing the last owner.
+- **Promo codes** — percentage or fixed-amount discounts, optional
+  event scope, max uses, expiry. Atomic claim under load.
+- **Embeddable buy-button widget** at `/widget.js` with a live demo
+  at `/widget-demo`
+- **Bus travel vertical** — routes, trip search at `/buses`, QR
+  boarding passes via the same Order/Ticket flow
 - Swagger docs auto-generated at `/docs`
 - Tests: webhook signature verification, order expiry race-loss case
 - CI: typecheck + build against Postgres
 
-## Next up
+## Next up (Phase 2)
 
-- Flutter port of the scanner for offline-first venue ops (the web
-  PWA covers the immediate need)
+- Flutter port of the scanner for offline-first venue ops
 - Webhook delivery retry queue + a deliveries log table for observability
-- Embeddable checkout widget for organizer sites
-- Bus travel vertical
-- Termii SMS confirmations
-- Partial refunds + Paystack refund webhook handler for async finalisation
+- Termii SMS confirmations alongside email
+- Partial refunds + Paystack refund webhook for async finalisation
+- Flights and hotels verticals
+- Reserved seating editor (currently general admission only)

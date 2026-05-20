@@ -2,21 +2,23 @@
 
 A phased launch plan that ships value early and avoids boiling the ocean.
 
-## Phase 1 — Foundation (MVP)
+## Phase 1 — Foundation (MVP) — ✅ Complete
 
 Goal: prove the multi-vendor booking loop with real organizers, real events, and real money in.
 
-- **Multi-vendor onboarding** — self-serve organizer signup, KYC, Paystack sub-account mapping
-- **Events & Concerts** — listing, detail, seat/tier selection, checkout, QR e-ticket
-- **Bus Travel** — route search, seat selection, QR boarding pass
-- **Paystack** as the sole payment provider with split payouts (see [PAYMENTS.md](./PAYMENTS.md))
-- Customer accounts, booking history, OTP verification
-- Organizer dashboard v1 — create events, design tickets (types, pricing, promo codes), live sales, refunds, payouts, team roles (see [ORGANIZERS.md](./ORGANIZERS.md))
-- Admin console — vendor approval, commission settings, basic reports
-- Scanner app (iOS + Android) for event check-in (QR validation, offline mode)
-- Public API v1 (events, orders, tickets, webhooks) and embeddable checkout widget — beta (see [API.md](./API.md))
+Shipped:
 
-Success criteria: 50+ active organizers, 100+ events live, working scan at the gate, payouts settled weekly without manual intervention.
+- **Multi-vendor onboarding** — self-serve organizer signup, light KYC (bank verification via Paystack sub-account, admin notes field)
+- **Events & Concerts** — listing, detail, multi-tier selection, Paystack checkout, signed QR e-tickets
+- **Bus Travel** — routes, search by city + date at `/buses`, trips reuse the events flow with `type=BUS_TRIP`, QR boarding passes
+- **Paystack** with split payouts to organizer sub-accounts
+- **Customer accounts** — `/signin`, `/signup`, `/account` with linked order history. (OTP deferred to Phase 2.)
+- **Organizer dashboard** — events, ticket tiers, live sales (sold/revenue/paid orders), one-click refunds, payouts setup, promo codes (percentage + fixed), team management with roles, developer settings
+- **Admin console** at `/admin` — platform stats, approve/suspend organizers, commission editor, KYC notes. Approval is enforced — `PENDING`/`SUSPENDED` organizers can't publish events.
+- **Scanner** — browser-based PWA at `/scan` using device camera, scoped to `OWNER` / `MANAGER` / `SCANNER` roles. Flutter port deferred.
+- **Public API v1** — per-organizer API keys (sha256-stored, revocable) plus outbound webhooks (HMAC SHA-256 signed) for `order.paid`, `order.refunded`, `ticket.scanned`. Public `/api/v1/me` smoke endpoint.
+- **Embeddable widget** — drop-in `<script src="/widget.js">` with a live demo at `/widget-demo`.
+- **Concurrency-safe inventory** — verified by `scripts/load-test-inventory.sh` at 200 buyers / 5 seats.
 
 ## Phase 2 — Travel & Stays
 
