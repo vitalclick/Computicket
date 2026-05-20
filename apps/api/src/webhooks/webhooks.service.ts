@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { TicketsService } from '../tickets/tickets.service';
 import { MailerService } from '../mail/mailer.service';
+import { SmsService } from '../mail/sms.service';
 import { WebhookDispatcher } from '../developers/webhook-dispatcher.service';
 import { RefundsService } from '../refunds/refunds.service';
 import { WalletService } from '../wallet/wallet.service';
@@ -27,6 +28,7 @@ export class WebhooksService {
     private readonly outbound: WebhookDispatcher,
     private readonly refunds: RefundsService,
     private readonly wallet: WalletService,
+    private readonly sms: SmsService,
   ) {}
 
   verifyPaystackSignature(rawBody: Buffer, signature: string | undefined): boolean {
@@ -122,6 +124,13 @@ export class WebhooksService {
       } catch (e) {
         this.logger.error(`Email send failed for order ${order.id}: ${(e as Error).message}`);
       }
+
+      // Best-effort SMS confirmation when the buyer left a phone number.
+      this.sms.send(
+        full.buyerPhone,
+        `Computicket: ${full.tickets.length} ticket(s) confirmed for ${full.event.title}. ` +
+          `Check your email or computicket.ng/account for QR codes.`,
+      ).catch(() => undefined);
     }
 
     return { handled: true, issued: result.issued, ticketCount: result.tickets.length };
