@@ -94,17 +94,34 @@ docs/         Architecture, roadmap, payments, organizers, API, brand
   dashboard endpoints
 - **Organizer dashboard UI** — sign in/up, organizer switcher, per-org
   page with sales stats (sold, revenue, paid orders), inline
-  multi-tier event creation form, draft/publish toggle
+  multi-tier event creation form, draft/publish toggle, orders list
+  with one-click refund, **payouts setup** (bank picker, account
+  verification via Paystack sub-account), **developer settings**
+  (per-organizer API keys + outbound webhook endpoints)
+- **Refunds** — Paystack refund + atomic state transition + ticket
+  voiding + inventory release, idempotent on replay
+- **Paystack split payments** — organizer sub-accounts, transactions
+  initialised with the subaccount code so funds route directly to
+  the organizer minus our commission
+- **Scanner PWA** — camera-based ticket validation at `/scan`,
+  scoped to {OWNER, MANAGER, SCANNER} roles on the event's organizer
+- **Per-organizer API keys** with sha256 storage and revocation; a
+  public `/api/v1/me` surface for partners to integrate against
+- **Outbound webhooks** — order.paid, order.refunded, ticket.scanned;
+  HMAC-SHA256 signature header, 5s timeout, parallel dispatch
+- **Concurrency-safe inventory** — verified by `scripts/load-test-inventory.sh`:
+  200 concurrent buyers competing for 5 seats produces exactly 5
+  successes and 195 sold-out responses, no over-sells
 - Swagger docs auto-generated at `/docs`
 - Tests: webhook signature verification, order expiry race-loss case
 - CI: typecheck + build against Postgres
 
 ## Next up
 
-- Scanner app (Flutter) — offline cache + replay protection at the gate
-- Refunds: Paystack refunds API + REFUNDED state + void tickets
-- Email confirmations: branded templates, Termii SMS for Nigeria
-- Public API: per-organizer API keys + outbound webhooks + embeddable
-  checkout widget
-- Paystack split payments wired to organizer sub-accounts
+- Flutter port of the scanner for offline-first venue ops (the web
+  PWA covers the immediate need)
+- Webhook delivery retry queue + a deliveries log table for observability
+- Embeddable checkout widget for organizer sites
 - Bus travel vertical
+- Termii SMS confirmations
+- Partial refunds + Paystack refund webhook handler for async finalisation
