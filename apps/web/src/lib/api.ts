@@ -476,6 +476,24 @@ export const api = {
       `/dashboard/organizers/${organizerSlug}/webhook-endpoints/${id}`,
       { method: 'DELETE', token },
     ),
+  listWebhookDeliveries: (token: string, organizerSlug: string) =>
+    request<Array<{
+      id: string;
+      event: string;
+      eventId: string;
+      status: 'PENDING' | 'DELIVERED' | 'FAILED';
+      attemptCount: number;
+      lastAttemptAt: string | null;
+      nextAttemptAt: string;
+      responseStatus: number | null;
+      createdAt: string;
+      endpoint: { id: string; url: string };
+    }>>(`/dashboard/organizers/${organizerSlug}/webhook-deliveries`, { token }),
+  retryWebhookDelivery: (token: string, organizerSlug: string, id: string) =>
+    request<{ retried: boolean; ok?: boolean }>(
+      `/dashboard/organizers/${organizerSlug}/webhook-deliveries/${id}/retry`,
+      { method: 'POST', token },
+    ),
 
   adminStats: (token: string) => request<AdminStats>('/admin/stats', { token }),
   adminListOrganizers: (token: string) =>

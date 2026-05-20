@@ -196,9 +196,37 @@ model WebhookEndpoint {
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
 
-  organizer Organizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  organizer  Organizer          @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
 
   @@index([organizerId])
+}
+
+enum WebhookDeliveryStatus {
+  PENDING
+  DELIVERED
+  FAILED
+}
+
+model WebhookDelivery {
+  id             String                @id @default(cuid())
+  endpointId     String
+  event          String
+  eventId        String
+  payload        String                @db.Text
+  signature      String
+  status         WebhookDeliveryStatus @default(PENDING)
+  attemptCount   Int                   @default(0)
+  lastAttemptAt  DateTime?
+  nextAttemptAt  DateTime              @default(now())
+  responseStatus Int?
+  responseBody   String?               @db.Text
+  createdAt      DateTime              @default(now())
+
+  endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([endpointId, createdAt])
 }
 
 model OrganizerMember {

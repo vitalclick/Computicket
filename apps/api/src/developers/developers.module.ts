@@ -6,11 +6,24 @@ import { ApiKeysService } from './api-keys.service';
 import { WebhookEndpointsController } from './webhook-endpoints.controller';
 import { WebhookEndpointsService } from './webhook-endpoints.service';
 import { WebhookDispatcher } from './webhook-dispatcher.service';
+import { WebhookRetryService } from './webhook-retry.service';
+import { WebhookDeliveriesController } from './webhook-deliveries.controller';
 
 @Module({
   imports: [AuthModule],
-  controllers: [ApiKeysController, WebhookEndpointsController, PublicApiController],
-  providers: [ApiKeysService, ApiKeyGuard, WebhookEndpointsService, WebhookDispatcher],
+  controllers: [
+    ApiKeysController,
+    WebhookEndpointsController,
+    PublicApiController,
+    WebhookDeliveriesController,
+  ],
+  providers: [
+    ApiKeysService,
+    ApiKeyGuard,
+    WebhookEndpointsService,
+    WebhookDispatcher,
+    WebhookRetryService,
+  ],
   exports: [WebhookDispatcher],
 })
 export class DevelopersModule {}

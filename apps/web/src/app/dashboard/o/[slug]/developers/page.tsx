@@ -6,6 +6,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
+type Delivery = {
+  id: string;
+  event: string;
+  status: 'PENDING' | 'DELIVERED' | 'FAILED';
+  attemptCount: number;
+  nextAttemptAt: string;
+  responseStatus: number | null;
+  createdAt: string;
+  endpoint: { url: string };
+};
+
 const EVENT_TYPES = ['order.paid', 'order.refunded', 'ticket.scanned'] as const;
 
 export default function DevelopersPage() {
@@ -13,6 +24,8 @@ export default function DevelopersPage() {
   const params = useParams<{ slug: string }>();
   const [keys, setKeys] = useState<Awaited<ReturnType<typeof api.listApiKeys>>>([]);
   const [endpoints, setEndpoints] = useState<Awaited<ReturnType<typeof api.listWebhookEndpoints>>>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [retrying, setRetrying] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,12 +47,14 @@ export default function DevelopersPage() {
       return;
     }
     try {
-      const [k, e] = await Promise.all([
+      const [k, e, d] = await Promise.all([
         api.listApiKeys(token, params.slug),
         api.listWebhookEndpoints(token, params.slug),
+        api.listWebhookDeliveries(token, params.slug),
       ]);
       setKeys(k);
       setEndpoints(e);
+      setDeliveries(d);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load');
     } finally {
@@ -285,6 +300,72 @@ export default function DevelopersPage() {
           </ul>
         )}
       </section>
+
+      <section className="mt-12">
+        <h2 className="text-lg font-semibold">Recent deliveries</h2>
+        <p className="text-sm text-gray-600 mt-1">
+          Last 100 attempted deliveries across your endpoints. Failed deliveries retry on a back-off
+          schedule (1m, 5m, 30m, 2h, 8h, 24h) for up to 6 attempts.
+        </p>
+        {deliveries.length === 0 ? (
+          <p className="mt-3 text-sm text-gray-500">Nothing yet.</p>
+        ) : (
+          <table className="mt-3 w-full text-sm">
+            <thead className="text-left text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
+              <tr>
+                <th className="py-2">Event</th>
+                <th className="py-2">Endpoint</th>
+                <th className="py-2">Status</th>
+                <th className="py-2">Attempts</th>
+                <th className="py-2">When</th>
+                <th className="py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {deliveries.map((d) => (
+                <tr key={d.id} className="border-b border-gray-100">
+                  <td className="py-3 font-mono text-xs">{d.event}</td>
+                  <td className="py-3 font-mono text-xs break-all max-w-xs">{d.endpoint.url}</td>
+                  <td className="py-3">
+                    <span className={deliveryBadge(d.status)}>
+                      {d.status}
+                      {d.responseStatus && ` (${d.responseStatus})`}
+                    </span>
+                  </td>
+                  <td className="py-3">{d.attemptCount}</td>
+                  <td className="py-3 text-gray-500">{new Date(d.createdAt).toLocaleString('en-NG')}</td>
+                  <td className="py-3 text-right">
+                    {d.status !== 'DELIVERED' && (
+                      <button
+                        onClick={async () => {
+                          setRetrying(d.id);
+                          try {
+                            await api.retryWebhookDelivery(getToken()!, params.slug, d.id);
+                            await load();
+                          } finally {
+                            setRetrying(null);
+                          }
+                        }}
+                        disabled={retrying === d.id}
+                        className="text-brand hover:underline text-xs disabled:text-gray-400"
+                      >
+                        {retrying === d.id ? 'Retrying…' : 'Retry now'}
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
     </div>
   );
+}
+
+function deliveryBadge(status: 'PENDING' | 'DELIVERED' | 'FAILED'): string {
+  const base = 'px-2 py-0.5 rounded-md text-xs font-medium';
+  if (status === 'DELIVERED') return `${base} bg-green-50 text-green-700`;
+  if (status === 'FAILED') return `${base} bg-red-50 text-red-700`;
+  return `${base} bg-amber-50 text-amber-800`;
 }
