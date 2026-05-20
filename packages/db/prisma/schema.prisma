@@ -49,6 +49,7 @@ model User {
   walletTopUps      WalletTopUp[]
   loyaltyTransactions LoyaltyTransaction[]
   agentProfile      AgentProfile?
+  corporateMemberships CorporateMember[]
   referredBy        User?    @relation("UserReferrals", fields: [referredById], references: [id])
   referred          User[]   @relation("UserReferrals")
   referralsMade     Referral[] @relation("Referrer")
@@ -101,6 +102,36 @@ model WalletTransaction {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+model CorporateAccount {
+  id              String   @id @default(cuid())
+  name            String
+  billingEmail    String
+  creditLimitKobo Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  members CorporateMember[]
+  orders  Order[]
+}
+
+enum CorporateRole {
+  ADMIN
+  MEMBER
+}
+
+model CorporateMember {
+  id                 String        @id @default(cuid())
+  corporateAccountId String
+  userId             String
+  role               CorporateRole @default(MEMBER)
+  perOrderLimitKobo  Int?
+  createdAt          DateTime      @default(now())
+
+  account CorporateAccount @relation(fields: [corporateAccountId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([corporateAccountId, userId])
 }
 
 model AgentProfile {
@@ -580,18 +611,21 @@ model Order {
   agentCommissionKobo Int     @default(0)
   loyaltyPointsRedeemed Int   @default(0)
   loyaltyPointsEarned   Int   @default(0)
+  corporateAccountId    String?
+  corporateSettledAt    DateTime?
   paystackRef     String?     @unique
   paidAt          DateTime?
   expiresAt       DateTime
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  user    User?        @relation(fields: [userId], references: [id])
-  event   Event        @relation(fields: [eventId], references: [id])
+  user    User?            @relation(fields: [userId], references: [id])
+  event   Event            @relation(fields: [eventId], references: [id])
   items   OrderItem[]
   addOns  OrderAddOn[]
   tickets Ticket[]
   refunds Refund[]
+  corporateAccount CorporateAccount? @relation(fields: [corporateAccountId], references: [id])
 
   @@index([status, createdAt])
 }

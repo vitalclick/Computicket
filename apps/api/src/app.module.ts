@@ -29,6 +29,7 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
 import { VouchersModule } from './vouchers/vouchers.module';
 import { ResaleModule } from './resale/resale.module';
 import { AgentsModule } from './agents/agents.module';
+import { CorporateModule } from './corporate/corporate.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { AgentsModule } from './agents/agents.module';
     VouchersModule,
     ResaleModule,
     AgentsModule,
+    CorporateModule,
   ],
 })
 export class AppModule {}

@@ -14,6 +14,7 @@ import { SeatingService } from '../seating/seating.service';
 import { AffiliateService } from '../marketing/affiliate.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { AgentsService } from '../agents/agents.service';
+import { CorporateService } from '../corporate/corporate.service';
 
 interface CreateOrderInput {
   eventSlug: string;
@@ -29,6 +30,7 @@ interface CreateOrderInput {
   affiliateCode?: string;
   agentCode?: string;
   redeemLoyaltyPoints?: number;
+  corporateAccountId?: string;
 }
 
 const HOLD_MINUTES = 15;
@@ -45,6 +47,7 @@ export class OrdersService {
     private readonly affiliate: AffiliateService,
     private readonly loyalty: LoyaltyService,
     private readonly agents: AgentsService,
+    private readonly corporate: CorporateService,
   ) {}
 
   async create(input: CreateOrderInput) {
@@ -194,6 +197,7 @@ export class OrdersService {
           affiliateCode: affiliateCodeStored,
           agentCode: agentCodeStored,
           agentCommissionKobo,
+          corporateAccountId: input.corporateAccountId,
           loyaltyPointsRedeemed,
           expiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
           paystackRef: reference,
@@ -216,6 +220,25 @@ export class OrdersService {
 
       return created;
     });
+
+    // Corporate-paid path: charge to the corporate account (subject to
+    // per-order limit and credit limit). Order is marked PAID immediately
+    // and tickets are issued without a Paystack roundtrip.
+    if (input.corporateAccountId) {
+      if (!input.userId) {
+        throw new BadRequestException('Corporate billing requires sign-in');
+      }
+      await this.corporate.assertCanCharge(input.corporateAccountId, input.userId, order.totalKobo);
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { status: 'PAID', paidAt: new Date() },
+      });
+      await this.tickets.issueAndReleaseHolds(order.id);
+      return {
+        order: { ...order, status: 'PAID' as const },
+        corporateAccountId: input.corporateAccountId,
+      };
+    }
 
     // Wallet-paid path: debit the user's wallet and finalise the order
     // synchronously. Tickets are issued immediately; no Paystack roundtrip.
