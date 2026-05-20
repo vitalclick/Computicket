@@ -72,9 +72,19 @@ export default function OrganizerDashboard() {
       <Link href="/dashboard" className="text-sm text-gray-500 hover:text-brand">
         ← Organizers
       </Link>
-      <h1 className="mt-2 text-2xl font-bold">{overview.organizer.name}</h1>
-      <div className="text-xs text-gray-500 mt-0.5">
-        {overview.organizer.slug} · {overview.organizer.status}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="mt-2 text-2xl font-bold">{overview.organizer.name}</h1>
+          <div className="text-xs text-gray-500 mt-0.5">
+            {overview.organizer.slug} · {overview.organizer.status}
+          </div>
+        </div>
+        <Link
+          href={`/dashboard/o/${params.slug}/payouts`}
+          className="text-sm text-brand hover:underline mt-3"
+        >
+          Payouts →
+        </Link>
       </div>
 
       <div className="mt-6 grid sm:grid-cols-3 gap-3">

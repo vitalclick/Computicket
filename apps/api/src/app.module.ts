@@ -13,6 +13,7 @@ import { TicketsModule } from './tickets/tickets.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { RefundsModule } from './refunds/refunds.module';
+import { PayoutsModule } from './payouts/payouts.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RefundsModule } from './refunds/refunds.module';
     WebhooksModule,
     DashboardModule,
     RefundsModule,
+    PayoutsModule,
   ],
 })
 export class AppModule {}

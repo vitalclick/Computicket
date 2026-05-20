@@ -6,6 +6,19 @@ interface InitializeParams {
   reference: string;
   callbackUrl?: string;
   metadata?: Record<string, unknown>;
+  subaccountCode?: string;
+}
+
+export interface SubaccountInput {
+  businessName: string;
+  bankCode: string;
+  accountNumber: string;
+  percentageCharge: number; // platform commission as percentage, e.g. 8.0
+}
+
+export interface SubaccountResult {
+  subaccountCode: string;
+  accountName: string;
 }
 
 export interface InitializeResult {
@@ -66,6 +79,7 @@ export class PaystackService {
         reference: params.reference,
         callback_url: params.callbackUrl,
         metadata: params.metadata,
+        ...(params.subaccountCode ? { subaccount: params.subaccountCode } : {}),
       }),
     });
 
@@ -84,6 +98,41 @@ export class PaystackService {
       authorizationUrl: body.data.authorization_url,
       accessCode: body.data.access_code,
       reference: body.data.reference,
+    };
+  }
+
+  async createSubaccount(input: SubaccountInput): Promise<SubaccountResult> {
+    if (!this.isLive()) {
+      this.logger.warn(`PAYSTACK_SECRET_KEY missing — simulating sub-account creation`);
+      return {
+        subaccountCode: `ACCT_dev_${input.accountNumber.slice(-6)}`,
+        accountName: `Dev Account ${input.accountNumber.slice(-4)}`,
+      };
+    }
+    const res = await fetch(`${PAYSTACK_BASE}/subaccount`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${this.secretKey}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        business_name: input.businessName,
+        settlement_bank: input.bankCode,
+        account_number: input.accountNumber,
+        percentage_charge: input.percentageCharge,
+      }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      this.logger.error(`Paystack subaccount create failed (${res.status}): ${text}`);
+      throw new ServiceUnavailableException('Bank verification failed');
+    }
+    const body = (await res.json()) as {
+      data: { subaccount_code: string; account_name: string };
+    };
+    return {
+      subaccountCode: body.data.subaccount_code,
+      accountName: body.data.account_name,
     };
   }
 

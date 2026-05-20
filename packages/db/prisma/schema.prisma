@@ -53,6 +53,9 @@ model Organizer {
   website          String?
   // Paystack split payout integration
   paystackSubaccountCode String?
+  payoutBankCode         String?
+  payoutAccountNumber    String?
+  payoutAccountName      String?
   commissionBps    Int             @default(800) // 8% default
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt

@@ -208,6 +208,37 @@ export const api = {
       };
     }>('/tickets/scan', { method: 'POST', token, body: JSON.stringify({ code }) }),
 
+  listBanks: () => request<{ banks: Array<{ code: string; name: string }> }>('/payouts/banks'),
+  getPayouts: (token: string, organizerSlug: string) =>
+    request<{
+      slug: string;
+      name: string;
+      commissionBps: number;
+      commissionPercent: number;
+      paystackSubaccountCode: string | null;
+      payoutBankCode: string | null;
+      payoutAccountNumber: string | null;
+      payoutAccountName: string | null;
+      bankName: string | null;
+      isSetUp: boolean;
+    }>(`/dashboard/organizers/${organizerSlug}/payouts`, { token }),
+  setPayouts: (
+    token: string,
+    organizerSlug: string,
+    body: { bankCode: string; accountNumber: string },
+  ) =>
+    request<{
+      subaccountCode: string;
+      bankCode: string;
+      accountNumber: string;
+      accountName: string;
+      bankName: string | null;
+    }>(`/dashboard/organizers/${organizerSlug}/payouts`, {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+
   refundOrder: (token: string, orderId: string) =>
     request<{
       orderId: string;

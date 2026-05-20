@@ -29,7 +29,10 @@ export class OrdersService {
   async create(input: CreateOrderInput) {
     const event = await this.prisma.event.findUnique({
       where: { slug: input.eventSlug },
-      include: { ticketTypes: true },
+      include: {
+        ticketTypes: true,
+        organizer: { select: { paystackSubaccountCode: true } },
+      },
     });
     if (!event) throw new NotFoundException(`Event "${input.eventSlug}" not found`);
     if (event.status !== 'PUBLISHED') throw new BadRequestException('Event is not on sale');
@@ -93,6 +96,7 @@ export class OrdersService {
       reference,
       callbackUrl: input.callbackUrl,
       metadata: { orderId: order.id, eventSlug: event.slug },
+      subaccountCode: event.organizer.paystackSubaccountCode ?? undefined,
     });
 
     return {
