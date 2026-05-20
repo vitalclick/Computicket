@@ -22,6 +22,7 @@ import { PromoCodesModule } from './promo-codes/promo-codes.module';
 import { BusesModule } from './buses/buses.module';
 import { WalletModule } from './wallet/wallet.module';
 import { SeatingModule } from './seating/seating.module';
+import { AddOnsModule } from './add-ons/add-ons.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { SeatingModule } from './seating/seating.module';
     BusesModule,
     WalletModule,
     SeatingModule,
+    AddOnsModule,
   ],
 })
 export class AppModule {}

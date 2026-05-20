@@ -21,6 +21,11 @@ class OrderItemDto {
   @IsOptional() @IsArray() @IsString({ each: true }) seatIds?: string[];
 }
 
+class OrderAddOnDto {
+  @IsString() addOnId!: string;
+  @IsInt() @Min(1) quantity!: number;
+}
+
 class CreateOrderDto {
   @IsString() eventSlug!: string;
   @IsEmail() buyerEmail!: string;
@@ -31,6 +36,8 @@ class CreateOrderDto {
   @IsOptional() @IsBoolean() payFromWallet?: boolean;
   @IsArray() @ArrayMinSize(1) @ValidateNested({ each: true }) @Type(() => OrderItemDto)
   items!: OrderItemDto[];
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => OrderAddOnDto)
+  addOns?: OrderAddOnDto[];
 }
 
 @ApiTags('orders')

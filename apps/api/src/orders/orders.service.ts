@@ -18,6 +18,7 @@ interface CreateOrderInput {
   buyerName?: string;
   buyerPhone?: string;
   items: Array<{ ticketTypeId: string; quantity: number; seatIds?: string[] }>;
+  addOns?: Array<{ addOnId: string; quantity: number }>;
   callbackUrl?: string;
   userId?: string;
   promoCode?: string;
@@ -42,6 +43,7 @@ export class OrdersService {
       where: { slug: input.eventSlug },
       include: {
         ticketTypes: true,
+        addOns: true,
         organizer: { select: { paystackSubaccountCode: true } },
       },
     });
@@ -91,6 +93,26 @@ export class OrdersService {
         });
       }
 
+      // Add-ons (concessions, parking, merch). Validate, accumulate into
+      // subtotal, claim against capacity if set.
+      const addOnsToCreate: Array<{ addOnId: string; quantity: number; unitPriceKobo: number }> = [];
+      const addOnById = new Map(event.addOns.map((a) => [a.id, a]));
+      for (const ao of input.addOns ?? []) {
+        const a = addOnById.get(ao.addOnId);
+        if (!a || !a.active) throw new BadRequestException(`Unknown add-on ${ao.addOnId}`);
+        if (ao.quantity <= 0) throw new BadRequestException('Add-on quantity must be positive');
+        if (a.capacity !== null && a.sold + ao.quantity > a.capacity) {
+          throw new BadRequestException(`Add-on "${a.name}" is sold out`);
+        }
+        // Increment sold immediately (no separate held counter for add-ons)
+        await tx.addOn.update({
+          where: { id: a.id },
+          data: { sold: { increment: ao.quantity } },
+        });
+        subtotal += a.priceKobo * ao.quantity;
+        addOnsToCreate.push({ addOnId: a.id, quantity: ao.quantity, unitPriceKobo: a.priceKobo });
+      }
+
       // Apply promo code (if any) — validate, atomically claim, compute discount.
       let discount = 0;
       let promoCodeStored: string | undefined;
@@ -123,8 +145,9 @@ export class OrdersService {
           expiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
           paystackRef: reference,
           items: { create: items },
+          addOns: addOnsToCreate.length ? { create: addOnsToCreate } : undefined,
         },
-        include: { items: true },
+        include: { items: true, addOns: true },
       });
 
       // Claim seats for any seated items. Failure aborts the whole txn,

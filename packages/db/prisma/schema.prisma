@@ -281,10 +281,39 @@ model Event {
   ticketTypes TicketType[]
   orders      Order[]
   promoCodes  PromoCode[]
+  addOns      AddOn[]
 
   @@index([status, startsAt])
   @@index([organizerId])
   @@index([type, status, startsAt])
+}
+
+model AddOn {
+  id          String   @id @default(cuid())
+  eventId     String
+  name        String
+  description String?
+  priceKobo   Int
+  capacity    Int?
+  sold        Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  event       Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  orderAddOns OrderAddOn[]
+
+  @@index([eventId])
+}
+
+model OrderAddOn {
+  id            String @id @default(cuid())
+  orderId       String
+  addOnId       String
+  quantity      Int
+  unitPriceKobo Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  addOn AddOn @relation(fields: [addOnId], references: [id])
 }
 
 model TicketType {
@@ -369,9 +398,10 @@ model Order {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  user    User?       @relation(fields: [userId], references: [id])
-  event   Event       @relation(fields: [eventId], references: [id])
+  user    User?        @relation(fields: [userId], references: [id])
+  event   Event        @relation(fields: [eventId], references: [id])
   items   OrderItem[]
+  addOns  OrderAddOn[]
   tickets Ticket[]
   refunds Refund[]
 
