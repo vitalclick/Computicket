@@ -74,15 +74,22 @@ docs/         Architecture, roadmap, payments, organizers, API, brand
 
 - Multi-vendor data model: organizers with members + roles, events, ticket types, orders, tickets
 - Public REST endpoints for events (list, detail, publish) and organizers (create, list, get)
-- Order creation with inventory check and 15-minute holds; Paystack init stubbed
-- Ticket scan endpoint with replay protection
-- Marketplace home + event listing + event detail pages
+- Order creation with inventory check and 15-minute holds
+- **Paystack initialize** — real `/transaction/initialize` call, with a dev fallback when keys aren't set
+- **Webhook handler** with HMAC SHA512 signature verification, amount-match check, and idempotent ticket issuance
+- **Atomic ticket issuance** — claims the order via conditional update so replayed webhooks can't double-issue
+- **QR codes** — `GET /v1/tickets/:code/qr.png` returns a scannable PNG
+- **Scan endpoint** with one-shot replay protection (second scan returns `already_scanned`)
+- Marketplace home, event listing, event detail with **live checkout form** (redirects to Paystack)
+- `/checkout/return` page that shows issued tickets and QRs after payment
 - Swagger docs auto-generated at `/docs`
+- Tests: webhook signature verification suite
 - CI: typecheck + build against Postgres
 
 ## Next up
 
-- Paystack initialize + webhook + signed QR ticket issuance
-- Organizer dashboard UI (sign in, create event, view sales)
-- Scanner app (Flutter) — offline cache + replay protection
-- Public API auth (API keys), webhook delivery, embeddable checkout widget
+- Organizer dashboard UI (sign in, create event, view sales, refunds)
+- Scanner app (Flutter) — offline cache + replay protection at the gate
+- Email/SMS confirmations (Postmark + Termii)
+- Public API auth (API keys), outbound webhooks for organizers, embeddable checkout widget
+- Bus travel vertical

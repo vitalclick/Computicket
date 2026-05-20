@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { PaystackService } from '../payments/paystack.service';
 
 interface CreateOrderInput {
   eventSlug: string;
@@ -12,13 +13,17 @@ interface CreateOrderInput {
   buyerName?: string;
   buyerPhone?: string;
   items: Array<{ ticketTypeId: string; quantity: number }>;
+  callbackUrl?: string;
 }
 
 const HOLD_MINUTES = 15;
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly paystack: PaystackService,
+  ) {}
 
   async create(input: CreateOrderInput) {
     const event = await this.prisma.event.findUnique({
@@ -43,8 +48,9 @@ export class OrdersService {
       items.push({ ticketTypeId: tt.id, quantity: item.quantity, unitPriceKobo: tt.priceKobo });
     }
 
-    const fee = Math.round(subtotal * 0.015); // 1.5% buyer fee, placeholder
+    const fee = Math.round(subtotal * 0.015);
     const total = subtotal + fee;
+    const reference = `ctng_${randomBytes(8).toString('hex')}`;
 
     const order = await this.prisma.order.create({
       data: {
@@ -56,20 +62,25 @@ export class OrdersService {
         feeKobo: fee,
         totalKobo: total,
         expiresAt: new Date(Date.now() + HOLD_MINUTES * 60_000),
-        paystackRef: `ctng_${randomBytes(8).toString('hex')}`,
+        paystackRef: reference,
         items: { create: items },
       },
       include: { items: true },
     });
 
-    // Paystack initialize would go here. For Phase 1 kickoff we return the
-    // reference and a placeholder authorization URL so the web app can wire
-    // the redirect now; webhook + real init follow in the next iteration.
+    const paystack = await this.paystack.initialize({
+      email: input.buyerEmail,
+      amountKobo: total,
+      reference,
+      callbackUrl: input.callbackUrl,
+      metadata: { orderId: order.id, eventSlug: event.slug },
+    });
+
     return {
       order,
       paystack: {
-        reference: order.paystackRef,
-        authorizationUrl: `https://checkout.paystack.com/${order.paystackRef}`,
+        reference: paystack.reference,
+        authorizationUrl: paystack.authorizationUrl,
         publicKey: process.env.PAYSTACK_PUBLIC_KEY ?? 'pk_test_placeholder',
       },
     };
@@ -81,6 +92,15 @@ export class OrdersService {
       include: { items: true, tickets: true, event: true },
     });
     if (!order) throw new NotFoundException(`Order "${id}" not found`);
+    return order;
+  }
+
+  async findByReference(reference: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { paystackRef: reference },
+      include: { items: true, tickets: true, event: true },
+    });
+    if (!order) throw new NotFoundException(`Order with reference "${reference}" not found`);
     return order;
   }
 }

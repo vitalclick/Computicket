@@ -23,6 +23,7 @@ class CreateOrderDto {
   @IsEmail() buyerEmail!: string;
   @IsOptional() @IsString() buyerName?: string;
   @IsOptional() @IsString() buyerPhone?: string;
+  @IsOptional() @IsString() callbackUrl?: string;
   @IsArray() @ArrayMinSize(1) @ValidateNested({ each: true }) @Type(() => OrderItemDto)
   items!: OrderItemDto[];
 }
@@ -35,6 +36,11 @@ export class OrdersController {
   @Post()
   create(@Body() dto: CreateOrderDto) {
     return this.orders.create(dto);
+  }
+
+  @Get('by-reference/:reference')
+  findByReference(@Param('reference') reference: string) {
+    return this.orders.findByReference(reference);
   }
 
   @Get(':id')

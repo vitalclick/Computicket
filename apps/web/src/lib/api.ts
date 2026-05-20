@@ -39,11 +39,47 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface Ticket {
+  id: string;
+  code: string;
+  status: 'ISSUED' | 'SCANNED' | 'VOIDED';
+}
+
+export interface Order {
+  id: string;
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED' | 'EXPIRED';
+  buyerEmail: string;
+  buyerName?: string | null;
+  totalKobo: number;
+  paystackRef: string;
+  event: { slug: string; title: string; venue: string; city: string; startsAt: string };
+  tickets: Ticket[];
+}
+
+export interface CreateOrderResponse {
+  order: { id: string; paystackRef: string; totalKobo: number };
+  paystack: { reference: string; authorizationUrl: string; publicKey: string };
+}
+
 export const api = {
   listEvents: (city?: string) =>
     request<EventSummary[]>(`/events${city ? `?city=${encodeURIComponent(city)}` : ''}`),
   getEvent: (slug: string) => request<EventDetail>(`/events/${slug}`),
+  createOrder: (body: {
+    eventSlug: string;
+    buyerEmail: string;
+    buyerName?: string;
+    buyerPhone?: string;
+    callbackUrl?: string;
+    items: Array<{ ticketTypeId: string; quantity: number }>;
+  }) => request<CreateOrderResponse>('/orders', { method: 'POST', body: JSON.stringify(body) }),
+  getOrderByReference: (reference: string) =>
+    request<Order>(`/orders/by-reference/${reference}`),
 };
+
+export function ticketQrUrl(code: string): string {
+  return `${API_URL}/tickets/${code}/qr.png`;
+}
 
 export function formatNgn(kobo: number): string {
   return new Intl.NumberFormat('en-NG', {

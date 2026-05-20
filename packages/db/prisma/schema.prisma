@@ -120,6 +120,7 @@ model TicketType {
 
   event       Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   orderItems  OrderItem[]
+  tickets     Ticket[]
 }
 
 // ---------- Orders & Tickets ----------
@@ -185,7 +186,8 @@ model Ticket {
   scannedBy    String?
   createdAt    DateTime     @default(now())
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
 
   @@index([status])
 }
