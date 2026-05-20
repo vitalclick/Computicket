@@ -237,6 +237,32 @@ export const api = {
       method: 'POST',
       token,
     }),
+  listTeam: (token: string, organizerSlug: string) =>
+    request<Array<{
+      id: string;
+      role: 'OWNER' | 'MANAGER' | 'FINANCE' | 'MARKETING' | 'SCANNER' | 'READ_ONLY';
+      createdAt: string;
+      user: { email: string; name: string | null };
+    }>>(`/dashboard/organizers/${organizerSlug}/members`, { token }),
+  inviteTeam: (token: string, organizerSlug: string, body: { email: string; role: string }) =>
+    request<{
+      id: string;
+      role: string;
+      user: { email: string; name: string | null };
+      newAccount: boolean;
+    }>(`/dashboard/organizers/${organizerSlug}/members`, {
+      method: 'POST', token, body: JSON.stringify(body),
+    }),
+  updateTeamRole: (token: string, organizerSlug: string, memberId: string, role: string) =>
+    request<{ id: string; role: string }>(
+      `/dashboard/organizers/${organizerSlug}/members/${memberId}`,
+      { method: 'PATCH', token, body: JSON.stringify({ role }) },
+    ),
+  removeTeamMember: (token: string, organizerSlug: string, memberId: string) =>
+    request<{ id: string; removed: true }>(
+      `/dashboard/organizers/${organizerSlug}/members/${memberId}`,
+      { method: 'DELETE', token },
+    ),
   listEventOrders: (token: string, organizerSlug: string, eventSlug: string) =>
     request<DashboardOrdersResponse>(
       `/dashboard/organizers/${organizerSlug}/events/${eventSlug}/orders`,
