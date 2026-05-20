@@ -21,6 +21,12 @@ export interface VerifyResult {
   paidAt?: string;
 }
 
+export interface RefundResult {
+  status: 'processed' | 'pending' | 'failed';
+  refundId: string;
+  amountKobo: number;
+}
+
 const PAYSTACK_BASE = 'https://api.paystack.co';
 
 @Injectable()
@@ -78,6 +84,44 @@ export class PaystackService {
       authorizationUrl: body.data.authorization_url,
       accessCode: body.data.access_code,
       reference: body.data.reference,
+    };
+  }
+
+  async refund(reference: string, amountKobo?: number): Promise<RefundResult> {
+    if (!this.isLive()) {
+      this.logger.warn(`PAYSTACK_SECRET_KEY missing — simulating refund for ${reference}`);
+      return {
+        status: 'processed',
+        refundId: `dev_refund_${reference}`,
+        amountKobo: amountKobo ?? 0,
+      };
+    }
+
+    const res = await fetch(`${PAYSTACK_BASE}/refund`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${this.secretKey}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        transaction: reference,
+        ...(amountKobo !== undefined ? { amount: amountKobo } : {}),
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      this.logger.error(`Paystack refund failed (${res.status}): ${text}`);
+      throw new ServiceUnavailableException('Refund failed at payment provider');
+    }
+
+    const body = (await res.json()) as {
+      data: { id: number; status: string; amount: number };
+    };
+    return {
+      status: body.data.status as RefundResult['status'],
+      refundId: String(body.data.id),
+      amountKobo: body.data.amount,
     };
   }
 

@@ -13,7 +13,8 @@ import { PrismaService } from '../prisma/prisma.service';
  * request refers to. The organizer is resolved from one of, in order:
  *   1. route param `:organizerSlug`
  *   2. body field `organizerSlug`
- *   3. route param `:slug` interpreted as an event slug (look up its organizer)
+ *   3. route param `:slug` interpreted as an event slug
+ *   4. route param `:orderId` (look up order -> event -> organizer)
  *
  * Must run after JwtAuthGuard so req.user is populated.
  */
@@ -47,6 +48,13 @@ export class OrganizerMemberGuard implements CanActivate {
         select: { organizer: { select: { slug: true } } },
       });
       return event?.organizer.slug ?? null;
+    }
+    if (params.orderId) {
+      const order = await this.prisma.order.findUnique({
+        where: { id: params.orderId },
+        select: { event: { select: { organizer: { select: { slug: true } } } } },
+      });
+      return order?.event.organizer.slug ?? null;
     }
     return null;
   }

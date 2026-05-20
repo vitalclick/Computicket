@@ -5,6 +5,43 @@ import { PrismaService } from '../prisma/prisma.service';
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async listEventOrders(organizerSlug: string, eventSlug: string) {
+    const event = await this.prisma.event.findFirst({
+      where: { slug: eventSlug, organizer: { slug: organizerSlug } },
+      select: { id: true, slug: true, title: true },
+    });
+    if (!event) throw new NotFoundException(`Event "${eventSlug}" not found`);
+
+    const orders = await this.prisma.order.findMany({
+      where: { eventId: event.id, status: { in: ['PAID', 'REFUNDED'] } },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        items: { include: { ticketType: { select: { name: true } } } },
+        _count: { select: { tickets: true } },
+      },
+      take: 200,
+    });
+
+    return {
+      event,
+      orders: orders.map((o) => ({
+        id: o.id,
+        status: o.status,
+        buyerEmail: o.buyerEmail,
+        buyerName: o.buyerName,
+        totalKobo: o.totalKobo,
+        paystackRef: o.paystackRef,
+        paidAt: o.paidAt,
+        ticketCount: o._count.tickets,
+        items: o.items.map((it) => ({
+          ticketTypeName: it.ticketType.name,
+          quantity: it.quantity,
+          unitPriceKobo: it.unitPriceKobo,
+        })),
+      })),
+    };
+  }
+
   async organizerOverview(organizerSlug: string) {
     const organizer = await this.prisma.organizer.findUnique({
       where: { slug: organizerSlug },

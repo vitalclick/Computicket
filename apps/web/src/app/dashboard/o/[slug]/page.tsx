@@ -147,6 +147,14 @@ export default function OrganizerDashboard() {
                         View public ↗
                       </Link>
                     )}
+                    {e.paidOrders > 0 && (
+                      <Link
+                        href={`/dashboard/o/${params.slug}/events/${e.slug}/orders`}
+                        className="text-sm text-brand hover:underline"
+                      >
+                        Orders ({e.paidOrders})
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

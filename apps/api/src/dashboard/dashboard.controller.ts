@@ -15,4 +15,12 @@ export class DashboardController {
   overview(@Param('organizerSlug') slug: string) {
     return this.dashboard.organizerOverview(slug);
   }
+
+  @Get('events/:eventSlug/orders')
+  listEventOrders(
+    @Param('organizerSlug') organizerSlug: string,
+    @Param('eventSlug') eventSlug: string,
+  ) {
+    return this.dashboard.listEventOrders(organizerSlug, eventSlug);
+  }
 }

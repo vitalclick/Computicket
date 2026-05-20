@@ -14,6 +14,13 @@ interface OrderConfirmationInput {
   tickets: Array<{ code: string; ticketTypeName: string }>;
 }
 
+interface RefundNotificationInput {
+  to: string;
+  buyerName?: string | null;
+  eventTitle: string;
+  amountKobo: number;
+}
+
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
@@ -62,6 +69,47 @@ export class MailerService {
       return;
     }
     this.logger.log(`Sent confirmation to ${input.to} for ${input.tickets.length} tickets`);
+  }
+
+  async sendRefundNotification(input: RefundNotificationInput): Promise<void> {
+    const subject = `Refund processed — ${input.eventTitle}`;
+    const greeting = input.buyerName ? `Hi ${input.buyerName},` : 'Hi there,';
+    const html = `
+<!doctype html>
+<html><body style="font-family:ui-sans-serif,system-ui,Arial;background:#f9fafb;padding:24px">
+  <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:32px">
+    <div style="font-weight:700;color:#008751">Computicket Nigeria</div>
+    <h1 style="font-size:22px;margin:16px 0">Your refund is on the way</h1>
+    <p>${greeting}</p>
+    <p>We've processed a refund of <strong>${formatNgn(input.amountKobo)}</strong> for your tickets to <strong>${escapeHtml(input.eventTitle)}</strong>. Your tickets have been voided.</p>
+    <p style="color:#6b7280;font-size:13px">Refunds typically land in your bank account within 5–14 business days, depending on your bank.</p>
+  </div>
+</body></html>`;
+    const text = `${greeting}\n\nWe've processed a refund of ${formatNgn(input.amountKobo)} for your tickets to ${input.eventTitle}. Your tickets have been voided.\n\nRefunds typically land in your bank account within 5–14 business days.`;
+
+    if (!this.postmarkToken) {
+      this.logger.log(`[dev mail] to=${input.to} subject="${subject}"`);
+      return;
+    }
+    const res = await fetch(POSTMARK_URL, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'x-postmark-server-token': this.postmarkToken,
+      },
+      body: JSON.stringify({
+        From: this.fromAddress,
+        To: input.to,
+        Subject: subject,
+        HtmlBody: html,
+        TextBody: text,
+        MessageStream: 'outbound',
+      }),
+    });
+    if (!res.ok) {
+      this.logger.error(`Postmark refund send failed (${res.status}): ${await res.text()}`);
+    }
   }
 
   private async renderConfirmationHtml(input: OrderConfirmationInput): Promise<string> {

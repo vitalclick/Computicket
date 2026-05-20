@@ -119,6 +119,23 @@ export interface DashboardOverview {
   events: DashboardEvent[];
 }
 
+export interface DashboardOrder {
+  id: string;
+  status: 'PAID' | 'REFUNDED';
+  buyerEmail: string;
+  buyerName: string | null;
+  totalKobo: number;
+  paystackRef: string;
+  paidAt: string | null;
+  ticketCount: number;
+  items: Array<{ ticketTypeName: string; quantity: number; unitPriceKobo: number }>;
+}
+
+export interface DashboardOrdersResponse {
+  event: { id: string; slug: string; title: string };
+  orders: DashboardOrder[];
+}
+
 export const api = {
   listEvents: (city?: string) =>
     request<EventSummary[]>(`/events${city ? `?city=${encodeURIComponent(city)}` : ''}`),
@@ -172,6 +189,19 @@ export const api = {
       method: 'POST',
       token,
     }),
+  listEventOrders: (token: string, organizerSlug: string, eventSlug: string) =>
+    request<DashboardOrdersResponse>(
+      `/dashboard/organizers/${organizerSlug}/events/${eventSlug}/orders`,
+      { token },
+    ),
+  refundOrder: (token: string, orderId: string) =>
+    request<{
+      orderId: string;
+      status: 'REFUNDED';
+      refundedAmountKobo: number;
+      voidedTickets: number;
+      alreadyRefunded: boolean;
+    }>(`/dashboard/orders/${orderId}/refund`, { method: 'POST', token }),
 };
 
 export function ticketQrUrl(code: string): string {
