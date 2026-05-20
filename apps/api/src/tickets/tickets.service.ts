@@ -55,6 +55,7 @@ export class TicketsService {
               orderId: order.id,
               ticketTypeId: item.ticketTypeId,
               code: generateTicketCode(),
+              ownerUserId: order.userId,
             },
           });
           created.push({ id: ticket.id, code: ticket.code });
@@ -121,6 +122,7 @@ export class TicketsService {
               orderId: order.id,
               ticketTypeId: item.ticketTypeId,
               code: generateTicketCode(),
+              ownerUserId: order.userId,
             },
           });
           created.push({ id: ticket.id, code: ticket.code });

@@ -627,11 +627,37 @@ model Ticket {
   status       TicketStatus @default(ISSUED)
   scannedAt    DateTime?
   scannedBy    String?
+  // Current owner — initialized to Order.userId on issuance, updated by resale.
+  ownerUserId  String?
   createdAt    DateTime     @default(now())
 
   order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
   ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
   seat       Seat?      @relation("TicketSeat")
+  listings   TicketListing[]
 
   @@index([status])
+  @@index([ownerUserId])
+}
+
+enum TicketListingStatus {
+  LISTED
+  SOLD
+  CANCELLED
+}
+
+model TicketListing {
+  id          String              @id @default(cuid())
+  ticketId    String
+  sellerId    String
+  askKobo     Int
+  status      TicketListingStatus @default(LISTED)
+  buyerId     String?
+  soldAt      DateTime?
+  createdAt   DateTime            @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([ticketId])
 }
