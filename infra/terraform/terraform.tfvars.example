@@ -1,0 +1,17 @@
+project     = "computicket"
+environment = "prod"
+region      = "eu-west-1"
+
+# Pre-existing Route53 hosted zone for the apex domain.
+domain_name      = "computicket.ng"
+route53_zone_id  = "Z0123456789ABCDEFGHIJ"
+
+# Defaults below are tuned for early prod traffic; scale up as needed.
+# rds_instance_class       = "db.t4g.medium"
+# rds_allocated_storage_gb = 50
+# eks_node_instance_types  = ["t3.medium"]
+# eks_node_desired_size    = 3
+
+tags = {
+  Owner = "platform"
+}
