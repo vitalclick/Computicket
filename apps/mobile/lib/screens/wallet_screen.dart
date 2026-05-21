@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -123,6 +124,16 @@ class _WalletScreenState extends State<WalletScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 _BalanceCard(balanceKobo: data.balanceKobo, onTopUp: _promptTopUpAmount),
+                const SizedBox(height: 12),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.verified_user_outlined),
+                    title: const Text('Verify identity'),
+                    subtitle: const Text('Raise your top-up cap by submitting BVN + ID'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.go('/wallet/kyc'),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 const Text('Recent activity',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),

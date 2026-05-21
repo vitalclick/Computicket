@@ -150,7 +150,9 @@ class _OrganizerDashboardScreenState extends State<OrganizerDashboardScreen> {
                     child: Text('No events yet.', style: TextStyle(color: Colors.grey)),
                   )
                 else
-                  ...data.events.map((e) => _EventCard(event: e)),
+                  ...data.events.map(
+                    (e) => _EventCard(event: e, organizerSlug: widget.organizerSlug),
+                  ),
               ],
             );
           },
@@ -187,7 +189,8 @@ class _Stat extends StatelessWidget {
 
 class _EventCard extends StatelessWidget {
   final DashboardEventRow event;
-  const _EventCard({required this.event});
+  final String organizerSlug;
+  const _EventCard({required this.event, required this.organizerSlug});
 
   @override
   Widget build(BuildContext context) {
@@ -223,6 +226,27 @@ class _EventCard extends StatelessWidget {
                     style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 Text('${event.paidOrders} orders · ${formatNaira(event.revenueKobo)}',
                     style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              ],
+            ),
+            const Divider(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: () => context.go(
+                    '/dashboard/$organizerSlug/events/${event.slug}/orders',
+                  ),
+                  icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                  label: const Text('Orders'),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: () => context.go(
+                    '/dashboard/$organizerSlug/events/${event.slug}/edit',
+                  ),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('Edit'),
+                ),
               ],
             ),
           ],

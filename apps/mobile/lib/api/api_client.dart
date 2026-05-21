@@ -217,6 +217,83 @@ class ApiClient {
     return ScanResult.fromJson(raw);
   }
 
+  // ---------- Organizer write actions ----------
+
+  Future<EventSummary> updateEvent({
+    required String slug,
+    required String token,
+    String? title,
+    String? description,
+    String? venue,
+    String? city,
+    DateTime? startsAt,
+    DateTime? endsAt,
+  }) async {
+    final raw = await _send(
+      'PATCH',
+      '/events/$slug',
+      token: token,
+      body: {
+        if (title != null) 'title': title,
+        if (description != null) 'description': description,
+        if (venue != null) 'venue': venue,
+        if (city != null) 'city': city,
+        if (startsAt != null) 'startsAt': startsAt.toUtc().toIso8601String(),
+        if (endsAt != null) 'endsAt': endsAt.toUtc().toIso8601String(),
+      },
+    );
+    return EventSummary.fromJson(raw);
+  }
+
+  Future<List<Map<String, dynamic>>> listOrganizerOrders({
+    required String token,
+    required String organizerSlug,
+    required String eventSlug,
+  }) async {
+    final raw = await _send(
+      'GET',
+      '/dashboard/organizers/$organizerSlug/events/$eventSlug/orders',
+      token: token,
+    );
+    final list = (raw['orders'] ?? <dynamic>[]) as List<dynamic>;
+    return list.map((o) => o as Map<String, dynamic>).toList();
+  }
+
+  Future<Map<String, dynamic>> refundOrder({
+    required String token,
+    required String orderId,
+    int? amountKobo,
+    String? reason,
+  }) async {
+    return _send(
+      'POST',
+      '/dashboard/orders/$orderId/refund',
+      token: token,
+      body: {
+        if (amountKobo != null) 'amountKobo': amountKobo,
+        if (reason != null) 'reason': reason,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> submitKyc({
+    required String token,
+    required String bvn,
+    required String idNumber,
+    String? idDocumentUrl,
+  }) async {
+    return _send(
+      'POST',
+      '/me/wallet/kyc',
+      token: token,
+      body: {
+        'bvn': bvn,
+        'idNumber': idNumber,
+        if (idDocumentUrl != null) 'idDocumentUrl': idDocumentUrl,
+      },
+    );
+  }
+
   // ---------- Push notifications ----------
 
   Future<void> registerDevice({

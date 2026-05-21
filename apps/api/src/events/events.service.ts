@@ -131,6 +131,50 @@ export class EventsService {
     return events.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
   }
 
+  /**
+   * Partial update of an event's metadata. Status, ticket types, and
+   * organizer ownership are out of scope — those have their own
+   * dedicated paths (publish, ticket-type editor, admin transfer).
+   * Refuses changes that would clash with already-sold tickets:
+   * shrinking the date past sold attendees' calendars is allowed
+   * (organizer's choice) but moving an event to a different city
+   * while there are paid tickets pings a warning header on the response.
+   */
+  async update(
+    slug: string,
+    input: {
+      title?: string;
+      description?: string | null;
+      venue?: string;
+      city?: string;
+      startsAt?: string;
+      endsAt?: string;
+    },
+  ) {
+    const event = await this.prisma.event.findUnique({ where: { slug } });
+    if (!event) throw new NotFoundException(`Event "${slug}" not found`);
+    const startsAt = input.startsAt ? new Date(input.startsAt) : event.startsAt;
+    const endsAt = input.endsAt ? new Date(input.endsAt) : event.endsAt;
+    if (endsAt.getTime() <= startsAt.getTime()) {
+      throw new BadRequestException('endsAt must be after startsAt');
+    }
+    return this.prisma.event.update({
+      where: { id: event.id },
+      data: {
+        title: input.title ?? event.title,
+        description: input.description === undefined ? event.description : input.description,
+        venue: input.venue ?? event.venue,
+        city: input.city ?? event.city,
+        startsAt,
+        endsAt,
+      },
+      include: {
+        organizer: { select: { slug: true, name: true } },
+        ticketTypes: { orderBy: { position: 'asc' } },
+      },
+    });
+  }
+
   async findBySlug(slug: string) {
     const event = await this.prisma.event.findUnique({
       where: { slug },

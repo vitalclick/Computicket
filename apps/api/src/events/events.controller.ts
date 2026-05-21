@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
@@ -23,6 +23,15 @@ class TicketTypeDto {
   @IsString() @MinLength(1) name!: string;
   @IsInt() @Min(0) priceKobo!: number;
   @IsInt() @Min(1) capacity!: number;
+}
+
+class UpdateEventDto {
+  @IsOptional() @IsString() @MinLength(2) title?: string;
+  @IsOptional() @IsString() description?: string;
+  @IsOptional() @IsString() venue?: string;
+  @IsOptional() @IsString() city?: string;
+  @IsOptional() @IsDateString() startsAt?: string;
+  @IsOptional() @IsDateString() endsAt?: string;
 }
 
 class CreateEventDto {
@@ -81,6 +90,13 @@ export class EventsController {
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.events.findBySlug(slug);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, OrganizerMemberGuard)
+  @Patch(':slug')
+  update(@Param('slug') slug: string, @Body() dto: UpdateEventDto) {
+    return this.events.update(slug, dto);
   }
 
   @ApiBearerAuth()
