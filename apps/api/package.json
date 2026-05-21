@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
     "@computicket/db": "workspace:*",
     "@nestjs/common": "^10.4.13",
     "@nestjs/config": "^3.3.0",
