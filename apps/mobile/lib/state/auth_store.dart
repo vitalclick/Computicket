@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
 import '../api/models.dart';
+import 'push_client.dart';
 
 const _tokenKey = 'ctng_token';
 const _emailKey = 'ctng_email';
@@ -13,12 +15,13 @@ const _nameKey = 'ctng_name';
 /// is keychain/keystore-backed.
 class AuthStore extends ChangeNotifier {
   final ApiClient api;
+  final PushClient? push;
   String? _token;
   String? _email;
   String? _name;
   String? _userId;
 
-  AuthStore(this.api);
+  AuthStore(this.api, {this.push});
 
   bool get isSignedIn => _token != null;
   String? get token => _token;
@@ -46,6 +49,10 @@ class AuthStore extends ChangeNotifier {
     _name = session.name;
     _userId = session.userId;
     notifyListeners();
+    // Fire-and-forget: server should receive the FCM token shortly
+    // after signin. Failures are logged inside PushClient. We don't
+    // block the signin completion on the round trip.
+    unawaited(push?.registerForUser(session.token) ?? Future.value());
   }
 
   Future<SigninResult> signin(String email, String password,
@@ -73,6 +80,12 @@ class AuthStore extends ChangeNotifier {
 
   Future<void> signOut() async {
     final prefs = await SharedPreferences.getInstance();
+    // Tell the server to stop addressing this device before clearing
+    // the token — once it's gone we can't authenticate the DELETE.
+    final t = _token;
+    if (t != null) {
+      await push?.deregister(t);
+    }
     await prefs.remove(_tokenKey);
     await prefs.remove(_emailKey);
     await prefs.remove(_nameKey);

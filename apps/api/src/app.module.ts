@@ -46,6 +46,7 @@ import { AuditModule } from './audit/audit.module';
 import { SecurityModule } from './security/security.module';
 import { PrivacyModule } from './privacy/privacy.module';
 import { ObservabilityModule } from './observability/observability.module';
+import { PushModule } from './push/push.module';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { ObservabilityModule } from './observability/observability.module';
     StreamingModule,
     SupportModule,
     NftModule,
+    PushModule,
     AuditModule,
     SecurityModule,
     PrivacyModule,

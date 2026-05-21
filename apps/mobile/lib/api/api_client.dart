@@ -217,6 +217,25 @@ class ApiClient {
     return ScanResult.fromJson(raw);
   }
 
+  // ---------- Push notifications ----------
+
+  Future<void> registerDevice({
+    required String authToken,
+    required String token,
+    required String platform,
+  }) async {
+    await _send(
+      'POST',
+      '/me/devices',
+      token: authToken,
+      body: {'token': token, 'platform': platform},
+    );
+  }
+
+  Future<void> unregisterDevice({required String authToken, required String token}) async {
+    await _send('DELETE', '/me/devices/$token', token: authToken);
+  }
+
   // ---------- Organizer dashboard ----------
 
   Future<List<Membership>> myMemberships(String token) async {

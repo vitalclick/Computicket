@@ -38,6 +38,7 @@ model User {
   failedSigninCount Int      @default(0)
   lockedUntil       DateTime?
   sessions          Session[]
+  deviceTokens      DeviceToken[]
   isAdmin           Boolean  @default(false)
   // Cached wallet balance. Source of truth is sum(WalletTransaction.amountKobo).
   walletBalanceKobo Int          @default(0)
@@ -915,4 +916,27 @@ model Session {
 
   @@index([userId, revokedAt])
   @@index([expiresAt])
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+}
+
+model DeviceToken {
+  id          String         @id @default(cuid())
+  userId      String
+  // FCM registration token. Unique across the platform so a buyer
+  // switching devices doesn't double up — the latest signin wins.
+  token       String         @unique
+  platform    DevicePlatform
+  // Last time the client sent the token up. Stale tokens (>90 days) are
+  // a cron-cleanup candidate.
+  lastUsedAt  DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

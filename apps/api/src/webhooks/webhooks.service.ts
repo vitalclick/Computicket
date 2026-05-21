@@ -8,6 +8,7 @@ import { WebhookDispatcher } from '../developers/webhook-dispatcher.service';
 import { RefundsService } from '../refunds/refunds.service';
 import { WalletService } from '../wallet/wallet.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { PushService } from '../push/push.service';
 import { BookingsService } from '../lodging/bookings.service';
 
 interface PaystackChargeSuccess {
@@ -33,6 +34,7 @@ export class WebhooksService {
     private readonly sms: SmsService,
     private readonly loyalty: LoyaltyService,
     private readonly bookings: BookingsService,
+    private readonly push: PushService,
   ) {}
 
   verifyPaystackSignature(rawBody: Buffer, signature: string | undefined): boolean {
@@ -141,6 +143,19 @@ export class WebhooksService {
         `Computicket: ${full.tickets.length} ticket(s) confirmed for ${full.event.title}. ` +
           `Check your email or computicket.ng/account for QR codes.`,
       ).catch(() => undefined);
+
+      // Push notification: only fires for authed buyers — guest
+      // checkouts don't have a userId and so can't be addressed.
+      if (full.userId) {
+        this.push
+          .sendToUser(full.userId, {
+            title: 'Your tickets are ready',
+            body: `${full.tickets.length} ticket${full.tickets.length === 1 ? '' : 's'} for ${full.event.title}.`,
+            deepLink: `/tickets/${full.tickets[0]?.code ?? ''}`,
+            data: { orderId: full.id, kind: 'order.paid' },
+          })
+          .catch((e) => this.logger.error(`Push send failed: ${(e as Error).message}`));
+      }
 
       // Referral reward: if this is the buyer's first paid order and a
       // pending referral row exists, credit the referrer's wallet.
