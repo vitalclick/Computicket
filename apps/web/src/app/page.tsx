@@ -42,7 +42,7 @@ export default async function HomePage() {
       <LiveTicker />
       <CategoryTiles />
 
-      <section className="wrap section-sm">
+      <section className="wrap section-sm" style={{ maxWidth: 1100 }}>
         <SectionHead
           eyebrow="Trending tonight"
           title="Lagos is loud this weekend."
