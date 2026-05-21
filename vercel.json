@@ -3,6 +3,5 @@
   "framework": "nextjs",
   "installCommand": "pnpm install --frozen-lockfile --filter @computicket/web...",
   "buildCommand": "pnpm --filter @computicket/web run build",
-  "outputDirectory": "apps/web/.next",
-  "ignoreCommand": "git rev-parse HEAD^ >/dev/null 2>&1 || exit 1; git diff --quiet HEAD^ HEAD -- apps/web packages pnpm-lock.yaml package.json pnpm-workspace.yaml vercel.json"
+  "outputDirectory": "apps/web/.next"
 }
