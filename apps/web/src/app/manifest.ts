@@ -11,11 +11,12 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: '#ffffff',
     theme_color: '#008751',
     icons: [
-      // Next.js generates resized variants from /icon.png automatically;
-      // /logo.png is the same source served from /public for any home-
-      // screen consumer that wants a high-res original.
-      { src: '/icon.png', sizes: 'any', type: 'image/png', purpose: 'any' },
-      { src: '/logo.png', sizes: '1200x1204', type: 'image/png', purpose: 'maskable' },
+      // /icon.png is 512×512 from the centered-and-padded master so it
+      // never distorts when browsers scale it down for the tab favicon.
+      // /logo.png is the same source at 256×256 — used in the site
+      // header and as the inline mark in transactional emails.
+      { src: '/icon.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+      { src: '/logo.png', sizes: '256x256', type: 'image/png', purpose: 'maskable' },
     ],
   };
 }
