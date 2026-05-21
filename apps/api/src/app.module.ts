@@ -33,6 +33,7 @@ import { CorporateModule } from './corporate/corporate.module';
 import { OAuthModule } from './oauth/oauth.module';
 import { WhitelabelModule } from './whitelabel/whitelabel.module';
 import { PricingModule } from './pricing/pricing.module';
+import { StreamingModule } from './streaming/streaming.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { PricingModule } from './pricing/pricing.module';
     OAuthModule,
     WhitelabelModule,
     PricingModule,
+    StreamingModule,
   ],
 })
 export class AppModule {}

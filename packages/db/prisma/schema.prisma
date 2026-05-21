@@ -588,6 +588,9 @@ model Event {
   coverUrl    String?
   status      EventStatus @default(DRAFT)
   type        EventType   @default(EVENT)
+  // Live streaming / hybrid: stream URL revealed to ticket holders while isLive is true
+  streamUrl   String?
+  isLive      Boolean     @default(false)
   // For type=BUS_TRIP: optional link to a parent route so buyers can
   // search by from/to. Trips also use venue=boarding terminal,
   // city=fromCity for compatibility with the existing event list.
