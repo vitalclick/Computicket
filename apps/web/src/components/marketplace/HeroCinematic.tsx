@@ -15,12 +15,12 @@ interface Tab {
 
 const TABS: Tab[] = [
   { id: 'events',   label: 'Events',      icon: 'calendar', href: '/events' },
-  { id: 'concerts', label: 'Concerts',    icon: 'music',    href: '/events?q=concert' },
+  { id: 'concerts', label: 'Concerts',    icon: 'music',    href: '/concerts' },
   { id: 'flights',  label: 'Flights',     icon: 'plane',    href: '/flights' },
   { id: 'buses',    label: 'Bus Travel',  icon: 'bus',      href: '/buses' },
   { id: 'hotels',   label: 'Stays',       icon: 'bed',      href: '/hotels' },
-  { id: 'cinema',   label: 'Cinema',      icon: 'film',     href: '/events?q=cinema' },
-  { id: 'x',        label: 'Experiences', icon: 'sparkle',  href: '/events?q=experiences' },
+  { id: 'cinema',   label: 'Cinema',      icon: 'film',     href: '/cinema' },
+  { id: 'x',        label: 'Experiences', icon: 'sparkle',  href: '/experiences' },
 ];
 
 interface Field {

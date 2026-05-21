@@ -12,12 +12,12 @@ interface Tile {
 
 const TILES: Tile[] = [
   { id: 'events',   icon: 'calendar', title: 'Events',      sub: 'This weekend',   color: 'oklch(0.62 0.20 350)', href: '/events' },
-  { id: 'concerts', icon: 'music',    title: 'Concerts',    sub: '2,184 live',     color: 'oklch(0.62 0.18 152)', href: '/events?q=concert' },
+  { id: 'concerts', icon: 'music',    title: 'Concerts',    sub: '2,184 live',     color: 'oklch(0.62 0.18 152)', href: '/concerts' },
   { id: 'flights',  icon: 'plane',    title: 'Flights',     sub: '38 airlines',    color: 'oklch(0.60 0.16 230)', href: '/flights' },
   { id: 'hotels',   icon: 'bed',      title: 'Stays',       sub: '4,920 hotels',   color: 'oklch(0.65 0.15 75)',  href: '/hotels' },
   { id: 'buses',    icon: 'bus',      title: 'Bus Travel',  sub: 'All NG routes',  color: 'oklch(0.62 0.14 200)', href: '/buses' },
-  { id: 'cinema',   icon: 'film',     title: 'Cinema',      sub: 'IMAX · 3D · 2D', color: 'oklch(0.55 0.18 305)', href: '/events?q=cinema' },
-  { id: 'x',        icon: 'sparkle',  title: 'Experiences', sub: 'Curated weekly', color: 'oklch(0.65 0.20 25)',  href: '/events?q=experiences' },
+  { id: 'cinema',   icon: 'film',     title: 'Cinema',      sub: 'IMAX · 3D · 2D', color: 'oklch(0.55 0.18 305)', href: '/cinema' },
+  { id: 'x',        icon: 'sparkle',  title: 'Experiences', sub: 'Curated weekly', color: 'oklch(0.65 0.20 25)',  href: '/experiences' },
 ];
 
 export function CategoryTiles() {

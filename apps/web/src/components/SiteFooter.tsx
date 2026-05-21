@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Icon } from './Icon';
 import { Wordmark } from './Wordmark';
 
-type Item = { label: string; href?: string };
+type Item = { label: string; href: string };
 type Column = { heading: string; items: Item[] };
 
 const COLUMNS: Column[] = [
@@ -10,11 +10,11 @@ const COLUMNS: Column[] = [
     heading: 'Discover',
     items: [
       { label: 'Events', href: '/events' },
-      { label: 'Concerts', href: '/events' },
-      { label: 'Theatre' },
-      { label: 'Cinema' },
-      { label: 'Festivals' },
-      { label: 'Experiences' },
+      { label: 'Concerts', href: '/concerts' },
+      { label: 'Theatre', href: '/theatre' },
+      { label: 'Cinema', href: '/cinema' },
+      { label: 'Festivals', href: '/festivals' },
+      { label: 'Experiences', href: '/experiences' },
     ],
   },
   {
@@ -23,63 +23,47 @@ const COLUMNS: Column[] = [
       { label: 'Flights', href: '/flights' },
       { label: 'Bus Travel', href: '/buses' },
       { label: 'Hotels', href: '/hotels' },
-      { label: 'Weekend Getaways' },
-      { label: 'Vouchers' },
-      { label: 'Package Deals' },
+      { label: 'Weekend Getaways', href: '/getaways' },
+      { label: 'Vouchers', href: '/vouchers' },
+      { label: 'Package Deals', href: '/packages' },
     ],
   },
   {
     heading: 'Organizers',
     items: [
-      { label: 'Sell Tickets', href: '/for-organizers' },
-      { label: 'Promoter Hub', href: '/for-organizers' },
-      { label: 'API Access', href: '/for-organizers' },
-      { label: 'Payouts', href: '/dashboard' },
-      { label: 'Analytics', href: '/dashboard' },
-      { label: 'Onboarding', href: '/signup' },
+      { label: 'Sell Tickets', href: '/for-organizers#sell-tickets' },
+      { label: 'Promoter Hub', href: '/for-organizers#promoter-hub' },
+      { label: 'API Access', href: '/for-organizers#api-access' },
+      { label: 'Payouts', href: '/for-organizers#payouts' },
+      { label: 'Analytics', href: '/for-organizers#analytics' },
+      { label: 'Onboarding', href: '/for-organizers#onboarding' },
     ],
   },
   {
     heading: 'Company',
     items: [
-      { label: 'About Us' },
-      { label: 'Careers' },
-      { label: 'Press' },
-      { label: 'Trust & Safety', href: '/support' },
-      { label: 'Partners' },
-      { label: 'Contact', href: '/support' },
+      { label: 'About Us', href: '/about' },
+      { label: 'Careers', href: '/careers' },
+      { label: 'Press', href: '/press' },
+      { label: 'Trust & Safety', href: '/trust' },
+      { label: 'Partners', href: '/partners' },
+      { label: 'Contact', href: '/contact' },
     ],
   },
   {
     heading: 'Support',
     items: [
-      { label: 'Help Centre', href: '/support' },
-      { label: 'Buyer Protection', href: '/support' },
-      { label: 'Refunds', href: '/support' },
-      { label: 'Privacy' },
-      { label: 'Terms' },
-      { label: 'Cookie Policy' },
+      { label: 'Help Centre', href: '/help' },
+      { label: 'Buyer Protection', href: '/buyer-protection' },
+      { label: 'Refunds', href: '/refunds' },
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms', href: '/terms' },
+      { label: 'Cookie Policy', href: '/cookies' },
     ],
   },
 ];
 
 const PAYMENTS = ['Paystack', 'Flutterwave', 'Verve', 'Mastercard', 'Visa', 'USSD'];
-
-function FooterLink({ item }: { item: Item }) {
-  const style: React.CSSProperties = { fontSize: 13.5, color: 'var(--ink-2)' };
-  if (item.href) {
-    return (
-      <Link href={item.href} style={style}>
-        {item.label}
-      </Link>
-    );
-  }
-  return (
-    <span style={{ ...style, cursor: 'pointer' }} aria-disabled="true">
-      {item.label}
-    </span>
-  );
-}
 
 export function SiteFooter() {
   return (
@@ -122,7 +106,13 @@ export function SiteFooter() {
               <div className="eyebrow mb-4">{c.heading}</div>
               <div className="col" style={{ gap: 10 }}>
                 {c.items.map((item) => (
-                  <FooterLink key={item.label} item={item} />
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    style={{ fontSize: 13.5, color: 'var(--ink-2)' }}
+                  >
+                    {item.label}
+                  </Link>
                 ))}
               </div>
             </div>
