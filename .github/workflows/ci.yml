@@ -40,7 +40,7 @@ jobs:
       - run: pnpm db:generate
       - run: pnpm --filter @computicket/db exec prisma migrate deploy
       - run: pnpm typecheck
-      - run: pnpm build
+      - run: pnpm build:all
       - run: pnpm test:e2e
 
       # ---- A11y smoke suite ----
