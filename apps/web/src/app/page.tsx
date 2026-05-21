@@ -67,7 +67,7 @@ export default async function HomePage() {
 
       <ForYouRail />
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
+      <section className="wrap section-sm" style={{ paddingTop: 0, maxWidth: 1240 }}>
         <SectionHead
           eyebrow="Featured Concerts"
           title="The tour bus is parked here."
