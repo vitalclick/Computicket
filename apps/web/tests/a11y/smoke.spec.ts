@@ -1,46 +1,14 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { test } from '@playwright/test';
+import { scan } from './fixtures';
 
 /**
- * Smoke a11y suite. Visits each public + auth page, runs axe-core
- * against it, and fails the build only on `serious` or `critical`
- * violations. `moderate` and `minor` are surfaced in the report (and
- * stored as an HTML artifact in CI) but don't gate the merge — they
- * tend to flag legitimate design choices (e.g. low-contrast helper
- * text) that we want to triage rather than auto-fail on.
+ * Smoke a11y suite for public + auth pages — no session required.
+ * The authed surface lives in authed.spec.ts so this file stays
+ * runnable even if the API seed hasn't planted the fixture users.
  *
- * Rule tags: WCAG 2.0 + 2.1, levels A + AA. This is the baseline most
- * organisations require for "we comply with WCAG"; AAA is the
- * stretch goal and we'd surface it as a separate, non-blocking job.
+ * `scan()` enforces WCAG 2.0 + 2.1 A + AA, failing only on serious
+ * and critical impacts. See ./fixtures.ts for the shared helper.
  */
-
-async function scan(page: Page, label: string) {
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .analyze();
-
-  const blockers = results.violations.filter(
-    (v) => v.impact === 'serious' || v.impact === 'critical',
-  );
-
-  // Print a compact summary on every run so the HTML report and the
-  // log line both tell the same story.
-  const summary = results.violations.map((v) => ({
-    id: v.id,
-    impact: v.impact,
-    nodes: v.nodes.length,
-    help: v.helpUrl,
-  }));
-  // eslint-disable-next-line no-console
-  console.log(`[a11y:${label}] ${results.violations.length} total, ${blockers.length} blocking`);
-  // eslint-disable-next-line no-console
-  if (results.violations.length > 0) console.log(summary);
-
-  expect(
-    blockers,
-    `Serious or critical a11y violations on "${label}":\n${JSON.stringify(blockers, null, 2)}`,
-  ).toEqual([]);
-}
 
 test.describe('Public surface', () => {
   test('home', async ({ page }) => {

@@ -45,6 +45,37 @@ async function main() {
     },
   });
 
+  // Known fixtures for the a11y / e2e suites: a manager on the
+  // livenation org so /dashboard is reachable, and a plain buyer so
+  // /account is reachable. Idempotent — re-running the seed leaves
+  // them as-is.
+  const manager = await prisma.user.upsert({
+    where: { email: 'manager@livenation.ng' },
+    update: { passwordHash },
+    create: {
+      email: 'manager@livenation.ng',
+      name: 'Chinwe Eze',
+      passwordHash,
+    },
+  });
+  await prisma.organizerMember.upsert({
+    where: {
+      organizerId_userId: { organizerId: organizer.id, userId: manager.id },
+    },
+    update: { role: 'MANAGER' },
+    create: { organizerId: organizer.id, userId: manager.id, role: 'MANAGER' },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'buyer@example.com' },
+    update: { passwordHash },
+    create: {
+      email: 'buyer@example.com',
+      name: 'Tunde Buyer',
+      passwordHash,
+    },
+  });
+
   await prisma.event.upsert({
     where: { slug: 'davido-timeless-tour-lagos' },
     update: {},

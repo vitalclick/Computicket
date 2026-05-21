@@ -44,18 +44,45 @@ nodes, and explains how to fix it. Three common buckets:
 
 ## What's covered
 
-| Route | Why it's in the smoke set |
-|---|---|
-| `/` | First impression — hero, nav, footer |
-| `/events` | Search interaction (combobox, listbox semantics) |
-| `/events/[slug]` | Event detail with structured-data + buy form |
-| `/for-organizers` | Marketing surface; the most "designed" page |
-| `/signin` | Form with optional 2FA challenge branch |
-| `/signup` | Form with autofill hints |
-| `/forgot-password` | Trivial form — sanity check |
+| Spec | Route | Auth |
+|---|---|---|
+| `smoke.spec.ts` | `/` | — |
+| | `/events` | — |
+| | `/events/davido-timeless-tour-lagos` | — |
+| | `/for-organizers` | — |
+| | `/signin` | — |
+| | `/signup` | — |
+| | `/forgot-password` | — |
+| `authed.spec.ts` | `/account` | buyer |
+| | `/account/security` | buyer |
+| | `/account/wallet` | buyer |
+| | `/support` | buyer |
+| | `/dashboard` | manager |
+| | `/dashboard/o/livenation-ng` | manager |
+| | `/admin` | admin |
+| | `/admin/audit-log` | admin |
 
-Authenticated pages (`/account`, `/dashboard`, `/admin`, `/me/...`)
-aren't in the smoke set yet because they need a real session.
-Targeted follow-up: stand up a Playwright fixture that signs a buyer
-in via the API and adds `/account/security` + `/dashboard` to the
-sweep.
+## Fixtures
+
+`fixtures.ts` extends Playwright's base `test` with three authed
+pages: `buyerPage`, `managerPage`, `adminPage`. Each one signs in
+via the API (POST `/v1/auth/signin`) and injects the JWT into
+`localStorage` under `ctng_token` (the same key
+`apps/web/src/lib/auth.ts` reads from) via `page.addInitScript`
+**before** navigation, so the first paint of `/account/*` is the
+real authed view rather than the redirect to `/signin`.
+
+The authed path needs the seeded fixture users — `pnpm db:seed`
+creates them idempotently:
+
+| Email | Password | Role |
+|---|---|---|
+| `buyer@example.com` | `Password123!` | plain buyer |
+| `manager@livenation.ng` | `Password123!` | `OrganizerMember(MANAGER)` on `livenation-ng` |
+| `admin@computicket.ng` | `AdminPass123!` | platform admin |
+
+The fixture refuses to proceed if any of those accounts has 2FA
+enabled (the API would return a challenge token instead of a real
+session token). If you ever enable 2FA on the seeded admin for
+defence-in-depth, swap the fixture to use a non-2FA test account
+specifically for the suite.
