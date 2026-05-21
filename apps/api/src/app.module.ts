@@ -41,6 +41,7 @@ import { NftModule } from './nft/nft.module';
 import { AuditModule } from './audit/audit.module';
 import { SecurityModule } from './security/security.module';
 import { PrivacyModule } from './privacy/privacy.module';
+import { ObservabilityModule } from './observability/observability.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { PrivacyModule } from './privacy/privacy.module';
     ScheduleModule.forRoot(),
     // Loose default — strict ceilings are applied per-route with @Throttle.
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
+    ObservabilityModule,
     PrismaModule,
     PaymentsModule,
     MailModule,

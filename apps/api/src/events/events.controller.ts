@@ -65,6 +65,19 @@ export class EventsController {
     });
   }
 
+  @Get('search')
+  search(
+    @Query('q') q: string,
+    @Query('city') city?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.events.search({
+      q,
+      city,
+      limit: limit ? Math.min(parseInt(limit, 10), 50) : undefined,
+    });
+  }
+
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.events.findBySlug(slug);
