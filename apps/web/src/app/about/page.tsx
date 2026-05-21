@@ -1,207 +1,177 @@
 import type { Metadata } from 'next';
-import { Icon } from '@/components/Icon';
-import { PillarGrid } from '@/components/marketplace/ContentPage';
-import { CategoryHero } from '@/components/marketplace/CategoryHero';
-import { SectionHead } from '@/components/marketplace/SectionHead';
+import {
+  ContentBlock,
+  ContentCTA,
+  ContentHero,
+  ContentSubNav,
+  PillarsBlock,
+  StatsStrip,
+  TeamBlock,
+  TimelineBlock,
+} from '@/components/marketplace/Editorial';
 
 export const metadata: Metadata = {
   title: 'About Computicket Nigeria',
   description:
-    "Nigeria's all-in-one ticketing platform. The story, the team, the mission.",
+    "Built in Lagos. For everywhere you'd rather be. Computicket Nigeria is the country's premium digital ecosystem for entertainment, travel and experiences.",
 };
-
-const NUMBERS = [
-  { n: '1.2M+', l: 'Tickets sold this year' },
-  { n: '2,400+', l: 'Events on-platform' },
-  { n: '38',    l: 'Airlines & operators' },
-  { n: '94',    l: 'Team members across NG' },
-  { n: '99.97%', l: 'Booking success rate' },
-];
-
-const TIMELINE = [
-  { y: '2021', t: 'Founded in Lagos',          s: 'Started as a single-organizer ticketing tool for one Lagos venue.' },
-  { y: '2022', t: 'Multi-vendor marketplace',   s: 'Opened to 50 organizers. Launched in-app QR scanning.' },
-  { y: '2023', t: 'Wallet & loyalty',           s: 'Built the Compass wallet, points and refunds-to-wallet system.' },
-  { y: '2024', t: 'Travel verticals',           s: 'Added bus, flight and hotel inventory. Public API + webhooks.' },
-  { y: '2025', t: 'Phase 3',                    s: 'AI search, white-label organizer subdomains, OAuth 2.0 for partners.' },
-  { y: '2026', t: 'Pan-African',                s: 'Expanding to Ghana, Kenya and South Africa.' },
-];
-
-const OFFICES = [
-  { city: 'Lagos',  region: 'Victoria Island',  staff: '54 staff', primary: true },
-  { city: 'Abuja',  region: 'Maitama',           staff: '22 staff' },
-  { city: 'Port Harcourt', region: 'GRA',         staff: '11 staff' },
-  { city: 'Remote', region: 'Across NG',         staff: '7 contributors' },
-];
 
 export default function AboutPage() {
   return (
     <div className="page-enter">
-      <CategoryHero
-        eyebrow="About Computicket"
-        title="We sell access. To events, to travel, to weekends Nigerians remember."
-        subtitle="Founded in 2021 in Lagos. Built mobile-first, Naija-coded, and obsessively focused on the things that actually break in Nigerian commerce — payments, fraud, connectivity, trust."
-        ph="ph-3"
-        primaryCta={{ label: 'Browse the platform', href: '/' }}
-        secondaryCta={{ label: 'Join the team', href: '/careers' }}
+      <ContentSubNav group="company" active="about" />
+
+      <ContentHero
+        eyebrow="About Computicket NG"
+        title={<>Built in Lagos. For everywhere you&apos;d rather be.</>}
+        lede="We are Nigeria's premium digital ecosystem for entertainment, travel and experiences — designed to make every booking feel as good as the moment it unlocks."
       />
 
-      <section className="wrap section-sm">
-        <SectionHead eyebrow="The mission" title="One marketplace for everywhere you'd rather be." />
-        <div
-          className="card"
-          style={{
-            padding: 32,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: 32,
-          }}
-        >
-          {NUMBERS.map((n) => (
-            <div key={n.l}>
-              <div className="h-1 tnum" style={{ fontSize: 36 }}>
-                {n.n}
-              </div>
-              <div className="text-xs muted mt-1" style={{ lineHeight: 1.45 }}>
-                {n.l}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <StatsStrip
+        stats={[
+          { n: '1.2M+', l: 'Tickets sold this year' },
+          { n: '2,400+', l: 'Events on-platform' },
+          { n: '38', l: 'Airlines & operators' },
+          { n: '99.97%', l: 'Booking success rate' },
+        ]}
+      />
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
-        <SectionHead
-          eyebrow="What we believe"
-          title="Four principles, every product decision."
-        />
-        <PillarGrid
-          columns={4}
-          items={[
-            {
-              icon: 'shield',
-              title: 'Trust at scale',
-              body:
-                'Buyer protection on every order. Verified organizers. Refundable funds. Computicket is the receipt when something goes wrong.',
-            },
-            {
-              icon: 'wallet',
-              title: 'Local payments first',
-              body:
-                "Paystack, Flutterwave, Moniepoint, Opay, USSD, bank transfer, wallet — built around how Nigerians actually pay.",
-            },
-            {
-              icon: 'qr',
-              title: 'Anti-fraud by default',
-              body:
-                "Rotating QR codes, device fingerprinting, anti-screenshot validation. Resale is regulated, not policed by venue staff.",
-            },
-            {
-              icon: 'pulse',
-              title: 'Built for 2G',
-              body:
-                'Offline ticket caches, lean payloads, USSD fallbacks. The booking flow works on the Lagos Mainland-Ikeja third-mainland-bridge.',
-            },
-          ]}
-        />
-      </section>
+      <ContentBlock
+        eyebrow="Our story"
+        title="The Apple, Airbnb and Ticketmaster of Africa — built by Nigerians for the world."
+        image="ph-1"
+        imageCaption="Lagos, May 2026 · Headquarters at Adeola Odeku"
+        body={
+          <>
+            <p>
+              Computicket NG started in a Yaba co-working space in 2021 with a stubborn belief:
+              Nigerians deserve a booking experience that doesn&apos;t just <em>work</em> — it
+              should feel like a luxury.
+            </p>
+            <p className="mt-4">
+              Five years later, we power ticketing for the country&apos;s biggest concerts, the
+              largest organizer hubs in West Africa, and a flight-and-stay marketplace that 1.2
+              million Nigerians trust every year.
+            </p>
+            <p className="mt-4">We are still a Lagos company — and still stubborn.</p>
+          </>
+        }
+      />
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
-        <SectionHead eyebrow="Timeline" title="Five years, six chapters." />
-        <div className="card" style={{ padding: 32 }}>
-          <div className="col">
-            {TIMELINE.map((step, i) => (
-              <div
-                key={step.y}
-                className="row"
-                style={{
-                  gap: 28,
-                  alignItems: 'flex-start',
-                  paddingBottom: 24,
-                  borderBottom:
-                    i < TIMELINE.length - 1 ? '1px solid var(--line)' : 'none',
-                  marginBottom: 16,
-                }}
-              >
-                <div
-                  className="mono"
-                  style={{
-                    minWidth: 64,
-                    fontSize: 16,
-                    color: 'var(--accent)',
-                    fontWeight: 600,
-                  }}
-                >
-                  {step.y}
-                </div>
-                <div>
-                  <div className="h-4">{step.t}</div>
-                  <p
-                    style={{
-                      fontSize: 14,
-                      color: 'var(--ink-3)',
-                      lineHeight: 1.6,
-                      marginTop: 6,
-                    }}
-                  >
-                    {step.s}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <PillarsBlock
+        eyebrow="What we stand for"
+        title="Four principles that shape every product decision."
+        pillars={[
+          {
+            icon: 'shield',
+            title: 'Trust by default',
+            body:
+              'Every transaction is insured, every QR is verified, every refund is processed in 48 hours. Trust is not a feature.',
+            color: 'oklch(0.62 0.18 152)',
+          },
+          {
+            icon: 'sparkle',
+            title: 'Intelligent, not noisy',
+            body:
+              "Compass AI personalises without surveilling. Suggestions you'd actually take — never spam, never sold.",
+            color: 'oklch(0.60 0.16 230)',
+          },
+          {
+            icon: 'bolt',
+            title: 'Naija-fast',
+            body:
+              'Optimised for 2G. Cached offline. USSD-friendly. Built for real Nigerian network realities — not Silicon Valley fiber.',
+            color: 'oklch(0.65 0.20 25)',
+          },
+          {
+            icon: 'heart',
+            title: 'Built with culture',
+            body:
+              "From Afrobeats to Owambe to Detty December — we are not just a platform for Nigerian life; we're built inside it.",
+            color: 'oklch(0.55 0.18 305)',
+          },
+        ]}
+      />
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
-        <SectionHead
-          eyebrow="Where we work"
-          title="Lagos HQ. Abuja, Port Harcourt, and 100% remote."
-        />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-          {OFFICES.map((o) => (
-            <div
-              key={o.city}
-              className="card"
-              style={{
-                padding: 22,
-                border: o.primary ? '1px solid var(--accent)' : '1px solid var(--line)',
-              }}
-            >
-              <div className="row gap-2" style={{ alignItems: 'center' }}>
-                <Icon name="pin" size={14} stroke={2} />
-                <span className="fw-600">{o.city}</span>
-                {o.primary ? <span className="badge badge-vip">HQ</span> : null}
-              </div>
-              <div className="text-xs muted mt-2">{o.region}</div>
-              <div className="text-xs accent-text mt-1">{o.staff}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ContentBlock
+        eyebrow="The team"
+        title="A small group of Nigerians obsessed with how this country has fun."
+        imagePosition="left"
+        image="ph-5"
+        imageCaption="Engineering offsite · Lekki Conservation Centre"
+        body={
+          <>
+            <p>
+              We are 84 people across Lagos, Abuja, Port Harcourt and Cape Town. About a third of
+              us were customers first.
+            </p>
+            <p className="mt-4">
+              Our investors include Africa-focused venture funds like Future Africa and TLcom,
+              plus a handful of operators from Paystack, Flutterwave, and Spotify.
+            </p>
+            <p className="mt-4">
+              We are hiring — engineers, designers, organizer success, and a few very specific
+              roles in fraud and AI safety.
+            </p>
+          </>
+        }
+      />
 
-      <section className="wrap" style={{ paddingBottom: 96 }}>
-        <div
-          className="card"
-          style={{
-            padding: 40,
-            background: 'linear-gradient(135deg, var(--accent-soft), transparent)',
-            border: '1px solid oklch(0.68 0.18 152 / .3)',
-            textAlign: 'center',
-          }}
-        >
-          <div className="eyebrow accent-text mb-2">We&apos;re hiring</div>
-          <h2 className="h-2" style={{ margin: '4px 0 8px' }}>
-            Want to build with us?
-          </h2>
-          <p className="muted" style={{ maxWidth: 520, margin: '0 auto', lineHeight: 1.6 }}>
-            Engineering, product, design, organizer success, scanning ops. Lagos, Abuja, remote.
-          </p>
-          <a href="/careers" className="btn btn-accent btn-lg mt-6">
-            See open roles <Icon name="arrow" size={14} />
-          </a>
-        </div>
-      </section>
+      <TimelineBlock
+        eyebrow="Milestones"
+        title="Five years, one country, a few rooftops."
+        items={[
+          {
+            year: '2021',
+            title: 'Founded in a co-working space',
+            body:
+              'Three founders, two laptops, one stubborn thesis. Sold 47 tickets in our first month — to a comedy show at Terra Kulture.',
+          },
+          {
+            year: '2022',
+            title: '₦1B GMV. First Lagos sell-out.',
+            body:
+              "Powered the entire ticketing for Asake's debut Lagos show. Crashed our servers twice. Learned a lot.",
+          },
+          {
+            year: '2023',
+            title: 'Compass AI · early access',
+            body:
+              'Quietly launched our personalisation engine. Conversion went up 38%. The team realised we had built something rare.',
+          },
+          {
+            year: '2024',
+            title: 'Flights, stays and Detty December',
+            body:
+              'Expanded into travel. Powered 22% of Detty December bookings in Lagos. Hit 1M downloads on Android.',
+          },
+          {
+            year: '2026',
+            title: 'The premium booking layer of Africa',
+            body:
+              'Now operating across 6 Nigerian states. Pilots launching in Accra, Nairobi and Johannesburg by Q4.',
+          },
+        ]}
+      />
+
+      <TeamBlock
+        eyebrow="Leadership"
+        title="The team behind the platform."
+        people={[
+          { name: 'Adaeze Okafor', role: 'Co-founder, CEO',  from: 'Paystack',      ph: 'ph-2' },
+          { name: 'Tobi Adesanya', role: 'Co-founder, CTO',  from: 'Flutterwave',   ph: 'ph-7' },
+          { name: 'Chika Nwankwo', role: 'VP Product',        from: 'Spotify',       ph: 'ph-3' },
+          { name: 'Emeka Balogun', role: 'Head of Trust & Safety', from: 'Interpol Cyber', ph: 'ph-4' },
+        ]}
+      />
+
+      <ContentCTA
+        eyebrow="Join us"
+        title="We're hiring — across product, engineering and creative."
+        sub="84 people. 12 open roles. One mission to make Nigerian booking feel like Apple, Airbnb and Ticketmaster combined."
+        primary={{ label: 'See open roles', href: '/careers' }}
+        secondary={{ label: 'Read engineering blog', href: '/press' }}
+      />
     </div>
   );
 }

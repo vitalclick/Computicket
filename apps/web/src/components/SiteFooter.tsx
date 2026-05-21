@@ -31,12 +31,12 @@ const COLUMNS: Column[] = [
   {
     heading: 'Organizers',
     items: [
-      { label: 'Sell Tickets', href: '/for-organizers#sell-tickets' },
-      { label: 'Promoter Hub', href: '/for-organizers#promoter-hub' },
-      { label: 'API Access', href: '/for-organizers#api-access' },
-      { label: 'Payouts', href: '/for-organizers#payouts' },
-      { label: 'Analytics', href: '/for-organizers#analytics' },
-      { label: 'Onboarding', href: '/for-organizers#onboarding' },
+      { label: 'Sell Tickets', href: '/for-organizers/sell-tickets' },
+      { label: 'Promoter Hub', href: '/for-organizers/promoter-hub' },
+      { label: 'API Access', href: '/for-organizers/api-access' },
+      { label: 'Payouts', href: '/for-organizers/payouts' },
+      { label: 'Analytics', href: '/for-organizers/analytics' },
+      { label: 'Onboarding', href: '/for-organizers/onboarding' },
     ],
   },
   {
