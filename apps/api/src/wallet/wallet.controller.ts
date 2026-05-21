@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 import type { Request } from 'express';
+import { EmailVerifiedGuard } from '../auth/email-verified.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { WalletService } from './wallet.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -42,6 +43,7 @@ export class WalletController {
     return this.wallet.submitKyc(req.user!.id, dto);
   }
 
+  @UseGuards(EmailVerifiedGuard)
   @Post('top-ups')
   async topUp(@Body() dto: TopUpDto, @Req() req: Request) {
     const user = await this.prisma.user.findUniqueOrThrow({

@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { OrganizerMemberGuard } from './organizer-member.guard';
 import { AdminGuard } from './admin.guard';
+import { EmailVerifiedGuard } from './email-verified.guard';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { AdminGuard } from './admin.guard';
     }),
   ],
   controllers: [AuthController, SessionsController],
-  providers: [AuthService, JwtAuthGuard, OrganizerMemberGuard, AdminGuard],
-  exports: [AuthService, JwtAuthGuard, OrganizerMemberGuard, AdminGuard, JwtModule],
+  providers: [AuthService, JwtAuthGuard, OrganizerMemberGuard, AdminGuard, EmailVerifiedGuard],
+  exports: [AuthService, JwtAuthGuard, OrganizerMemberGuard, AdminGuard, EmailVerifiedGuard, JwtModule],
 })
 export class AuthModule {}

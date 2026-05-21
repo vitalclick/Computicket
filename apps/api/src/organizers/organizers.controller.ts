@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/comm
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsOptional, IsString, Matches, MinLength } from 'class-validator';
 import type { Request } from 'express';
+import { EmailVerifiedGuard } from '../auth/email-verified.guard';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OrganizersService } from './organizers.service';
 
@@ -17,7 +18,7 @@ export class OrganizersController {
   constructor(private readonly organizers: OrganizersService) {}
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
   @Post()
   create(@Body() dto: CreateOrganizerDto, @Req() req: Request) {
     return this.organizers.create({ ...dto, ownerUserId: req.user!.id });
