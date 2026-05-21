@@ -51,12 +51,10 @@ jobs:
           ENV=$([ "${{ github.ref }}" = "refs/heads/main" ] && echo "production" || echo "preview")
           echo "DEPLOY_ENV=$ENV" >> $GITHUB_ENV
           vercel pull --yes --environment=$ENV --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
       - name: Build for Vercel
         run: |
           FLAG=$([ "$DEPLOY_ENV" = "production" ] && echo "--prod" || echo "")
           vercel build $FLAG --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
       - name: Deploy prebuilt to Vercel
         id: deploy
         run: |
@@ -64,7 +62,6 @@ jobs:
           URL=$(vercel deploy --prebuilt $FLAG --token=${{ secrets.VERCEL_TOKEN }})
           echo "url=$URL" >> $GITHUB_OUTPUT
           echo "Deployed to $URL"
-        working-directory: apps/web
       - name: Comment deploy URL on the commit
         if: github.event_name == 'push'
         uses: actions/github-script@v7

@@ -10,7 +10,8 @@ live separately on the EKS cluster the Terraform module provisions
 
 ```sh
 npm install -g vercel
-cd apps/web
+# Run from the REPO ROOT (vercel.json lives there, telling Vercel
+# the Next.js app is at apps/web).
 vercel login
 vercel link
 ```
@@ -20,24 +21,24 @@ When prompted:
 - **Which scope?** Your team / personal scope
 - **Link to existing project?** No (or yes if you already created it)
 - **Project name?** `computicket-web`
-- **In which directory is your code?** `./` (you're already in `apps/web`)
+- **In which directory is your code?** `./` (repo root — vercel.json
+  handles the monorepo routing)
 
 `vercel link` writes `.vercel/project.json` locally — **don't commit
 it**, it's already ignored. The pair of IDs in it (`projectId`,
 `orgId`) go into GitHub secrets in step 4.
 
-### 2. Configure the project on Vercel
+### 2. Vercel project settings
 
-In the Vercel dashboard → your project → Settings:
+The repo's `vercel.json` carries every build setting — there's
+nothing to configure in the dashboard. Specifically:
 
-| Setting | Value |
-|---|---|
-| Root Directory | `apps/web` |
-| Framework Preset | `Next.js` (auto-detected) |
-| Build Command | from `vercel.json` (don't override) |
-| Install Command | from `vercel.json` (don't override) |
-| Output Directory | from `vercel.json` (don't override) |
-| Include source files outside Root Dir | **on** (so pnpm workspace deps resolve) |
+- **Root Directory**: leave at `/` (default). The `outputDirectory`
+  in vercel.json (`apps/web/.next`) tells Vercel where the build
+  artifact lands.
+- **Framework Preset**: auto-detected as Next.js (or set explicitly
+  if you want).
+- **Build / Install / Output**: don't override — let vercel.json win.
 
 ### 3. Environment variables
 
