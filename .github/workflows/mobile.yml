@@ -28,5 +28,8 @@ jobs:
       # the existing lib/ + pubspec.yaml without touching our source files.
       - run: flutter create --no-overwrite --org ng.computicket --project-name computicket_mobile .
       - run: flutter pub get
+      # Regenerate launcher icons from assets/icon.png — guards the
+      # icon plumbing as part of the build, not just at release time.
+      - run: dart run flutter_launcher_icons
       - run: flutter analyze
       - run: flutter test

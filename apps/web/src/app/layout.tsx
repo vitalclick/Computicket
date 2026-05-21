@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { NavAuthLink } from '@/components/Nav';
 import './globals.css';
@@ -44,8 +45,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <header className="border-b border-gray-200">
           <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold text-brand" aria-label="Computicket Nigeria home">
-              Computicket<span className="text-gray-400">.ng</span>
+            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-brand" aria-label="Computicket Nigeria home">
+              <Image
+                src="/logo.png"
+                alt=""
+                width={32}
+                height={32}
+                priority
+                className="h-8 w-8 rounded"
+              />
+              <span>Computicket<span className="text-gray-400">.ng</span></span>
             </Link>
             <nav className="flex gap-6 text-sm items-center" aria-label="Primary">
               <Link href="/events" className="hover:text-brand">Events</Link>

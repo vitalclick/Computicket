@@ -3,6 +3,18 @@ import * as QRCode from 'qrcode';
 
 const POSTMARK_URL = 'https://api.postmarkapp.com/email';
 
+/**
+ * Renders an `<img>` for the Computicket mark when MAIL_LOGO_URL is set,
+ * otherwise an empty string so we fall back to the wordmark-only header.
+ * Pinned to a 32px square so the same source PNG works without a CDN
+ * resize.
+ */
+function logoMark(): string {
+  const url = process.env.MAIL_LOGO_URL;
+  if (!url) return '';
+  return `<img src="${escapeHtml(url)}" alt="" width="32" height="32" style="display:inline-block;vertical-align:middle;margin-right:8px;border-radius:6px" />`;
+}
+
 interface OrderConfirmationInput {
   to: string;
   buyerName?: string | null;
@@ -83,7 +95,7 @@ export class MailerService {
     const greeting = input.name ? `Hi ${escapeHtml(input.name)},` : 'Hi there,';
     const html = `<!doctype html><html><body style="font-family:ui-sans-serif,system-ui,Arial;background:#f9fafb;padding:24px">
 <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:32px">
-<div style="font-weight:700;color:#008751">Computicket Nigeria</div>
+<div style="font-weight:700;color:#008751">${logoMark()}Computicket Nigeria</div>
 <h1 style="font-size:22px;margin:16px 0">Verify your email</h1>
 <p>${greeting}</p>
 <p>Tap the button below to confirm this email address. The link expires in 24 hours.</p>
@@ -99,7 +111,7 @@ export class MailerService {
     const greeting = input.name ? `Hi ${escapeHtml(input.name)},` : 'Hi there,';
     const html = `<!doctype html><html><body style="font-family:ui-sans-serif,system-ui,Arial;background:#f9fafb;padding:24px">
 <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:32px">
-<div style="font-weight:700;color:#008751">Computicket Nigeria</div>
+<div style="font-weight:700;color:#008751">${logoMark()}Computicket Nigeria</div>
 <h1 style="font-size:22px;margin:16px 0">Reset your password</h1>
 <p>${greeting}</p>
 <p>We received a request to reset your password. Tap below — the link is single-use and expires in 1 hour.</p>
@@ -140,7 +152,7 @@ export class MailerService {
   async sendBroadcast(input: BroadcastInput): Promise<void> {
     const html = `<!doctype html><html><body style="font-family:ui-sans-serif,system-ui,Arial;background:#f9fafb;padding:24px">
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:8px;padding:32px">
-<div style="font-weight:700;color:#008751">Computicket Nigeria · ${escapeHtml(input.eventTitle)}</div>
+<div style="font-weight:700;color:#008751">${logoMark()}Computicket Nigeria · ${escapeHtml(input.eventTitle)}</div>
 <div style="margin-top:16px;white-space:pre-wrap;font-size:15px;line-height:1.5;color:#111827">${escapeHtml(input.bodyText)}</div>
 <div style="margin-top:24px;color:#9ca3af;font-size:12px">Sent because you have a ticket to ${escapeHtml(input.eventTitle)}.</div>
 </div></body></html>`;
@@ -176,7 +188,7 @@ export class MailerService {
 <!doctype html>
 <html><body style="font-family:ui-sans-serif,system-ui,Arial;background:#f9fafb;padding:24px">
   <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:32px">
-    <div style="font-weight:700;color:#008751">Computicket Nigeria</div>
+    <div style="font-weight:700;color:#008751">${logoMark()}Computicket Nigeria</div>
     <h1 style="font-size:22px;margin:16px 0">Your refund is on the way</h1>
     <p>${greeting}</p>
     <p>We've processed a refund of <strong>${formatNgn(input.amountKobo)}</strong> for your tickets to <strong>${escapeHtml(input.eventTitle)}</strong>. Your tickets have been voided.</p>
@@ -256,7 +268,7 @@ export class MailerService {
     <tr><td align="center" style="padding:32px 16px">
       <table width="560" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:8px;padding:32px">
         <tr><td>
-          <div style="font-weight:700;color:#008751;font-size:18px">Computicket Nigeria</div>
+          <div style="font-weight:700;color:#008751;font-size:18px">${logoMark()}Computicket Nigeria</div>
           <h1 style="font-size:24px;margin:16px 0 4px">You're going to ${escapeHtml(input.eventTitle)}</h1>
           <div style="color:#4b5563;font-size:14px">${escapeHtml(input.eventVenue)}, ${escapeHtml(input.eventCity)} · ${escapeHtml(startsAt)}</div>
           <p style="font-size:15px;color:#111827;margin-top:24px">${greeting} Your payment of ${formatNgn(input.totalKobo)} was received. Here ${input.tickets.length === 1 ? 'is your ticket' : `are your ${input.tickets.length} tickets`}:</p>

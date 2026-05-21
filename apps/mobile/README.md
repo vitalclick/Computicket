@@ -28,9 +28,14 @@ without polluting the diff. Before your first run:
 cd apps/mobile
 flutter create --no-overwrite --org ng.computicket --project-name computicket_mobile .
 flutter pub get
+dart run flutter_launcher_icons
 ```
 
-The CI workflow at `.github/workflows/mobile.yml` does the same.
+The third command reads the `flutter_launcher_icons:` block in
+`pubspec.yaml` and rasters `assets/icon.png` into every Android density
+bucket, the iOS asset catalogue, and the web `favicon.png`. Re-run it
+whenever `assets/icon.png` changes. The CI workflow at
+`.github/workflows/mobile.yml` does both steps automatically.
 
 ## Pointing at the API
 

@@ -62,11 +62,21 @@ class _SignInScreenState extends State<SignInScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Center(
+                child: Image.asset(
+                  'assets/icon.png',
+                  width: 72,
+                  height: 72,
+                  semanticLabel: 'Computicket Nigeria',
+                ),
+              ),
+              const SizedBox(height: 16),
               Text(
                 showing2FA
                     ? 'Enter the 6-digit code from your authenticator app.'
                     : 'Access your tickets and bookings.',
                 style: const TextStyle(color: Colors.grey),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               if (!showing2FA) ...[
