@@ -147,10 +147,24 @@ export function HeroCinematic() {
         </div>
 
         <div style={{ maxWidth: 880 }}>
-          <h1 className="h-1" style={{ margin: '0 0 18px' }}>
-            <span className="text-gradient">Everywhere you&apos;d rather be —</span>
-            <br />
-            <span className="serif" style={{ fontSize: '0.92em', color: 'var(--ink-2)' }}>
+          <h1 className="h-1" style={{ margin: '0 0 28px' }}>
+            <span className="text-gradient" style={{ display: 'block' }}>
+              Everywhere you&apos;d rather be —
+            </span>
+            <span
+              className="serif"
+              style={{
+                display: 'block',
+                fontSize: '0.92em',
+                color: 'var(--ink-2)',
+                /* Instrument Serif italic has tall descenders that
+                   overflow .h-1's tight 0.95 line-height and collide
+                   with the paragraph below. Give it a roomier
+                   line-box on its own line. */
+                lineHeight: 1.15,
+                marginTop: 4,
+              }}
+            >
               booked in one tap.
             </span>
           </h1>
