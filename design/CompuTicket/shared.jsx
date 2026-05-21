@@ -285,12 +285,48 @@ const ConcertCard = ({ c, size = "md" }) => {
 
 /* ----- Footer ----- */
 const Footer = () => {
+  const { go } = useRoute();
   const cols = [
-    { h:"Discover", items:["Events","Concerts","Theatre","Cinema","Festivals","Experiences"]},
-    { h:"Travel",   items:["Flights","Bus Travel","Hotels","Weekend Getaways","Vouchers","Package Deals"]},
-    { h:"Organizers", items:["Sell Tickets","Promoter Hub","API Access","Payouts","Analytics","Onboarding"]},
-    { h:"Company",  items:["About Us","Careers","Press","Trust & Safety","Partners","Contact"]},
-    { h:"Support",  items:["Help Centre","Buyer Protection","Refunds","Privacy","Terms","Cookie Policy"]},
+    { h:"Discover", items:[
+      {l:"Events",    t:{name:"search"}},
+      {l:"Concerts",  t:{name:"search"}},
+      {l:"Theatre",   t:{name:"search"}},
+      {l:"Cinema",    t:{name:"search"}},
+      {l:"Festivals", t:{name:"search"}},
+      {l:"Experiences", t:{name:"search"}},
+    ]},
+    { h:"Travel", items:[
+      {l:"Flights",          t:{name:"flights"}},
+      {l:"Bus Travel",       t:{name:"buses"}},
+      {l:"Hotels",           t:{name:"hotels"}},
+      {l:"Weekend Getaways", t:{name:"hotels"}},
+      {l:"Vouchers",         t:{name:"home"}},
+      {l:"Package Deals",    t:{name:"home"}},
+    ]},
+    { h:"Organizers", items:[
+      {l:"Sell Tickets",   t:{name:"organizer"}},
+      {l:"Promoter Hub",   t:{name:"organizer"}},
+      {l:"API Access",     t:{name:"page", id:"partners"}},
+      {l:"Payouts",        t:{name:"organizer"}},
+      {l:"Analytics",      t:{name:"organizer"}},
+      {l:"Onboarding",     t:{name:"organizer"}},
+    ]},
+    { h:"Company", items:[
+      {l:"About Us",       t:{name:"page", id:"about"}},
+      {l:"Careers",        t:{name:"page", id:"careers"}},
+      {l:"Press",          t:{name:"page", id:"press"}},
+      {l:"Trust & Safety", t:{name:"page", id:"trust"}},
+      {l:"Partners",       t:{name:"page", id:"partners"}},
+      {l:"Contact",        t:{name:"page", id:"contact"}},
+    ]},
+    { h:"Support", items:[
+      {l:"Help Centre",      t:{name:"page", id:"contact"}},
+      {l:"Buyer Protection", t:{name:"page", id:"trust"}},
+      {l:"Refunds",          t:{name:"page", id:"trust"}},
+      {l:"Privacy",          t:{name:"page", id:"trust"}},
+      {l:"Terms",            t:{name:"page", id:"trust"}},
+      {l:"Cookie Policy",    t:{name:"page", id:"trust"}},
+    ]},
   ];
   return (
     <footer className="footer">
@@ -313,7 +349,8 @@ const Footer = () => {
               <div className="eyebrow mb-4">{c.h}</div>
               <div className="col" style={{gap:10}}>
                 {c.items.map(i => (
-                  <a key={i} style={{fontSize:13.5, color:'var(--ink-2)', cursor:'pointer'}}>{i}</a>
+                  <a key={i.l} onClick={() => go(i.t)}
+                    style={{fontSize:13.5, color:'var(--ink-2)', cursor:'pointer'}}>{i.l}</a>
                 ))}
               </div>
             </div>

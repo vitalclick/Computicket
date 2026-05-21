@@ -59,6 +59,7 @@ const App = () => {
     case "hotels":    page = <PageHotels/>; break;
     case "flights":   page = <PageFlights/>; break;
     case "buses":     page = <PageBuses/>; break;
+    case "page":      page = <PageStatic id={route.id || "about"}/>; break;
     case "home":
     default:          page = <PageHome heroVariant={t.heroVariant}/>;
   }
@@ -114,6 +115,8 @@ const PageJumper = ({ route, go }) => {
     { id:"hotels",    l:"Hotels",            k:""},
     { id:"flights",   l:"Flights",           k:""},
     { id:"buses",     l:"Bus travel",        k:""},
+    { id:"page-about",l:"About · editorial", k:"about"},
+    { id:"page-trust",l:"Trust & Safety",    k:"trust"},
   ];
   return (
     <>
@@ -136,24 +139,31 @@ const PageJumper = ({ route, go }) => {
           padding:8, minWidth:240, boxShadow:'var(--shadow-lg)',
         }}>
           <div className="eyebrow" style={{padding:'8px 12px 6px'}}>Jump to screen</div>
-          {pages.map(p => (
-            <button key={p.id} onClick={() => { go({ name:p.id, ...(p.k?{q:p.k.replace('q=','')}:{}) }); setOpen(false); }}
-              style={{
-                width:'100%', textAlign:'left',
-                padding:'10px 12px', borderRadius:'var(--r-2)',
-                background: route.name === p.id ? 'var(--accent-soft)' : 'transparent',
-                color: route.name === p.id ? 'var(--accent)' : 'var(--ink)',
-                fontSize:13, fontWeight: route.name === p.id ? 600 : 500,
-                display:'flex', alignItems:'center', gap:8,
-                cursor:'pointer',
-              }}
-              onMouseEnter={e => { if (route.name !== p.id) e.currentTarget.style.background = 'var(--surface-2)'; }}
-              onMouseLeave={e => { if (route.name !== p.id) e.currentTarget.style.background = 'transparent'; }}
-            >
-              {route.name === p.id && <Icon name="check" size={13}/>}
-              <span>{p.l}</span>
-            </button>
-          ))}
+          {pages.map(p => {
+            const isPage = p.id.startsWith('page-');
+            const target = isPage ? { name:'page', id: p.k } : { name:p.id, ...(p.k?{q:p.k.replace('q=','')}:{}) };
+            const isActive = isPage
+              ? (route.name === 'page' && route.id === p.k)
+              : (route.name === p.id);
+            return (
+              <button key={p.id} onClick={() => { go(target); setOpen(false); }}
+                style={{
+                  width:'100%', textAlign:'left',
+                  padding:'10px 12px', borderRadius:'var(--r-2)',
+                  background: isActive ? 'var(--accent-soft)' : 'transparent',
+                  color: isActive ? 'var(--accent)' : 'var(--ink)',
+                  fontSize:13, fontWeight: isActive ? 600 : 500,
+                  display:'flex', alignItems:'center', gap:8,
+                  cursor:'pointer',
+                }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--surface-2)'; }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+              >
+                {isActive && <Icon name="check" size={13}/>}
+                <span>{p.l}</span>
+              </button>
+            );
+          })}
         </div>
       )}
     </>
