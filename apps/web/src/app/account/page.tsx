@@ -84,7 +84,7 @@ export default function AccountPage() {
                 {o.tickets.map((t) => (
                   <li key={t.id} className="flex gap-3 items-center border border-gray-100 rounded-md p-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={ticketQrUrl(t.code)} alt={t.code} width={96} height={96} className="w-24 h-24" />
+                    <img src={ticketQrUrl(t.code)} alt={`QR code for ticket ${t.code}`} width={96} height={96} className="w-24 h-24" />
                     <div className="min-w-0">
                       <div className="font-mono text-xs break-all">{t.code}</div>
                       <div className={`text-xs mt-1 ${t.status === 'SCANNED' ? 'text-gray-400' : t.status === 'VOIDED' ? 'text-red-600' : 'text-green-700'}`}>

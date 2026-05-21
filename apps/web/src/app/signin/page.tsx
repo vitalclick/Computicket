@@ -73,31 +73,44 @@ function SignInForm() {
           ? 'Enter the 6-digit code from your authenticator app.'
           : 'Access your tickets, bookings, and organizer dashboard.'}
       </p>
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
         {!challengeToken && (
           <>
-            <input
-              type="email" required placeholder="Email"
-              value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
-            />
-            <input
-              type="password" required minLength={8} placeholder="Password"
-              value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
-            />
+            <div>
+              <label htmlFor="signin-email" className="sr-only">Email address</label>
+              <input
+                id="signin-email" type="email" required placeholder="Email" autoComplete="email"
+                value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
+            <div>
+              <label htmlFor="signin-password" className="sr-only">Password</label>
+              <input
+                id="signin-password" type="password" required minLength={8}
+                placeholder="Password" autoComplete="current-password"
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
           </>
         )}
         {challengeToken && (
-          <input
-            type="text" required inputMode="numeric" autoComplete="one-time-code"
-            pattern="[0-9]{6}" maxLength={6} placeholder="6-digit code"
-            value={totpCode} onChange={(e) => setTotpCode(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono tracking-widest text-center text-lg"
-            autoFocus
-          />
+          <div>
+            <label htmlFor="signin-totp" className="sr-only">Two-factor authentication code</label>
+            <input
+              id="signin-totp" type="text" required inputMode="numeric"
+              autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6}
+              placeholder="6-digit code"
+              value={totpCode} onChange={(e) => setTotpCode(e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono tracking-widest text-center text-lg"
+              autoFocus
+            />
+          </div>
         )}
-        {error && <div className="text-sm text-red-600">{error}</div>}
+        {error && (
+          <div className="text-sm text-red-600" role="alert" aria-live="polite">{error}</div>
+        )}
         <button
           type="submit" disabled={submitting}
           className="w-full bg-brand text-white font-medium py-2.5 rounded-md hover:bg-brand-dark disabled:bg-gray-300"

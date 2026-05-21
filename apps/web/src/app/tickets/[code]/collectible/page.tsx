@@ -101,7 +101,7 @@ export default function CollectiblePage() {
       <div className="mt-6 grid md:grid-cols-2 gap-6">
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={data.imageUrl} alt="Ticket QR" className="w-full aspect-square object-contain bg-gray-50" />
+          <img src={data.imageUrl} alt={`QR code for ticket ${data.code}`} className="w-full aspect-square object-contain bg-gray-50" />
           <div className="p-4 space-y-1 text-sm">
             <div className="font-semibold">{data.event.title}</div>
             <div className="text-gray-600">{data.event.venue}, {data.event.city}</div>

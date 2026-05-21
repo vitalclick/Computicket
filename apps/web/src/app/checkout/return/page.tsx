@@ -64,7 +64,7 @@ export default async function CheckoutReturnPage({ searchParams }: PageProps) {
         {order.tickets.map((t) => (
           <li key={t.id} className="border border-gray-200 rounded-lg p-4 flex items-center gap-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={ticketQrUrl(t.code)} alt={t.code} className="w-32 h-32" />
+            <img src={ticketQrUrl(t.code)} alt={`QR code for ticket ${t.code}`} className="w-32 h-32" />
             <div>
               <div className="text-xs text-gray-500 uppercase tracking-wide">{t.status}</div>
               <div className="font-mono text-sm mt-1">{t.code}</div>

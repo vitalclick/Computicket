@@ -34,17 +34,29 @@ function SignUpForm() {
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold">Create an account</h1>
       <p className="mt-2 text-sm text-gray-600">Track your tickets and bookings in one place.</p>
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <input type="text" placeholder="Your name" value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2" />
-        <input type="email" required placeholder="Email" value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2" />
-        <input type="password" required minLength={8} placeholder="Password (8+ characters)"
-          value={password} onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2" />
-        {error && <div className="text-sm text-red-600">{error}</div>}
+      <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+        <div>
+          <label htmlFor="signup-name" className="sr-only">Your name</label>
+          <input id="signup-name" type="text" placeholder="Your name" autoComplete="name"
+            value={name} onChange={(e) => setName(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2" />
+        </div>
+        <div>
+          <label htmlFor="signup-email" className="sr-only">Email address</label>
+          <input id="signup-email" type="email" required placeholder="Email"
+            autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2" />
+        </div>
+        <div>
+          <label htmlFor="signup-password" className="sr-only">Password</label>
+          <input id="signup-password" type="password" required minLength={8}
+            placeholder="Password (8+ characters)" autoComplete="new-password"
+            value={password} onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2" />
+        </div>
+        {error && (
+          <div className="text-sm text-red-600" role="alert" aria-live="polite">{error}</div>
+        )}
         <button type="submit" disabled={submitting}
           className="w-full bg-brand text-white font-medium py-2.5 rounded-md hover:bg-brand-dark disabled:bg-gray-300">
           {submitting ? 'Creating…' : 'Create account'}
