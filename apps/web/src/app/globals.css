@@ -139,11 +139,17 @@ img, svg { display: block; max-width: 100%; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 
 /* ---------- Type ---------- */
-.h-display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.035em; line-height: 0.95; }
-.h-1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(40px, 5.4vw, 80px); letter-spacing: -0.04em; line-height: 0.95; }
-.h-2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 3.2vw, 44px); letter-spacing: -0.03em; line-height: 1; }
-.h-3 { font-family: var(--font-display); font-weight: 600; font-size: 24px; letter-spacing: -0.02em; line-height: 1.1; }
-.h-4 { font-weight: 600; font-size: 18px; letter-spacing: -0.01em; line-height: 1.2; }
+/* These classes collide with Tailwind utility classes of the same
+   name (e.g. `.h-1` → height: 0.25rem). Explicitly reset `height` so
+   the design rule fully wins — our CSS is loaded after `@tailwind
+   utilities` so equal-specificity rules layered last apply. Without
+   this the marketplace h1 gets clamped to 4px and its children
+   overflow into the next paragraph. */
+.h-display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.035em; line-height: 0.95; height: auto; }
+.h-1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(40px, 5.4vw, 80px); letter-spacing: -0.04em; line-height: 0.95; height: auto; }
+.h-2 { font-family: var(--font-display); font-weight: 600; font-size: clamp(28px, 3.2vw, 44px); letter-spacing: -0.03em; line-height: 1; height: auto; }
+.h-3 { font-family: var(--font-display); font-weight: 600; font-size: 24px; letter-spacing: -0.02em; line-height: 1.1; height: auto; }
+.h-4 { font-weight: 600; font-size: 18px; letter-spacing: -0.01em; line-height: 1.2; height: auto; }
 .serif { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
 .eyebrow {
   font-family: var(--font-mono);
