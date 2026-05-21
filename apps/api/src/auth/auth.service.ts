@@ -124,8 +124,30 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email: input.email } });
     if (!user?.passwordHash) throw new UnauthorizedException('Invalid email or password');
     if (user.deletedAt) throw new UnauthorizedException('Account closed');
+
+    // Progressive lockout: 5 failures in a row trips a 15-minute hold.
+    // The counter resets on the next successful signin (or after the
+    // lockedUntil window expires).
+    if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
+      const minutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60_000);
+      throw new UnauthorizedException(
+        `Too many failed sign-ins. Try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`,
+      );
+    }
+
     const ok = await bcrypt.compare(input.password, user.passwordHash);
-    if (!ok) throw new UnauthorizedException('Invalid email or password');
+    if (!ok) {
+      const nextCount = user.failedSigninCount + 1;
+      const shouldLock = nextCount >= 5;
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedSigninCount: shouldLock ? 0 : nextCount,
+          lockedUntil: shouldLock ? new Date(Date.now() + 15 * 60_000) : user.lockedUntil,
+        },
+      });
+      throw new UnauthorizedException('Invalid email or password');
+    }
 
     if (user.totpEnabledAt) {
       // Without a code, hand back a short-lived challenge token. The
@@ -210,6 +232,15 @@ export class AuthService {
   }
 
   private async issueToken(user: { id: string; email: string; name: string | null }) {
+    // Clear lockout state on any successful issuance — covers both
+    // password signin and the 2FA challenge completion path.
+    await this.prisma.user.updateMany({
+      where: {
+        id: user.id,
+        OR: [{ failedSigninCount: { gt: 0 } }, { lockedUntil: { not: null } }],
+      },
+      data: { failedSigninCount: 0, lockedUntil: null },
+    });
     const token = await this.jwt.signAsync({ sub: user.id, email: user.email });
     return {
       token,

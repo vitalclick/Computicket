@@ -31,6 +31,35 @@ describe('Auth & security (e2e)', () => {
         .expect(401);
     });
 
+    it('locks the account after 5 wrong-password attempts', async () => {
+      const server = ctx.app.getHttpServer();
+      await request(server).post('/v1/auth/signup')
+        .send({ email: 'lockme@test.ng', password: 'CorrectPassword1!' }).expect(201);
+      for (let i = 0; i < 5; i++) {
+        await request(server).post('/v1/auth/signin')
+          .send({ email: 'lockme@test.ng', password: 'wrong' }).expect(401);
+      }
+      // 6th attempt — even with the right password — should be locked out.
+      const res = await request(server).post('/v1/auth/signin')
+        .send({ email: 'lockme@test.ng', password: 'CorrectPassword1!' })
+        .expect(401);
+      expect(res.body.message).toMatch(/locked|too many failed/i);
+
+      // Lift the lock and confirm the success path clears the counter.
+      await ctx.prisma.user.update({
+        where: { email: 'lockme@test.ng' },
+        data: { lockedUntil: null, failedSigninCount: 0 },
+      });
+      await request(server).post('/v1/auth/signin')
+        .send({ email: 'lockme@test.ng', password: 'CorrectPassword1!' })
+        .expect(201);
+      const after = await ctx.prisma.user.findUniqueOrThrow({
+        where: { email: 'lockme@test.ng' },
+      });
+      expect(after.failedSigninCount).toBe(0);
+      expect(after.lockedUntil).toBeNull();
+    });
+
     it('refuses duplicate signups', async () => {
       await request(ctx.app.getHttpServer())
         .post('/v1/auth/signup')

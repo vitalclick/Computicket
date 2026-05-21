@@ -33,6 +33,10 @@ model User {
   // Set when the user requested NDPR account deletion; PII is scrubbed
   // but the row stays to anchor order history for accounting.
   deletedAt         DateTime?
+  // Progressive lockout: rate limiting catches floods, this catches slow
+  // credential-stuffing across many IPs against one account.
+  failedSigninCount Int      @default(0)
+  lockedUntil       DateTime?
   isAdmin           Boolean  @default(false)
   // Cached wallet balance. Source of truth is sum(WalletTransaction.amountKobo).
   walletBalanceKobo Int          @default(0)
