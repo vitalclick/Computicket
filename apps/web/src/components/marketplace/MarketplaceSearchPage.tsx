@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { EventCard } from '@/components/marketplace/EventCard';
 import { FilterGroup } from '@/components/marketplace/FilterGroup';
@@ -65,14 +66,35 @@ function buildCompassAnswer({
   } for "${query.trim()}". The closest ${entityLabel} is at the top — open it for full details, or tighten the search with filters on the left.`;
 }
 
-export function MarketplaceSearchPage({
+export function MarketplaceSearchPage(props: Props) {
+  // `useSearchParams` triggers Next 15's CSR bailout when used during
+  // static rendering; the Suspense boundary keeps the rest of the page
+  // server-renderable.
+  return (
+    <Suspense fallback={null}>
+      <MarketplaceSearchPageInner {...props} />
+    </Suspense>
+  );
+}
+
+function MarketplaceSearchPageInner({
   initialQuery = '',
   initialFacet = 'all',
   searchPlaceholder = 'Search by event, venue or city…',
   searchAriaLabel = 'Search events',
   entityLabel = 'event',
 }: Props) {
-  const [query, setQuery] = useState(initialQuery);
+  const searchParams = useSearchParams();
+  // Hero-driven landing: the home page's search bar pushes the user
+  // here with ?q=… (plus optional city/when/guests we surface as a
+  // "Searched for" chip row below the facet tabs but don't try to
+  // server-side filter since the events API doesn't speak those yet).
+  const heroQuery = searchParams.get('q') ?? '';
+  const heroCity = searchParams.get('city') ?? '';
+  const heroWhen = searchParams.get('when') ?? '';
+  const heroGuests = searchParams.get('guests') ?? '';
+
+  const [query, setQuery] = useState(heroQuery || initialQuery);
   const [filter, setFilter] = useState(initialFacet);
   const [events, setEvents] = useState<EventSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -345,6 +367,29 @@ export function MarketplaceSearchPage({
         </aside>
 
         <div>
+          {heroCity || heroWhen || heroGuests ? (
+            <div className="row mb-4 gap-2" style={{ flexWrap: 'wrap', alignItems: 'center' }}>
+              <span className="text-xs muted" style={{ alignSelf: 'center' }}>
+                Searched for:
+              </span>
+              {heroCity ? (
+                <span className="chip chip-accent">
+                  <Icon name="pin" size={11} /> {heroCity}
+                </span>
+              ) : null}
+              {heroWhen ? (
+                <span className="chip chip-accent">
+                  <Icon name="calendar" size={11} /> {heroWhen}
+                </span>
+              ) : null}
+              {heroGuests ? (
+                <span className="chip chip-accent">
+                  <Icon name="user" size={11} /> {heroGuests}{' '}
+                  {Number(heroGuests) === 1 ? 'ticket' : 'tickets'}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
           <div className="between mb-6">
             <div className="text-sm muted">
               Showing{' '}
