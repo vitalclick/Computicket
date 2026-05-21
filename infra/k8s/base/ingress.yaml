@@ -1,0 +1,56 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: computicket
+  annotations:
+    # Targets nginx-ingress; swap class to "alb" + add the AWS ALB
+    # annotations if you're on EKS using aws-load-balancer-controller.
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # cert-manager issues + renews via Let's Encrypt; the prod overlay
+    # patches in the actual ClusterIssuer name.
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    # The Paystack webhook delivery needs an HTTPS endpoint with a
+    # globally-valid cert. Don't disable hsts on this ingress.
+    nginx.ingress.kubernetes.io/hsts: "true"
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - computicket.ng
+        - www.computicket.ng
+        - api.computicket.ng
+      secretName: computicket-tls
+  rules:
+    - host: api.computicket.ng
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 80
+    - host: computicket.ng
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80
+    - host: www.computicket.ng
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80

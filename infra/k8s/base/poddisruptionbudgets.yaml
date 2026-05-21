@@ -1,0 +1,22 @@
+# Keep at least one pod of each service available during voluntary
+# disruptions (node drains, autoscaler scale-downs). Combined with
+# Deployment minReplicas=2 this guarantees zero-downtime maintenance.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: web

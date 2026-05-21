@@ -1,0 +1,52 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: computicket-staging
+resources:
+  - ../../base
+  - namespace.yaml
+
+images:
+  - name: ghcr.io/vitalclick/computicket-api
+    newTag: TAG
+  - name: ghcr.io/vitalclick/computicket-web
+    newTag: TAG
+
+# Half the prod fleet — enough to catch regressions, cheap to run.
+replicas:
+  - name: api
+    count: 1
+  - name: web
+    count: 1
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: computicket-config
+    patch: |-
+      - op: replace
+        path: /data/PUBLIC_WEB_URL
+        value: https://staging.computicket.ng
+      - op: replace
+        path: /data/PUBLIC_API_URL
+        value: https://api.staging.computicket.ng/v1
+      - op: replace
+        path: /data/CORS_ALLOWED_ORIGINS
+        value: https://staging.computicket.ng
+  - target:
+      kind: Ingress
+      name: computicket
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts
+        value:
+          - staging.computicket.ng
+          - api.staging.computicket.ng
+      - op: replace
+        path: /spec/rules/0/host
+        value: api.staging.computicket.ng
+      - op: replace
+        path: /spec/rules/1/host
+        value: staging.computicket.ng
+      - op: remove
+        path: /spec/rules/2
