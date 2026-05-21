@@ -197,6 +197,18 @@ export default function AccountPage() {
           }}
         >
           <div className="col gap-6">
+            <div className="between">
+              <h2 className="h-3" style={{ margin: 0 }}>
+                Your tickets
+              </h2>
+              <span className="text-sm muted">
+                {paid.length === 0
+                  ? 'No bookings yet'
+                  : `${paid.length} paid order${paid.length === 1 ? '' : 's'} · ${totalTickets} ticket${
+                      totalTickets === 1 ? '' : 's'
+                    }`}
+              </span>
+            </div>
             {next ? (
               <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                 <div
@@ -415,9 +427,10 @@ export default function AccountPage() {
                 <div className="between mb-4">
                   <div>
                     <div className="eyebrow mb-2">Digital Ticket Vault</div>
-                    <div className="h-3">
-                      {allTickets.length} active pass{allTickets.length === 1 ? '' : 'es'}
-                    </div>
+                    <h3 className="h-3" style={{ margin: 0 }}>
+                      Digital vault · {allTickets.length} active pass
+                      {allTickets.length === 1 ? '' : 'es'}
+                    </h3>
                   </div>
                 </div>
                 <div className="rail">
@@ -475,7 +488,16 @@ export default function AccountPage() {
                           >
                             {t.event.title}
                           </div>
-                          <div className="text-xs muted">{t.event.city}</div>
+                          <div
+                            className="text-xs mono muted"
+                            style={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {t.code}
+                          </div>
                         </div>
                         <Icon name="qr" size={20} />
                       </div>

@@ -56,6 +56,28 @@ export function SiteHeader() {
           <Icon name="chevronDown" size={12} />
         </button>
 
+        <nav
+          aria-label="Primary"
+          style={{ display: 'flex', alignItems: 'center', gap: 16, marginLeft: 8, flexShrink: 0 }}
+        >
+          {(
+            [
+              { label: 'Events', href: '/events' },
+              { label: 'Concerts', href: '/concerts' },
+              { label: 'Travel', href: '/flights' },
+              { label: 'Stays', href: '/hotels' },
+            ] as const
+          ).map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--ink-2)' }}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
         <div style={{ flex: 1, minWidth: 0 }} />
 
         <Link

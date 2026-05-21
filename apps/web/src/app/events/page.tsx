@@ -83,7 +83,7 @@ export default function EventsPage() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search events, venues, cities…"
+              placeholder="Search by event, venue or city…"
               aria-label="Search events"
               style={{
                 flex: 1,
