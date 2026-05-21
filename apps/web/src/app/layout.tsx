@@ -1,10 +1,37 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
-import Link from 'next/link';
-import { NavAuthLink } from '@/components/Nav';
+import { Bricolage_Grotesque, Geist, Geist_Mono, Instrument_Serif } from 'next/font/google';
+import { SiteFooter } from '@/components/SiteFooter';
+import { SiteHeader } from '@/components/SiteHeader';
+import { THEME_INIT_SCRIPT } from '@/components/ThemeToggle';
 import './globals.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://computicket.ng';
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-bricolage',
+  display: 'swap',
+});
+const geist = Geist({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-geist',
+  display: 'swap',
+});
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-geist-mono',
+  display: 'swap',
+});
+const instrument = Instrument_Serif({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-instrument',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -34,43 +61,31 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const fontClasses = `${bricolage.variable} ${geist.variable} ${geistMono.variable} ${instrument.variable}`;
   return (
-    <html lang="en-NG">
-      <body className="min-h-screen flex flex-col">
+    <html
+      lang="en-NG"
+      data-theme="light"
+      data-accent="naija"
+      data-density="comfortable"
+      className={fontClasses}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="shell" style={{ display: 'flex', flexDirection: 'column' }}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:text-brand-dark focus:px-3 focus:py-1.5 focus:rounded-md focus:shadow"
         >
           Skip to main content
         </a>
-        <header className="border-b border-gray-200">
-          <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-brand-dark" aria-label="Computicket Nigeria home">
-              <Image
-                src="/logo.png"
-                alt=""
-                width={32}
-                height={32}
-                priority
-                className="h-8 w-8 rounded"
-              />
-              <span>Computicket<span className="text-gray-500">.ng</span></span>
-            </Link>
-            <nav className="flex gap-6 text-sm items-center" aria-label="Primary">
-              <Link href="/events" className="hover:text-brand-dark">Events</Link>
-              <Link href="/buses" className="hover:text-brand-dark">Buses</Link>
-              <Link href="/for-organizers" className="hover:text-brand-dark">For organizers</Link>
-              <NavAuthLink />
-            </nav>
-          </div>
-        </header>
-        <main id="main-content" className="flex-1">{children}</main>
-        <footer className="border-t border-gray-200 mt-16">
-          <div className="max-w-6xl mx-auto px-4 py-6 text-sm text-gray-500 flex justify-between">
-            <span>© {new Date().getFullYear()} Computicket Nigeria</span>
-            <span>Phase 1 preview</span>
-          </div>
-        </footer>
+        <SiteHeader />
+        <main id="main-content" style={{ flex: 1 }}>
+          {children}
+        </main>
+        <SiteFooter />
       </body>
     </html>
   );
