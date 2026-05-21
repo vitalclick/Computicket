@@ -7,7 +7,7 @@ void main() {
     expect(formatNaira(0), '₦0');
     expect(formatNaira(500), '₦5');
     expect(formatNaira(1500000), '₦15,000');
-    expect(formatNaira(12_345_678_900), '₦123,456,789');
+    expect(formatNaira(12345678900), '₦123,456,789');
   });
 
   test('buildTheme yields a Material3 ThemeData with the brand seed', () {

@@ -32,9 +32,9 @@ class SeatPicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Legend
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: const [
+          children: [
             _LegendChip(color: Colors.white, border: true, label: 'Available'),
             _LegendChip(color: brandGreen, label: 'Selected'),
             _LegendChip(color: Color(0xFFE5E7EB), label: 'Held'),
