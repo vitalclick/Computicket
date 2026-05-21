@@ -20,9 +20,9 @@ const COLUMNS: Column[] = [
   {
     heading: 'Travel',
     items: [
-      { label: 'Flights' },
+      { label: 'Flights', href: '/flights' },
       { label: 'Bus Travel', href: '/buses' },
-      { label: 'Hotels' },
+      { label: 'Hotels', href: '/hotels' },
       { label: 'Weekend Getaways' },
       { label: 'Vouchers' },
       { label: 'Package Deals' },
