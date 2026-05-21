@@ -88,7 +88,7 @@ function ConsentInner() {
       <ul className="mt-4 space-y-2">
         {info.scopes.map((s) => (
           <li key={s} className="flex gap-2 text-sm">
-            <span className="text-brand">●</span>
+            <span className="text-brand-dark">●</span>
             <code className="font-mono">{s}</code>
           </li>
         ))}

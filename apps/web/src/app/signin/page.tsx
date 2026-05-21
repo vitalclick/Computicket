@@ -119,8 +119,8 @@ function SignInForm() {
         </button>
       </form>
       <div className="mt-6 text-sm text-gray-600 flex justify-between">
-        <Link href="/signup" className="text-brand hover:underline">Create an account</Link>
-        <Link href="/forgot-password" className="text-brand hover:underline">Forgot password?</Link>
+        <Link href="/signup" className="text-brand-dark hover:underline">Create an account</Link>
+        <Link href="/forgot-password" className="text-brand-dark hover:underline">Forgot password?</Link>
       </div>
     </div>
   );

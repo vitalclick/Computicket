@@ -46,14 +46,14 @@ export default function AccountPage() {
           <h1 className="text-2xl font-bold">Your tickets</h1>
           <p className="text-sm text-gray-600 mt-1">Signed in as {email}</p>
         </div>
-        <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-brand">
+        <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-brand-dark">
           Sign out
         </button>
       </div>
 
       <Link
         href="/account/wallet"
-        className="mt-6 inline-flex items-center gap-2 text-sm text-brand hover:underline"
+        className="mt-6 inline-flex items-center gap-2 text-sm text-brand-dark hover:underline"
       >
         Manage wallet →
       </Link>

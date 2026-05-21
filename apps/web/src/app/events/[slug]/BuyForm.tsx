@@ -108,6 +108,7 @@ export function BuyForm({ event }: Props) {
                   onChange={(e) =>
                     setQuantities((q) => ({ ...q, [tt.id]: parseInt(e.target.value, 10) }))
                   }
+                  aria-label={`Quantity for ${tt.name}`}
                   className="border border-gray-300 rounded-md px-2 py-1.5 disabled:bg-gray-100"
                 >
                   {Array.from({ length: Math.min(10, remaining) + 1 }, (_, i) => (
@@ -173,7 +174,7 @@ export function BuyForm({ event }: Props) {
 
       {signedIn && (
         <p className="mt-3 text-xs text-gray-500">
-          Signed in — your tickets will appear in your <a href="/account" className="text-brand hover:underline">account</a> after payment.
+          Signed in — your tickets will appear in your <a href="/account" className="text-brand-dark underline">account</a> after payment.
         </p>
       )}
 

@@ -135,7 +135,7 @@ export default function CollectiblePage() {
             <button
               onClick={claim}
               disabled={!wallet || submitting}
-              className="mt-3 w-full rounded-lg bg-emerald-600 text-white py-2 text-sm font-medium disabled:opacity-50"
+              className="mt-3 w-full rounded-lg bg-emerald-700 text-white py-2 text-sm font-medium disabled:opacity-50"
             >
               {data.claimedWallet ? 'Re-issue voucher' : 'Claim collectible'}
             </button>

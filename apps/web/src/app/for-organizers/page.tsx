@@ -35,18 +35,18 @@ export default function ForOrganizersPage() {
     <div>
       <section className="bg-brand text-white">
         <div className="max-w-5xl mx-auto px-4 py-20">
-          <p className="text-sm uppercase tracking-wide opacity-80">For organizers</p>
+          <p className="text-sm uppercase tracking-wide ">For organizers</p>
           <h1 className="mt-3 text-3xl md:text-5xl font-bold leading-tight max-w-3xl">
             An event management app like Computicket is essential for modern event planning.
           </h1>
-          <p className="mt-5 text-lg opacity-90 max-w-2xl">
+          <p className="mt-5 text-lg max-w-2xl">
             It centralizes control, automates ticket sales, and provides real-time analytics —
             saving you time and maximizing revenue.
           </p>
           <div className="mt-8 flex gap-3">
             <Link
               href="/dashboard/signup"
-              className="bg-white text-brand font-medium px-6 py-3 rounded-md hover:bg-gray-100"
+              className="bg-white text-brand-dark font-medium px-6 py-3 rounded-md hover:bg-gray-100"
             >
               Start selling tickets
             </Link>

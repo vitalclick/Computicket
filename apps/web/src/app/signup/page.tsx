@@ -63,7 +63,11 @@ function SignUpForm() {
         </button>
       </form>
       <p className="mt-6 text-sm text-gray-600">
-        Already have an account? <Link href="/signin" className="text-brand hover:underline">Sign in</Link>
+        {/* Underline always: the brand-dark vs gray-600 contrast is only
+            1.1:1, well below the WCAG 3:1 threshold for "link distinguishable
+            from surrounding text by colour alone". Underline restores
+            discoverability without a colour-contrast dependency. */}
+        Already have an account? <Link href="/signin" className="text-brand-dark underline">Sign in</Link>
       </p>
     </div>
   );

@@ -35,13 +35,13 @@ function VerifyEmailInner() {
       {state === 'ok' && (
         <>
           <p className="mt-4 text-emerald-700">Your email is verified.</p>
-          <Link href="/account" className="mt-6 inline-block text-brand hover:underline">Continue to your account</Link>
+          <Link href="/account" className="mt-6 inline-block text-brand-dark hover:underline">Continue to your account</Link>
         </>
       )}
       {state === 'fail' && (
         <>
           <p className="mt-4 text-red-600">{error}</p>
-          <Link href="/account" className="mt-6 inline-block text-brand hover:underline">Go to account</Link>
+          <Link href="/account" className="mt-6 inline-block text-brand-dark hover:underline">Go to account</Link>
         </>
       )}
     </div>

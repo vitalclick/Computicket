@@ -176,7 +176,7 @@ export default function SecurityPage() {
             : 'Your email is not verified yet.'}
         </p>
         {!status.emailVerified && (
-          <button onClick={requestVerify} className="mt-3 rounded-md bg-emerald-600 text-white px-4 py-2 text-sm">
+          <button onClick={requestVerify} className="mt-3 rounded-md bg-emerald-700 text-white px-4 py-2 text-sm">
             Send verification email
           </button>
         )}
@@ -214,7 +214,7 @@ export default function SecurityPage() {
                 value={code} onChange={(e) => setCode(e.target.value)}
                 className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm font-mono tracking-widest text-center"
               />
-              <button onClick={enableTotp} className="rounded-md bg-emerald-600 text-white px-4 py-2 text-sm">
+              <button onClick={enableTotp} className="rounded-md bg-emerald-700 text-white px-4 py-2 text-sm">
                 Enable
               </button>
             </div>
@@ -222,7 +222,7 @@ export default function SecurityPage() {
         ) : (
           <>
             <p className="text-sm text-gray-600 mt-1">Protect your account with a TOTP authenticator app.</p>
-            <button onClick={startTotp} className="mt-3 rounded-md bg-emerald-600 text-white px-4 py-2 text-sm">
+            <button onClick={startTotp} className="mt-3 rounded-md bg-emerald-700 text-white px-4 py-2 text-sm">
               Set up 2FA
             </button>
           </>

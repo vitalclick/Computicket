@@ -72,7 +72,7 @@ export default async function EventDetailPage({ params }: PageProps) {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="text-sm text-brand font-medium">{event.organizer.name}</div>
+      <div className="text-sm text-brand-dark font-medium">{event.organizer.name}</div>
       <h1 className="mt-2 text-3xl md:text-4xl font-bold">{event.title}</h1>
       <div className="mt-3 text-gray-600">
         <div>{event.venue}, {event.city}</div>

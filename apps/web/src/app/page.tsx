@@ -17,12 +17,12 @@ export default async function HomePage() {
           <h1 className="text-4xl md:text-5xl font-bold max-w-2xl">
             Tickets, travel and experiences — all in one place.
           </h1>
-          <p className="mt-4 text-lg opacity-90 max-w-xl">
+          <p className="mt-4 text-lg max-w-xl">
             Nigeria&apos;s all-in-one booking platform for events, concerts, bus travel and more.
           </p>
           <Link
             href="/events"
-            className="inline-block mt-8 bg-white text-brand font-medium px-6 py-3 rounded-md hover:bg-gray-100"
+            className="inline-block mt-8 bg-white text-brand-dark font-medium px-6 py-3 rounded-md hover:bg-gray-100"
           >
             Browse events
           </Link>
@@ -32,7 +32,7 @@ export default async function HomePage() {
       <section className="max-w-6xl mx-auto px-4 py-12">
         <div className="flex items-end justify-between mb-6">
           <h2 className="text-2xl font-bold">Upcoming events</h2>
-          <Link href="/events" className="text-sm text-brand hover:underline">View all →</Link>
+          <Link href="/events" className="text-sm text-brand-dark hover:underline">View all →</Link>
         </div>
 
 
@@ -52,7 +52,7 @@ export default async function HomePage() {
             return (
               <li key={event.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
                 <Link href={`/events/${event.slug}`} className="block p-5">
-                  <div className="text-xs text-brand font-medium">{event.organizer.name}</div>
+                  <div className="text-xs text-brand-dark font-medium">{event.organizer.name}</div>
                   <h3 className="mt-1 text-lg font-semibold">{event.title}</h3>
                   <div className="mt-2 text-sm text-gray-600">{event.venue}, {event.city}</div>
                   <div className="text-sm text-gray-600">{formatDate(event.startsAt)}</div>
@@ -67,7 +67,7 @@ export default async function HomePage() {
       <section className="bg-gray-50 border-t border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-14 grid md:grid-cols-[1.2fr,1fr] gap-10 items-center">
           <div>
-            <p className="text-sm uppercase tracking-wide text-brand font-medium">For organizers</p>
+            <p className="text-sm uppercase tracking-wide text-brand-dark font-medium">For organizers</p>
             <h2 className="mt-2 text-2xl md:text-3xl font-bold">
               An event management app like Computicket is essential for modern event planning.
             </h2>
@@ -84,15 +84,15 @@ export default async function HomePage() {
           </div>
           <ul className="space-y-3 text-sm">
             <li className="flex gap-3">
-              <span className="text-brand">●</span>
+              <span className="text-brand-dark">●</span>
               <span><strong>Centralized control</strong> — events, ticket tiers, refunds, scanning, payouts in one dashboard.</span>
             </li>
             <li className="flex gap-3">
-              <span className="text-brand">●</span>
+              <span className="text-brand-dark">●</span>
               <span><strong>Automated sales</strong> — Paystack checkout, atomic inventory holds, direct settlement to your bank.</span>
             </li>
             <li className="flex gap-3">
-              <span className="text-brand">●</span>
+              <span className="text-brand-dark">●</span>
               <span><strong>Real-time analytics</strong> — sold counts, revenue, paid orders, all live as money lands.</span>
             </li>
           </ul>

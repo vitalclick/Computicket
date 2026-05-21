@@ -43,10 +43,10 @@ export default async function WhitelabelPage({ params }: PageProps) {
     <div className="min-h-screen flex flex-col" style={{ background: '#ffffff' }}>
       <header style={{ background: brand }} className="text-white">
         <div className="max-w-5xl mx-auto px-4 py-8">
-          <div className="text-xs uppercase tracking-wide opacity-80">Powered by Computicket</div>
+          <div className="text-xs uppercase tracking-wide ">Powered by Computicket</div>
           <h1 className="mt-2 text-3xl md:text-4xl font-bold">{data.organizer.name}</h1>
           {data.organizer.description && (
-            <p className="mt-3 max-w-2xl opacity-90">{data.organizer.description}</p>
+            <p className="mt-3 max-w-2xl ">{data.organizer.description}</p>
           )}
         </div>
       </header>
@@ -77,7 +77,7 @@ export default async function WhitelabelPage({ params }: PageProps) {
       <footer className="border-t border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-4 text-xs text-gray-500 flex justify-between">
           <span>© {new Date().getFullYear()} {data.organizer.name}</span>
-          <a href="https://computicket.ng" className="hover:text-brand">Powered by Computicket Nigeria</a>
+          <a href="https://computicket.ng" className="hover:text-brand-dark">Powered by Computicket Nigeria</a>
         </div>
       </footer>
     </div>

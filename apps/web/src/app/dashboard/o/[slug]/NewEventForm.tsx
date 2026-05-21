@@ -89,7 +89,7 @@ export function NewEventForm({ organizerSlug, onCreated }: Props) {
           <button
             type="button"
             onClick={() => setTiers((t) => [...t, { name: '', priceNgn: '', capacity: '' }])}
-            className="text-xs text-brand hover:underline"
+            className="text-xs text-brand-dark hover:underline"
           >
             + Add tier
           </button>

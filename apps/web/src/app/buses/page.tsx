@@ -103,7 +103,7 @@ export default function BusesPage() {
             <li key={t.slug} className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-md transition">
               <Link href={`/events/${t.slug}`} className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="text-xs text-brand font-medium">{t.organizer.name}</div>
+                  <div className="text-xs text-brand-dark font-medium">{t.organizer.name}</div>
                   <div className="mt-1 text-lg font-semibold">
                     {t.route ? `${t.route.fromCity} → ${t.route.toCity}` : t.title}
                   </div>

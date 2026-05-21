@@ -93,7 +93,7 @@ export default function SupportPage() {
             <div
               className={
                 t.role === 'user'
-                  ? 'max-w-[80%] rounded-2xl rounded-br-sm bg-emerald-600 text-white px-4 py-2 text-sm whitespace-pre-wrap'
+                  ? 'max-w-[80%] rounded-2xl rounded-br-sm bg-emerald-700 text-white px-4 py-2 text-sm whitespace-pre-wrap'
                   : 'max-w-[80%] rounded-2xl rounded-bl-sm bg-gray-100 text-gray-900 px-4 py-2 text-sm whitespace-pre-wrap'
               }
             >
@@ -125,7 +125,7 @@ export default function SupportPage() {
         <button
           onClick={send}
           disabled={!token || sending || !input.trim()}
-          className="rounded-lg bg-emerald-600 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
+          className="rounded-lg bg-emerald-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
         >
           Send
         </button>

@@ -56,7 +56,7 @@ export default function OrganizerDashboard() {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16">
         <div className="text-red-600">{error}</div>
-        <Link href="/dashboard" className="text-sm text-brand hover:underline mt-4 inline-block">
+        <Link href="/dashboard" className="text-sm text-brand-dark hover:underline mt-4 inline-block">
           ← Back to organizers
         </Link>
       </div>
@@ -69,7 +69,7 @@ export default function OrganizerDashboard() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <Link href="/dashboard" className="text-sm text-gray-500 hover:text-brand">
+      <Link href="/dashboard" className="text-sm text-gray-500 hover:text-brand-dark">
         ← Organizers
       </Link>
       <div className="flex items-start justify-between gap-4">
@@ -80,12 +80,12 @@ export default function OrganizerDashboard() {
           </div>
         </div>
         <div className="mt-3 flex gap-4 flex-wrap">
-          <Link href={`/dashboard/o/${params.slug}/analytics`} className="text-sm text-brand hover:underline">Analytics →</Link>
-          <Link href={`/dashboard/o/${params.slug}/team`} className="text-sm text-brand hover:underline">Team →</Link>
-          <Link href={`/dashboard/o/${params.slug}/promo-codes`} className="text-sm text-brand hover:underline">Promo codes →</Link>
-          <Link href={`/dashboard/o/${params.slug}/bus-routes`} className="text-sm text-brand hover:underline">Bus routes →</Link>
-          <Link href={`/dashboard/o/${params.slug}/payouts`} className="text-sm text-brand hover:underline">Payouts →</Link>
-          <Link href={`/dashboard/o/${params.slug}/developers`} className="text-sm text-brand hover:underline">Developers →</Link>
+          <Link href={`/dashboard/o/${params.slug}/analytics`} className="text-sm text-brand-dark hover:underline">Analytics →</Link>
+          <Link href={`/dashboard/o/${params.slug}/team`} className="text-sm text-brand-dark hover:underline">Team →</Link>
+          <Link href={`/dashboard/o/${params.slug}/promo-codes`} className="text-sm text-brand-dark hover:underline">Promo codes →</Link>
+          <Link href={`/dashboard/o/${params.slug}/bus-routes`} className="text-sm text-brand-dark hover:underline">Bus routes →</Link>
+          <Link href={`/dashboard/o/${params.slug}/payouts`} className="text-sm text-brand-dark hover:underline">Payouts →</Link>
+          <Link href={`/dashboard/o/${params.slug}/developers`} className="text-sm text-brand-dark hover:underline">Developers →</Link>
         </div>
       </div>
 
@@ -145,7 +145,7 @@ export default function OrganizerDashboard() {
                       <button
                         onClick={() => publish(e.slug)}
                         disabled={publishing === e.slug}
-                        className="text-sm text-brand hover:underline disabled:text-gray-400"
+                        className="text-sm text-brand-dark hover:underline disabled:text-gray-400"
                       >
                         {publishing === e.slug ? 'Publishing…' : 'Publish'}
                       </button>
@@ -154,7 +154,7 @@ export default function OrganizerDashboard() {
                       <Link
                         href={`/events/${e.slug}`}
                         target="_blank"
-                        className="text-sm text-brand hover:underline"
+                        className="text-sm text-brand-dark hover:underline"
                       >
                         View public ↗
                       </Link>
@@ -162,7 +162,7 @@ export default function OrganizerDashboard() {
                     {e.paidOrders > 0 && (
                       <Link
                         href={`/dashboard/o/${params.slug}/events/${e.slug}/orders`}
-                        className="text-sm text-brand hover:underline"
+                        className="text-sm text-brand-dark hover:underline"
                       >
                         Orders ({e.paidOrders})
                       </Link>

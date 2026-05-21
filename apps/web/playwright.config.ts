@@ -26,7 +26,20 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        // Allow sandboxes that can't fetch the bundled Chromium to
+        // point at a system Chrome via env var. CI uses the bundled
+        // browser (no override), so this is a no-op in the cloud.
+        ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+          ? {
+              launchOptions: {
+                executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE,
+                args: ['--no-sandbox'],
+              },
+            }
+          : {}),
+      },
     },
   ],
   webServer: {

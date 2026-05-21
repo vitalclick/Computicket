@@ -39,13 +39,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen flex flex-col">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:text-brand focus:px-3 focus:py-1.5 focus:rounded-md focus:shadow"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:text-brand-dark focus:px-3 focus:py-1.5 focus:rounded-md focus:shadow"
         >
           Skip to main content
         </a>
         <header className="border-b border-gray-200">
           <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-brand" aria-label="Computicket Nigeria home">
+            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-brand-dark" aria-label="Computicket Nigeria home">
               <Image
                 src="/logo.png"
                 alt=""
@@ -54,12 +54,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 priority
                 className="h-8 w-8 rounded"
               />
-              <span>Computicket<span className="text-gray-400">.ng</span></span>
+              <span>Computicket<span className="text-gray-500">.ng</span></span>
             </Link>
             <nav className="flex gap-6 text-sm items-center" aria-label="Primary">
-              <Link href="/events" className="hover:text-brand">Events</Link>
-              <Link href="/buses" className="hover:text-brand">Buses</Link>
-              <Link href="/for-organizers" className="hover:text-brand">For organizers</Link>
+              <Link href="/events" className="hover:text-brand-dark">Events</Link>
+              <Link href="/buses" className="hover:text-brand-dark">Buses</Link>
+              <Link href="/for-organizers" className="hover:text-brand-dark">For organizers</Link>
               <NavAuthLink />
             </nav>
           </div>

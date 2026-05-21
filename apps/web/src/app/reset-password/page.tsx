@@ -45,7 +45,7 @@ function ResetForm() {
       <div className="max-w-md mx-auto px-4 py-16">
         <h1 className="text-2xl font-bold">Missing reset token</h1>
         <p className="mt-2 text-sm text-gray-600">
-          The reset link is invalid. <Link href="/forgot-password" className="text-brand hover:underline">Request a new one</Link>.
+          The reset link is invalid. <Link href="/forgot-password" className="text-brand-dark underline">Request a new one</Link>.
         </p>
       </div>
     );

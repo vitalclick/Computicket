@@ -57,11 +57,11 @@ export default function WalletPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
-      <Link href="/account" className="text-sm text-gray-500 hover:text-brand">← Account</Link>
+      <Link href="/account" className="text-sm text-gray-500 hover:text-brand-dark">← Account</Link>
       <h1 className="mt-2 text-2xl font-bold">Wallet</h1>
 
       <div className="mt-6 rounded-lg bg-brand text-white p-6">
-        <div className="text-sm uppercase tracking-wide opacity-80">Balance</div>
+        <div className="text-sm uppercase tracking-wide ">Balance</div>
         <div className="mt-2 text-4xl font-bold">{formatNgn(data.balanceKobo)}</div>
       </div>
 

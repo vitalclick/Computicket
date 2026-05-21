@@ -70,7 +70,7 @@ export default function AnalyticsPage() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-brand hover:underline">
+          <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-brand-dark hover:underline">
             ← Back to dashboard
           </Link>
           <h1 className="mt-1 text-2xl font-semibold">{data.organizer.name} · analytics</h1>

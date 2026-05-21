@@ -17,13 +17,13 @@ export function NavAuthLink() {
   if (signedIn === null) return <span className="text-gray-400 text-sm">…</span>;
   if (signedIn) {
     return (
-      <Link href="/account" className="hover:text-brand">
+      <Link href="/account" className="hover:text-brand-dark">
         Account
       </Link>
     );
   }
   return (
-    <Link href="/signin" className="hover:text-brand">
+    <Link href="/signin" className="hover:text-brand-dark">
       Sign in
     </Link>
   );

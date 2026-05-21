@@ -72,7 +72,7 @@ function EventRow({ event }: { event: EventSummary }) {
     <li className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition">
       <Link href={`/events/${event.slug}`} className="flex justify-between items-start">
         <div>
-          <div className="text-xs text-brand font-medium">{event.organizer.name}</div>
+          <div className="text-xs text-brand-dark font-medium">{event.organizer.name}</div>
           <h2 className="mt-1 text-lg font-semibold">{event.title}</h2>
           <div className="mt-1 text-sm text-gray-600">{event.venue}, {event.city}</div>
           <div className="text-sm text-gray-600">{formatDate(event.startsAt)}</div>

@@ -52,6 +52,11 @@ jobs:
       - run: pnpm db:seed
       - run: pnpm --filter @computicket/web exec playwright install --with-deps chromium
       - name: Start API in background
+        env:
+          # The Playwright suites sign in repeatedly from a single IP
+          # (the runner). Without this flag the per-route throttler
+          # 429s the functional suite's auth + organizer tests.
+          DISABLE_THROTTLER: "1"
         run: |
           node apps/api/dist/main.js > /tmp/api.log 2>&1 &
           echo "API_PID=$!" >> $GITHUB_ENV

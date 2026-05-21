@@ -68,10 +68,10 @@ export default function DashboardHome() {
           <p className="text-sm text-gray-600 mt-1">Signed in as {me.email}</p>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/scan" className="text-sm text-brand hover:underline">
+          <Link href="/scan" className="text-sm text-brand-dark hover:underline">
             Open scanner →
           </Link>
-          <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-brand">
+          <button onClick={handleSignOut} className="text-sm text-gray-500 hover:text-brand-dark">
             Sign out
           </button>
         </div>
@@ -102,7 +102,7 @@ export default function DashboardHome() {
                       {m.organizer.slug} · {m.organizer.status} · You are {m.role}
                     </div>
                   </div>
-                  <span className="text-brand">→</span>
+                  <span className="text-brand-dark">→</span>
                 </div>
               </Link>
             </li>
@@ -113,7 +113,7 @@ export default function DashboardHome() {
       {me.memberships.length > 0 && !showNewOrg && (
         <button
           onClick={() => setShowNewOrg(true)}
-          className="mt-6 text-sm text-brand hover:underline"
+          className="mt-6 text-sm text-brand-dark hover:underline"
         >
           + New organizer
         </button>
@@ -151,7 +151,7 @@ export default function DashboardHome() {
             <button
               type="button"
               onClick={() => setShowNewOrg(false)}
-              className="text-gray-500 px-4 py-2 hover:text-brand"
+              className="text-gray-500 px-4 py-2 hover:text-brand-dark"
             >
               Cancel
             </button>

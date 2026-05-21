@@ -72,7 +72,7 @@ export default function EventOrdersPage() {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16">
         <div className="text-red-600">{error}</div>
-        <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-brand hover:underline mt-4 inline-block">
+        <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-brand-dark hover:underline mt-4 inline-block">
           ← Back
         </Link>
       </div>
@@ -82,7 +82,7 @@ export default function EventOrdersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-gray-500 hover:text-brand">
+      <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-gray-500 hover:text-brand-dark">
         ← {params.slug}
       </Link>
       <h1 className="mt-2 text-2xl font-bold">{data.event.title}</h1>

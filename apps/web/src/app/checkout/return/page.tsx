@@ -14,7 +14,7 @@ export default async function CheckoutReturnPage({ searchParams }: PageProps) {
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold">Missing reference</h1>
         <p className="mt-2 text-gray-600">We couldn&apos;t find your transaction.</p>
-        <Link href="/" className="mt-6 inline-block text-brand hover:underline">Back home</Link>
+        <Link href="/" className="mt-6 inline-block text-brand-dark hover:underline">Back home</Link>
       </div>
     );
   }
