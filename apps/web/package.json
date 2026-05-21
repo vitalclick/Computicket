@@ -8,7 +8,8 @@
     "start": "next start -p 3000",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:a11y": "playwright test"
+    "test:a11y": "playwright test",
+    "test:functional": "playwright test --config playwright.functional.config.ts"
   },
   "dependencies": {
     "next": "^15.0.3",

@@ -30,7 +30,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm start -p ${PORT}`,
+    command: `pnpm exec next start -p ${PORT}`,
     url: `http://127.0.0.1:${PORT}`,
     timeout: 90_000,
     reuseExistingServer: !process.env.CI,

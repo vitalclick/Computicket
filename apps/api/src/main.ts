@@ -40,6 +40,10 @@ function corsOriginRule(): string[] | boolean {
     'http://localhost:3000',
     'http://127.0.0.1:3000',
     'http://10.0.2.2:3000',
+    // Playwright suites (a11y + functional) spin `next start` on 3100
+    // so they can coexist with a developer's `next dev` on 3000.
+    'http://localhost:3100',
+    'http://127.0.0.1:3100',
   ];
 }
 
