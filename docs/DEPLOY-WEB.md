@@ -52,18 +52,7 @@ Set per-environment in the dashboard (Settings → Environment Variables):
 `NEXT_PUBLIC_*` values get baked into the client bundle at build time, so
 each environment needs them set before the first deploy.
 
-### 4. GitHub secrets
-
-For the CI-gated deploy in `.github/workflows/deploy-web.yml`, add
-three secrets in the GitHub repo settings → Secrets and variables → Actions:
-
-| Secret | Where to find it |
-|---|---|
-| `VERCEL_TOKEN` | `vercel.com/account/tokens` → Create |
-| `VERCEL_ORG_ID` | `.vercel/project.json` (from step 1) → `"orgId"` |
-| `VERCEL_PROJECT_ID` | `.vercel/project.json` → `"projectId"` |
-
-### 5. Connect the custom domain
+### 4. Connect the custom domain
 
 Vercel dashboard → Domains → Add Domain → `computicket.ng` (and `www`).
 
@@ -76,31 +65,23 @@ Vercel issues + renews the TLS cert automatically via Let's Encrypt.
 
 ## Day-to-day deploys
 
-Two flows running side-by-side:
+Vercel's native git integration handles every deploy:
 
-- **Vercel's native git integration**: every push to a branch creates
-  a Preview deployment with its own URL. Push to `main` creates a
-  Production deployment. No CI gate — Vercel deploys whatever the
-  branch builds.
-- **GitHub Actions** (`deploy-web.yml`): runs on push to `main`,
-  waits for the `build` job in `ci.yml` to pass first, then deploys
-  via `vercel deploy --prebuilt`. This is the *gated* path —
-  production deploys never go out if typecheck / e2e / a11y /
-  functional tests are red.
+- Push to any branch → **Preview deployment** with its own URL,
+  commented onto the PR if there is one.
+- Push to `main` → **Production deployment** to `computicket.ng`.
 
-Turn off Vercel's native production deploys for `main` in the
-dashboard if you want the GitHub Action to be the only path to
-production:
+No CI gate is enforced on top of this — a red `ci.yml` build will not
+block a deploy from going out. The expected workflow is to merge to
+`main` only after CI is green on the PR. If you outgrow that and want
+hard CI-gated production, restore `.github/workflows/deploy-web.yml`
+from git history (commit `360c4eb` is a known-good copy) and add the
+three Vercel secrets it documents.
 
-> Settings → Git → Production Branch → set to a non-existent branch
-> like `_disabled-vercel-prod` so the GitHub Action is the sole
-> deployer. Preview deploys on other branches still work.
+## What CI covers (independently of the deploy)
 
-## What the CI gate covers
-
-The `wait-for-ci` job in `deploy-web.yml` polls the GitHub Checks API
-for a job named `build` on the same SHA. That job — defined in
-`ci.yml` — runs:
+`.github/workflows/ci.yml` runs on every push and PR. It doesn't
+deploy — it just gates merges to `main`:
 
 1. `pnpm install --frozen-lockfile`
 2. `pnpm db:generate`
@@ -110,7 +91,9 @@ for a job named `build` on the same SHA. That job — defined in
 6. `pnpm --filter @computicket/web run test:a11y` (axe-core via Playwright)
 7. `pnpm --filter @computicket/web run test:functional` (Playwright happy paths)
 
-Only after all seven pass does the deploy job fire.
+Enable "Require status checks to pass before merging" in GitHub branch
+protection on `main` so a red CI run blocks the merge that would
+trigger a production deploy.
 
 ## Rollbacks
 
