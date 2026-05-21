@@ -24,6 +24,9 @@ jobs:
     env:
       DATABASE_URL: postgresql://computicket:computicket@localhost:5432/computicket?schema=public
       NEXT_PUBLIC_API_URL: http://localhost:4000/v1
+      JWT_SECRET: ci-test-jwt
+      APP_KEY: ci-test-app-key
+      PAYSTACK_SECRET_KEY: sk_test_replace_me
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -39,3 +42,36 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm build
       - run: pnpm test:e2e
+
+      # ---- A11y smoke suite ----
+      # Seed reproducible event data so /events/davido-timeless-tour-lagos
+      # is reachable, install Playwright's Chromium, then run the suite.
+      # Playwright spins up `next start` itself; the API is brought up
+      # here in the background so the web SSR + client calls have
+      # somewhere to land.
+      - run: pnpm db:seed
+      - run: pnpm --filter @computicket/web exec playwright install --with-deps chromium
+      - name: Start API in background
+        run: |
+          node apps/api/dist/main.js > /tmp/api.log 2>&1 &
+          echo "API_PID=$!" >> $GITHUB_ENV
+          # Wait until the health probe answers; bail after 30s.
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4000/v1/health >/dev/null; then
+              echo "API ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API failed to start"; cat /tmp/api.log; exit 1
+      - run: pnpm --filter @computicket/web run test:a11y
+      - name: Stop API
+        if: always()
+        run: kill ${{ env.API_PID }} || true
+      - name: Upload a11y report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-a11y-report
+          path: apps/web/playwright-report/
+          retention-days: 14
