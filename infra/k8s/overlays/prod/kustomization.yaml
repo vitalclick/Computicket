@@ -5,6 +5,19 @@ namespace: computicket
 resources:
   - ../../base
   - namespace.yaml
+  - external-secrets.yaml
+
+# Drop the placeholder Secret from the base — External Secrets Operator
+# now owns `computicket-secrets`, sourced from AWS Secrets Manager.
+# `creationPolicy: Owner` means ESO will create it on first sync, so
+# we don't want kustomize laying down an empty stub first.
+patches:
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: computicket-secrets
 
 images:
   # CI tags images with the commit SHA — set TAG via the deploy

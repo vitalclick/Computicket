@@ -9,7 +9,8 @@ replica counts, hostnames, and any env-specific config.
 | File | What |
 |---|---|
 | `configmap.yaml` | Non-secret env (`NODE_ENV`, public URLs, CORS allowlist, feature flags) |
-| `secret.template.yaml` | Required secrets — never apply this verbatim; see *Secrets* below |
+| `secret.template.yaml` | Documentation stub for the Secret keys consumed by the app. Not applied directly in either overlay — the `computicket-secrets` Secret is owned by the ExternalSecret in each overlay (see below) |
+| `overlays/*/external-secrets.yaml` | SecretStore + ExternalSecret that pull from AWS Secrets Manager into `computicket-secrets` every hour |
 | `api.deployment.yaml`, `api.service.yaml`, `api.hpa.yaml` | NestJS API at `:4000`, exposed as `api` ClusterIP, autoscaled CPU 70% / memory 80% (2–20 pods) |
 | `web.deployment.yaml`, `web.service.yaml`, `web.hpa.yaml` | Next.js standalone at `:3000`, `web` ClusterIP, autoscaled CPU 70% (2–10 pods) |
 | `migrate.job.yaml` | Pre-rollout `prisma migrate deploy` |
@@ -18,19 +19,33 @@ replica counts, hostnames, and any env-specific config.
 
 ## Deploy
 
+The one-shot path that wires Helm bootstrap + image build/push +
+kustomize apply + migrate-Job wait is `infra/scripts/launch.sh`:
+
+```sh
+infra/scripts/launch.sh prod          # full prod rollout
+TAG=v1.2.3 infra/scripts/launch.sh    # pin a specific tag
+SKIP_WEB=0 infra/scripts/launch.sh    # also push the web image (only
+                                      # needed if not using Vercel)
+```
+
+If you'd rather do it by hand:
+
 ```sh
 # Sanity-check the rendered output before touching the cluster.
 kubectl kustomize infra/k8s/overlays/prod | less
 
-# Set the image tag from your CI pipeline:
+# Set the image tag (kustomize edit set image rewrites the GHCR
+# placeholders to your real ECR URLs from `terraform output`):
 cd infra/k8s/overlays/prod
 kustomize edit set image \
-  ghcr.io/vitalclick/computicket-api=ghcr.io/vitalclick/computicket-api:$GIT_SHA \
-  ghcr.io/vitalclick/computicket-web=ghcr.io/vitalclick/computicket-web:$GIT_SHA
+  ghcr.io/vitalclick/computicket-api=<ECR_API>:$GIT_SHA \
+  ghcr.io/vitalclick/computicket-web=<ECR_WEB>:$GIT_SHA
 
 # Apply.
 kubectl apply -k infra/k8s/overlays/prod
-kubectl -n computicket rollout status deploy/api deploy/web --timeout=5m
+kubectl -n computicket wait --for=condition=complete --timeout=10m job/db-migrate
+kubectl -n computicket rollout status deploy/api deploy/web --timeout=10m
 ```
 
 ## Secrets

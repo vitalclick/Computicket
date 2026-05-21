@@ -5,6 +5,7 @@ namespace: computicket-staging
 resources:
   - ../../base
   - namespace.yaml
+  - external-secrets.yaml
 
 images:
   - name: ghcr.io/vitalclick/computicket-api
@@ -20,6 +21,14 @@ replicas:
     count: 1
 
 patches:
+  # ESO owns `computicket-secrets` in this namespace too — drop the
+  # placeholder stub from base so kustomize doesn't lay it down first.
+  - patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: computicket-secrets
   - target:
       kind: ConfigMap
       name: computicket-config
