@@ -207,6 +207,31 @@ export const api = {
     request<AuthResponse>('/auth/signin', { method: 'POST', body: JSON.stringify(body) }),
   me: (token: string) => request<Me>('/auth/me', { token }),
 
+  /** Exchange a Google ID token (from GIS) for a Computicket session. */
+  googleSignin: (idToken: string) =>
+    request<AuthResponse>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ idToken }),
+    }),
+  /** Exchange an Apple ID token (from AppleID JS) for a Computicket session. */
+  appleSignin: (idToken: string, name?: string) =>
+    request<AuthResponse>('/auth/apple', {
+      method: 'POST',
+      body: JSON.stringify({ idToken, ...(name ? { name } : {}) }),
+    }),
+  /** Email the user a passwordless sign-in link. Always returns { sent: true }. */
+  magicLinkRequest: (email: string) =>
+    request<{ sent: true }>('/auth/magic-link/request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  /** Consume a magic-link token. Single-use, expires in 15 minutes. */
+  magicLinkConfirm: (token: string) =>
+    request<AuthResponse>('/auth/magic-link/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
+
   walletOverview: (token: string) =>
     request<{
       balanceKobo: number;

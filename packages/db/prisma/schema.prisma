@@ -39,6 +39,8 @@ model User {
   lockedUntil       DateTime?
   sessions          Session[]
   deviceTokens      DeviceToken[]
+  socialAccounts    SocialAccount[]
+  magicLinks        MagicLink[]
   isAdmin           Boolean  @default(false)
   // Cached wallet balance. Source of truth is sum(WalletTransaction.amountKobo).
   walletBalanceKobo Int          @default(0)
@@ -939,4 +941,65 @@ model DeviceToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// Social login + magic-link passwordless auth.
+// ──────────────────────────────────────────────────────────────────────
+
+enum SocialProvider {
+  GOOGLE
+  APPLE
+}
+
+model SocialAccount {
+  id          String         @id @default(cuid())
+  userId      String
+  provider    SocialProvider
+  // Provider's stable subject identifier (Google `sub`, Apple `sub`).
+  // Unique per provider — one social account per provider per user.
+  providerId  String
+  email       String?
+  // Display name from the provider at link time. Stored to optionally
+  // backfill the user's profile name on first link.
+  displayName String?
+  // First link timestamp; never updated. Useful for telemetry +
+  // debugging unexpected re-link attempts.
+  linkedAt    DateTime       @default(now())
+  // Last time this provider was used to sign in. Helps the user
+  // remember which provider they actually use.
+  lastUsedAt  DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}
+
+model MagicLink {
+  id          String   @id @default(cuid())
+  // Optional — null when the email doesn't match any user yet. We still
+  // create + email a token to avoid enumeration, but it just creates a
+  // fresh account on consumption (passwordless onboarding).
+  userId      String?
+  email       String
+  // sha256 of the raw token shipped in the email. We never store the
+  // raw token at rest — verification recomputes the hash and matches.
+  tokenHash   String   @unique
+  // Single-use: set when the link is consumed; second attempt rejects.
+  consumedAt  DateTime?
+  expiresAt   DateTime
+  // IP that requested the link; used for low-friction security review
+  // (e.g. flag if consumption IP is in a completely different region).
+  requestedIp String?
+  // User-agent the link was emailed for. Display to the user on
+  // consumption so an attacker who steals the link from email is more
+  // likely to be spotted.
+  requestedUa String?
+  createdAt   DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, consumedAt])
+  @@index([expiresAt])
 }

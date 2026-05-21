@@ -106,6 +106,37 @@ export class MailerService {
     await this.deliver(input.to, subject, html, text);
   }
 
+  /**
+   * Passwordless sign-in email. Single-use link, expires in 15 minutes.
+   * Footer surfaces the requesting IP + user-agent so the recipient can
+   * spot a stolen link before they click.
+   */
+  async sendMagicLink(input: {
+    to: string;
+    link: string;
+    requestedIp?: string;
+    requestedUa?: string;
+  }): Promise<void> {
+    const subject = 'Sign in to Computicket';
+    const meta =
+      input.requestedIp || input.requestedUa
+        ? `<p style="color:#6b7280;font-size:11px;margin-top:24px">Requested from ${
+            escapeHtml(input.requestedIp ?? 'unknown IP')
+          } · ${escapeHtml(input.requestedUa ?? 'unknown device')}. If that wasn't you, ignore this email — the link expires in 15 minutes and can only be used once.</p>`
+        : '';
+    const html = `<!doctype html><html><body style="font-family:ui-sans-serif,system-ui,Arial;background:#f9fafb;padding:24px">
+<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:32px">
+<div style="font-weight:700;color:#008751">${logoMark()}Computicket Nigeria</div>
+<h1 style="font-size:22px;margin:16px 0">Your sign-in link</h1>
+<p>Tap below to sign in. The link works once and expires in 15 minutes.</p>
+<p style="margin:24px 0"><a href="${escapeHtml(input.link)}" style="background:#008751;color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:600">Sign me in</a></p>
+<p style="color:#6b7280;font-size:12px">Or paste this URL into your browser:<br/><span style="word-break:break-all">${escapeHtml(input.link)}</span></p>
+${meta}
+</div></body></html>`;
+    const text = `Your Computicket sign-in link:\n${input.link}\n\nWorks once, expires in 15 minutes. Didn't ask? Ignore this email.`;
+    await this.deliver(input.to, subject, html, text);
+  }
+
   async sendPasswordReset(input: { to: string; name?: string | null; link: string }): Promise<void> {
     const subject = 'Reset your Computicket password';
     const greeting = input.name ? `Hi ${escapeHtml(input.name)},` : 'Hi there,';

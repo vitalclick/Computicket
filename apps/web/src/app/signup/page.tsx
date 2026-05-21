@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
+import { AuthDivider, SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 import { api } from '@/lib/api';
 import { setToken } from '@/lib/auth';
 
@@ -34,7 +36,11 @@ function SignUpForm() {
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold">Create an account</h1>
       <p className="mt-2 text-sm text-gray-600">Track your tickets and bookings in one place.</p>
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+      <div className="mt-8">
+        <SocialAuthButtons next={next} onSuccess={(n) => router.push(n)} />
+        <AuthDivider label="or use email" />
+      </div>
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4" noValidate>
         <div>
           <label htmlFor="signup-name" className="sr-only">Your name</label>
           <input id="signup-name" type="text" placeholder="Your name" autoComplete="name"
@@ -62,6 +68,12 @@ function SignUpForm() {
           {submitting ? 'Creating…' : 'Create account'}
         </button>
       </form>
+      <div className="mt-6">
+        <AuthDivider label="passwordless" />
+        <div className="mt-3">
+          <MagicLinkForm />
+        </div>
+      </div>
       <p className="mt-6 text-sm text-gray-600">
         {/* Underline always: the brand-dark vs gray-600 contrast is only
             1.1:1, well below the WCAG 3:1 threshold for "link distinguishable

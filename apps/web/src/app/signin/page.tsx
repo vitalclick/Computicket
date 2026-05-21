@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
+import { AuthDivider, SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 import { API_URL } from '@/lib/api';
 import { setToken } from '@/lib/auth';
 
@@ -73,7 +75,13 @@ function SignInForm() {
           ? 'Enter the 6-digit code from your authenticator app.'
           : 'Access your tickets, bookings, and organizer dashboard.'}
       </p>
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+      {!challengeToken ? (
+        <div className="mt-8">
+          <SocialAuthButtons next={next} onSuccess={(n) => router.push(n)} />
+          <AuthDivider label="or use email" />
+        </div>
+      ) : null}
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4" noValidate>
         {!challengeToken && (
           <>
             <div>
@@ -118,6 +126,14 @@ function SignInForm() {
           {submitting ? 'Signing in…' : challengeToken ? 'Verify' : 'Sign in'}
         </button>
       </form>
+      {!challengeToken ? (
+        <div className="mt-6">
+          <AuthDivider label="passwordless" />
+          <div className="mt-3">
+            <MagicLinkForm />
+          </div>
+        </div>
+      ) : null}
       <div className="mt-6 text-sm text-gray-600 flex justify-between">
         <Link href="/signup" className="text-brand-dark hover:underline">Create an account</Link>
         <Link href="/forgot-password" className="text-brand-dark hover:underline">Forgot password?</Link>
