@@ -91,11 +91,12 @@ class _EventDetailBodyState extends State<_EventDetailBody> {
             token: auth.token,
           );
       final url = Uri.parse(res.authorizationUrl);
-      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      final opened = await launchUrl(url, mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
         setState(() => _error = 'Couldn\'t open the payment page. Try again.');
       }
     } catch (e) {
-      setState(() => _error = e.toString());
+      if (mounted) setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _buying = false);
     }

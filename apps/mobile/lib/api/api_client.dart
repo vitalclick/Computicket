@@ -31,10 +31,17 @@ class ApiClient {
   Future<Map<String, dynamic>> _send(
     String method,
     String path, {
+    Map<String, String>? query,
     Map<String, dynamic>? body,
     String? token,
   }) async {
-    final url = baseUrl.replace(path: '${baseUrl.path}$path');
+    // Compose path + query separately — Uri.replace(path:) otherwise
+    // percent-encodes any `?` or `=` we inlined into `path`, silently
+    // breaking GETs with query strings.
+    final url = baseUrl.replace(
+      path: '${baseUrl.path}$path',
+      queryParameters: query,
+    );
     final headers = <String, String>{
       'content-type': 'application/json',
       'accept': 'application/json',
@@ -115,8 +122,11 @@ class ApiClient {
   // ---------- Events ----------
 
   Future<List<EventSummary>> listEvents({String? city}) async {
-    final query = city == null || city.isEmpty ? '' : '?city=$city';
-    final raw = await _send('GET', '/events$query');
+    final raw = await _send(
+      'GET',
+      '/events',
+      query: city != null && city.isNotEmpty ? {'city': city} : null,
+    );
     return ((raw['data'] ?? <dynamic>[]) as List<dynamic>)
         .map((e) => EventSummary.fromJson(e as Map<String, dynamic>))
         .toList();
@@ -124,8 +134,7 @@ class ApiClient {
 
   Future<List<EventSummary>> searchEvents(String q) async {
     if (q.trim().isEmpty) return listEvents();
-    final encoded = Uri.encodeQueryComponent(q.trim());
-    final raw = await _send('GET', '/events/search?q=$encoded');
+    final raw = await _send('GET', '/events/search', query: {'q': q.trim()});
     return ((raw['data'] ?? <dynamic>[]) as List<dynamic>)
         .map((e) => EventSummary.fromJson(e as Map<String, dynamic>))
         .toList();
