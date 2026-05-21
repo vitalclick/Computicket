@@ -6,6 +6,8 @@ import { FlightsController, PublicFlightsController } from './flights.controller
 import { FlightsService } from './flights.service';
 import { BookingsController } from './bookings.controller';
 import { BookingsService } from './bookings.service';
+import { DuffelClient } from './duffel.client';
+import { HotelBedsClient } from './hotelbeds.client';
 
 @Module({
   imports: [AuthModule],
@@ -16,7 +18,7 @@ import { BookingsService } from './bookings.service';
     PublicFlightsController,
     BookingsController,
   ],
-  providers: [HotelsService, FlightsService, BookingsService],
+  providers: [HotelsService, FlightsService, BookingsService, DuffelClient, HotelBedsClient],
   exports: [BookingsService],
 })
 export class LodgingModule {}

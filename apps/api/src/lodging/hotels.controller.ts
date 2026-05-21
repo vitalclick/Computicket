@@ -39,8 +39,13 @@ export class PublicHotelsController {
   constructor(private readonly hotels: HotelsService) {}
 
   @Get()
-  search(@Query('city') city?: string) {
-    return this.hotels.search({ city });
+  search(
+    @Query('city') city?: string,
+    @Query('destinationCode') destinationCode?: string,
+    @Query('checkIn') checkIn?: string,
+    @Query('checkOut') checkOut?: string,
+  ) {
+    return this.hotels.search({ city, destinationCode, checkIn, checkOut });
   }
 
   @Get(':slug')
