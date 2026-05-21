@@ -38,3 +38,4 @@ jobs:
       - run: pnpm --filter @computicket/db exec prisma migrate deploy
       - run: pnpm typecheck
       - run: pnpm build
+      - run: pnpm test:e2e

@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CanActivate, Injectable } from '@nestjs/common';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+
+@Injectable()
+class NoopGuard implements CanActivate { canActivate() { return true; } }
 import { PrismaModule } from './prisma/prisma.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MailModule } from './mail/mail.module';
@@ -48,7 +52,13 @@ import { ObservabilityModule } from './observability/observability.module';
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     // Loose default — strict ceilings are applied per-route with @Throttle.
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
+    // Tests set DISABLE_THROTTLER=1 to opt out entirely (otherwise repeat
+    // signin/signup hits in suites would 429 each other).
+    ThrottlerModule.forRoot([
+      process.env.DISABLE_THROTTLER === '1'
+        ? { ttl: 1, limit: 100_000 }
+        : { ttl: 60_000, limit: 120 },
+    ]),
     ObservabilityModule,
     PrismaModule,
     PaymentsModule,
@@ -90,7 +100,10 @@ import { ObservabilityModule } from './observability/observability.module';
     PrivacyModule,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    {
+      provide: APP_GUARD,
+      useClass: process.env.DISABLE_THROTTLER === '1' ? NoopGuard : ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

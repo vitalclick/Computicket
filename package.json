@@ -9,6 +9,7 @@
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r run typecheck",
     "test": "pnpm -r run test",
+    "test:e2e": "pnpm --filter @computicket/api run test:e2e",
     "db:generate": "pnpm --filter @computicket/db run generate",
     "db:migrate": "pnpm --filter @computicket/db run migrate",
     "db:seed": "pnpm --filter @computicket/db run seed",
