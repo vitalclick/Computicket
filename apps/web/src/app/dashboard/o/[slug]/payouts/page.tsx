@@ -1,8 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
+import {
+  DashboardError,
+  DashboardLoading,
+  DashboardPageHeader,
+} from '@/components/dashboard/DashboardPageHeader';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
@@ -10,6 +15,7 @@ interface PayoutSettings {
   paystackSubaccountCode: string | null;
   payoutAccountNumber: string | null;
   payoutAccountName: string | null;
+  payoutBankCode?: string | null;
   bankName: string | null;
   commissionPercent: number;
   isSetUp: boolean;
@@ -30,7 +36,9 @@ export default function PayoutsPage() {
   const load = useCallback(async () => {
     const token = getToken();
     if (!token) {
-      router.replace('/dashboard/signin');
+      router.replace(
+        `/signin?next=${encodeURIComponent(`/dashboard/o/${params.slug}/payouts`)}`,
+      );
       return;
     }
     try {
@@ -60,7 +68,9 @@ export default function PayoutsPage() {
     try {
       const token = getToken()!;
       const res = await api.setPayouts(token, params.slug, { bankCode, accountNumber });
-      setSuccess(`Verified ${res.accountName} at ${res.bankName}. Sub-account ${res.subaccountCode}.`);
+      setSuccess(
+        `Verified ${res.accountName} at ${res.bankName}. Sub-account ${res.subaccountCode}.`,
+      );
       await load();
       setAccountNumber('');
     } catch (e) {
@@ -70,75 +80,141 @@ export default function PayoutsPage() {
     }
   }
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-16 text-gray-500">Loading…</div>;
-  if (!settings) return null;
+  if (loading) return <DashboardLoading />;
+  if (!settings) return <DashboardError message={error ?? 'No payout settings'} />;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-gray-500 hover:text-brand-dark">
-        ← {params.slug}
-      </Link>
-      <h1 className="mt-2 text-2xl font-bold">Payouts</h1>
-      <p className="text-sm text-gray-600 mt-1">
-        Ticket sales settle directly to your bank account via Paystack. Platform commission of{' '}
-        <strong>{settings.commissionPercent}%</strong> is taken from each transaction.
-      </p>
+    <div className="page-enter">
+      <DashboardPageHeader
+        orgSlug={params.slug}
+        eyebrow="Payouts"
+        title="Settlement account"
+        sub={
+          <>
+            Ticket sales settle directly to your bank account via Paystack. Platform commission
+            of <strong>{settings.commissionPercent}%</strong> is taken from each transaction
+            before funds reach you.
+          </>
+        }
+      />
 
-      {settings.isSetUp && (
-        <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4">
-          <div className="text-sm font-semibold text-green-800">Settlement configured</div>
-          <div className="mt-1 text-sm text-green-700">
-            {settings.payoutAccountName} ·{' '}
-            <span className="font-mono">{settings.payoutAccountNumber}</span> · {settings.bankName}
-          </div>
-          <div className="text-xs text-green-600 mt-1 font-mono">
-            {settings.paystackSubaccountCode}
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-        <h2 className="font-semibold">
-          {settings.isSetUp ? 'Change settlement account' : 'Set up settlement account'}
-        </h2>
-        <label className="block">
-          <span className="text-xs text-gray-600">Bank</span>
-          <select
-            required
-            value={bankCode}
-            onChange={(e) => setBankCode(e.target.value)}
-            className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white"
+      <section className="wrap" style={{ paddingBottom: 24 }}>
+        {settings.isSetUp ? (
+          <div
+            className="card"
+            style={{
+              padding: 24,
+              background: 'var(--accent-soft)',
+              borderColor: 'oklch(0.68 0.18 152 / .3)',
+            }}
           >
-            <option value="">Select a bank</option>
-            {banks.map((b) => (
-              <option key={b.code} value={b.code}>{b.name}</option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="text-xs text-gray-600">Account number (10 digits)</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="\d{10}"
-            required
-            value={accountNumber}
-            onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
-            className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 font-mono"
-          />
-        </label>
+            <div className="row gap-2" style={{ alignItems: 'center' }}>
+              <Icon name="check" size={16} stroke={2.5} />
+              <span className="fw-600">Settlement configured</span>
+            </div>
+            <div className="mt-3" style={{ fontSize: 14 }}>
+              <div>
+                <span className="muted">Account name:</span>{' '}
+                <strong>{settings.payoutAccountName}</strong>
+              </div>
+              <div className="mt-1">
+                <span className="muted">Account number:</span>{' '}
+                <span className="mono">{settings.payoutAccountNumber}</span>
+              </div>
+              <div className="mt-1">
+                <span className="muted">Bank:</span> {settings.bankName}
+              </div>
+              <div className="mt-1">
+                <span className="muted">Paystack subaccount:</span>{' '}
+                <span className="mono text-xs">{settings.paystackSubaccountCode}</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="card"
+            style={{ padding: 24, border: '1px dashed var(--line-strong)' }}
+          >
+            <div className="row gap-3" style={{ alignItems: 'flex-start' }}>
+              <Icon name="info" size={20} />
+              <div>
+                <div className="fw-600">No payout account yet</div>
+                <p
+                  className="text-sm muted mt-2"
+                  style={{ lineHeight: 1.6 }}
+                >
+                  You can draft events without this, but every event needs a verified payout
+                  account before it can publish — buyers&apos; money must have a destination.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
 
-        {error && <div className="text-sm text-red-600">{error}</div>}
-        {success && <div className="text-sm text-green-700">{success}</div>}
+      <section className="wrap" style={{ paddingBottom: 64 }}>
+        <form onSubmit={handleSubmit} className="card" style={{ padding: 24 }}>
+          <h2 className="h-4" style={{ margin: 0 }}>
+            {settings.isSetUp ? 'Change settlement account' : 'Set up settlement account'}
+          </h2>
+          <p className="text-xs muted mt-1">
+            We verify the account name with Paystack&apos;s bank API in under 5 seconds before
+            saving. Most major Nigerian banks supported.
+          </p>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-brand text-white px-4 py-2 rounded-md hover:bg-brand-dark disabled:bg-gray-300"
-        >
-          {saving ? 'Verifying with bank…' : settings.isSetUp ? 'Update' : 'Verify and save'}
-        </button>
-      </form>
+          <div className="col gap-3 mt-5">
+            <label className="col gap-1">
+              <span className="text-xs muted">Bank</span>
+              <select
+                required
+                value={bankCode}
+                onChange={(e) => setBankCode(e.target.value)}
+                className="input"
+              >
+                <option value="">Select a bank</option>
+                {banks.map((b) => (
+                  <option key={b.code} value={b.code}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="col gap-1">
+              <span className="text-xs muted">Account number (10 digits)</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="\d{10}"
+                required
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
+                className="input mono"
+                placeholder="0123456789"
+              />
+            </label>
+          </div>
+
+          {error ? (
+            <p role="alert" className="text-sm mt-4" style={{ color: 'var(--danger)' }}>
+              {error}
+            </p>
+          ) : null}
+          {success ? (
+            <p role="status" className="text-sm mt-4 accent-text">
+              {success}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn btn-accent mt-5"
+          >
+            {saving ? 'Verifying with bank…' : settings.isSetUp ? 'Update account' : 'Verify and save'}
+            <Icon name="arrow" size={13} />
+          </button>
+        </form>
+      </section>
     </div>
   );
 }

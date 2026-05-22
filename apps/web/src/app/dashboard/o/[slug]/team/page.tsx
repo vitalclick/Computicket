@@ -1,14 +1,20 @@
 'use client';
 
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
+import {
+  DashboardError,
+  DashboardLoading,
+  DashboardPageHeader,
+} from '@/components/dashboard/DashboardPageHeader';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
 const ROLES = ['OWNER', 'MANAGER', 'FINANCE', 'MARKETING', 'SCANNER', 'READ_ONLY'] as const;
+type Role = (typeof ROLES)[number];
 
-const ROLE_DESCRIPTIONS: Record<typeof ROLES[number], string> = {
+const ROLE_DESCRIPTIONS: Record<Role, string> = {
   OWNER: 'Full control, including team and payouts',
   MANAGER: 'Create and publish events, issue refunds',
   FINANCE: 'View revenue, issue refunds',
@@ -26,13 +32,16 @@ export default function TeamPage() {
   const [busy, setBusy] = useState<string | null>(null);
 
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<string>('MANAGER');
-  const [inviteResult, setInviteResult] = useState<{ email: string; newAccount: boolean } | null>(null);
+  const [role, setRole] = useState<Role>('MANAGER');
+  const [inviteResult, setInviteResult] = useState<
+    { email: string; newAccount: boolean } | null
+  >(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const token = getToken();
     if (!token) {
-      router.replace('/signin?next=' + encodeURIComponent(`/dashboard/o/${params.slug}/team`));
+      router.replace(`/signin?next=${encodeURIComponent(`/dashboard/o/${params.slug}/team`)}`);
       return;
     }
     try {
@@ -52,116 +61,243 @@ export default function TeamPage() {
     e.preventDefault();
     setBusy('invite');
     setInviteResult(null);
+    setInviteError(null);
     try {
       const res = await api.inviteTeam(getToken()!, params.slug, { email, role });
       setInviteResult({ email: res.user.email, newAccount: res.newAccount });
       setEmail('');
       await load();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed');
+      setInviteError(err instanceof Error ? err.message : 'Failed');
     } finally {
       setBusy(null);
     }
   }
 
-  async function changeRole(memberId: string, newRole: string) {
+  async function changeRole(memberId: string, newRole: Role) {
     setBusy(memberId);
     try {
       await api.updateTeamRole(getToken()!, params.slug, memberId, newRole);
       await load();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed');
+      setError(err instanceof Error ? err.message : 'Failed');
     } finally {
       setBusy(null);
     }
   }
 
-  async function remove(memberId: string, email: string) {
-    if (!confirm(`Remove ${email} from this organizer?`)) return;
+  async function remove(memberId: string, memberEmail: string) {
+    if (
+      !confirm(
+        `Remove ${memberEmail} from this organizer? They lose access immediately.`,
+      )
+    )
+      return;
     setBusy(memberId);
     try {
       await api.removeTeamMember(getToken()!, params.slug, memberId);
       await load();
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed');
+      setError(err instanceof Error ? err.message : 'Failed');
     } finally {
       setBusy(null);
     }
   }
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-16 text-gray-500">Loading…</div>;
-  if (error) return <div className="max-w-3xl mx-auto px-4 py-16 text-red-600">{error}</div>;
+  if (loading) return <DashboardLoading />;
+  if (error && members.length === 0) return <DashboardError message={error} />;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-gray-500 hover:text-brand-dark">
-        ← {params.slug}
-      </Link>
-      <h1 className="mt-2 text-2xl font-bold">Team</h1>
-      <p className="text-sm text-gray-600 mt-1">
-        Only Owners can manage team members. New invitees get an account they finish by signing up at /signup.
-      </p>
+    <div className="page-enter">
+      <DashboardPageHeader
+        orgSlug={params.slug}
+        eyebrow="Staff"
+        title="Team"
+        sub="Only Owners can manage team members. New invitees get an account they finish by signing up at /signup."
+      />
 
-      <form onSubmit={invite} className="mt-8 border border-gray-200 rounded-lg p-4 bg-white space-y-3">
-        <h2 className="font-semibold">Invite a teammate</h2>
-        <div className="grid sm:grid-cols-[2fr,1fr,auto] gap-2 items-start">
-          <input
-            type="email" required placeholder="teammate@example.com"
-            value={email} onChange={(e) => setEmail(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-          />
-          <select
-            value={role} onChange={(e) => setRole(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
-          >
-            {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
-          <button
-            type="submit" disabled={busy === 'invite'}
-            className="bg-brand text-white px-4 py-2 rounded-md text-sm hover:bg-brand-dark disabled:bg-gray-300"
-          >
-            {busy === 'invite' ? 'Inviting…' : 'Invite'}
-          </button>
-        </div>
-        <p className="text-xs text-gray-500">{ROLE_DESCRIPTIONS[role as typeof ROLES[number]]}</p>
-        {inviteResult && (
-          <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md p-3">
-            Invited <strong>{inviteResult.email}</strong>.{' '}
-            {inviteResult.newAccount
-              ? 'They will need to sign up at /signup with this email to set their password.'
-              : 'They already have an account and can sign in immediately.'}
-          </div>
-        )}
-      </form>
-
-      <h2 className="mt-10 text-lg font-semibold">Members ({members.length})</h2>
-      <ul className="mt-3 space-y-2">
-        {members.map((m) => (
-          <li key={m.id} className="border border-gray-200 rounded-lg p-4 bg-white flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="font-medium truncate">{m.user.name || m.user.email}</div>
-              {m.user.name && <div className="text-xs text-gray-500">{m.user.email}</div>}
+      <section className="wrap" style={{ paddingBottom: 24 }}>
+        <form onSubmit={invite} className="card" style={{ padding: 24 }}>
+          <div className="row gap-3 mb-4" style={{ alignItems: 'center' }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 'var(--r-2)',
+                background: 'var(--accent-soft)',
+                color: 'var(--accent)',
+                display: 'grid',
+                placeItems: 'center',
+              }}
+            >
+              <Icon name="user" size={16} />
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div>
+              <h2 className="h-4" style={{ margin: 0 }}>
+                Invite a teammate
+              </h2>
+              <p className="text-xs muted mt-1">
+                We send an invitation email; if they already have an account, they can sign in
+                immediately.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '2fr 1fr auto',
+              gap: 10,
+              alignItems: 'flex-start',
+            }}
+          >
+            <input
+              type="email"
+              required
+              placeholder="teammate@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input"
+              aria-label="Teammate email"
+            />
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as Role)}
+              className="input"
+              aria-label="Role"
+              style={{ cursor: 'pointer' }}
+            >
+              {ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              disabled={busy === 'invite'}
+              className="btn btn-accent"
+              style={{ height: 'fit-content' }}
+            >
+              {busy === 'invite' ? 'Inviting…' : 'Invite'}
+              <Icon name="arrow" size={13} />
+            </button>
+          </div>
+          <p className="text-xs muted mt-3">{ROLE_DESCRIPTIONS[role]}</p>
+
+          {inviteResult ? (
+            <div
+              role="status"
+              className="card mt-4"
+              style={{
+                padding: 16,
+                background: 'var(--accent-soft)',
+                borderColor: 'oklch(0.68 0.18 152 / .3)',
+              }}
+            >
+              <div className="row gap-2" style={{ alignItems: 'center' }}>
+                <Icon name="check" size={14} stroke={2.5} />
+                <span className="fw-600">Invited {inviteResult.email}</span>
+              </div>
+              <p className="text-sm muted mt-2" style={{ lineHeight: 1.6 }}>
+                {inviteResult.newAccount
+                  ? 'They will need to sign up at /signup with this email to set their password.'
+                  : 'They already have an account and can sign in immediately.'}
+              </p>
+            </div>
+          ) : null}
+
+          {inviteError ? (
+            <p role="alert" className="text-sm mt-3" style={{ color: 'var(--danger)' }}>
+              {inviteError}
+            </p>
+          ) : null}
+        </form>
+      </section>
+
+      <section className="wrap" style={{ paddingBottom: 64 }}>
+        <div className="between mb-4">
+          <h2 className="h-3" style={{ margin: 0 }}>
+            Members
+          </h2>
+          <span className="text-sm muted">{members.length} total</span>
+        </div>
+        {error ? (
+          <p role="alert" className="text-sm mb-3" style={{ color: 'var(--danger)' }}>
+            {error}
+          </p>
+        ) : null}
+        <div className="col gap-2">
+          {members.map((m) => (
+            <div
+              key={m.id}
+              className="card"
+              style={{
+                padding: 18,
+                display: 'grid',
+                gridTemplateColumns: 'auto minmax(0,1fr) auto auto',
+                gap: 16,
+                alignItems: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background:
+                    'linear-gradient(135deg, var(--accent), oklch(0.55 0.18 180))',
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: 13,
+                }}
+                aria-hidden="true"
+              >
+                {(m.user.name || m.user.email).slice(0, 1).toUpperCase()}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div className="fw-600" style={{ fontSize: 14 }}>
+                  {m.user.name || m.user.email}
+                </div>
+                {m.user.name ? (
+                  <div className="text-xs muted mt-1 mono">{m.user.email}</div>
+                ) : null}
+              </div>
               <select
                 value={m.role}
-                onChange={(e) => changeRole(m.id, e.target.value)}
+                onChange={(e) => changeRole(m.id, e.target.value as Role)}
                 disabled={busy === m.id}
-                className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white"
+                aria-label={`Role for ${m.user.email}`}
+                className="input"
+                style={{ width: 'auto', padding: '6px 10px', fontSize: 13 }}
               >
-                {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
               </select>
               <button
+                type="button"
                 onClick={() => remove(m.id, m.user.email)}
                 disabled={busy === m.id}
-                className="text-red-600 hover:underline text-xs disabled:text-gray-400"
+                className="text-xs"
+                style={{
+                  color: 'var(--danger)',
+                  background: 'transparent',
+                  border: 0,
+                  padding: '6px 10px',
+                  cursor: 'pointer',
+                }}
               >
                 Remove
               </button>
             </div>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
