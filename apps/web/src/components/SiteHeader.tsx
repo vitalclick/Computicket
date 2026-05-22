@@ -48,7 +48,7 @@ export function SiteHeader() {
 
         <button
           type="button"
-          className="btn btn-glass btn-sm"
+          className="btn btn-glass btn-sm header-city-pill"
           style={{ flexShrink: 0, padding: '8px 14px' }}
         >
           <Icon name="pin" size={14} />
@@ -60,6 +60,26 @@ export function SiteHeader() {
 
         <Link
           href="/events"
+          aria-label="Search"
+          className="header-mobile-search-icon"
+          style={{
+            flexShrink: 0,
+            width: 40,
+            height: 40,
+            display: 'none',
+            placeItems: 'center',
+            borderRadius: 'var(--r-pill)',
+            background: 'var(--surface)',
+            border: '1px solid var(--line)',
+            color: 'var(--ink-2)',
+          }}
+        >
+          <Icon name="search" size={16} />
+        </Link>
+
+        <Link
+          href="/events"
+          className="header-search-pill"
           style={{
             flexShrink: 0,
             display: 'flex',
@@ -86,12 +106,12 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <Link href="/for-organizers" className="org-pill" title="Promoter Hub" style={{ flexShrink: 0 }}>
+        <Link href="/for-organizers" className="org-pill header-org-pill" title="Promoter Hub" style={{ flexShrink: 0 }}>
           <span className="org-dot" />
           <span>For Organizers</span>
         </Link>
 
-        <Link href="/support" className="ai-pill" title="Ask Compass AI" style={{ flexShrink: 0 }}>
+        <Link href="/support" className="ai-pill header-ai-pill" title="Ask Compass AI" style={{ flexShrink: 0 }}>
           <span className="ai-dot" />
           <span>Ask Compass</span>
         </Link>
@@ -107,13 +127,14 @@ export function SiteHeader() {
           </Link>
         ) : null}
 
-        <ThemeToggle />
+        <span className="header-theme-toggle"><ThemeToggle /></span>
 
         {signedIn === null ? (
           <span className="muted text-sm" aria-hidden="true">…</span>
         ) : signedIn ? (
           <Link
             href="/account"
+            className="header-account-pill"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -141,10 +162,10 @@ export function SiteHeader() {
             >
               ME
             </span>
-            <span style={{ fontSize: 13, fontWeight: 500 }}>Account</span>
+            <span className="header-account-label" style={{ fontSize: 13, fontWeight: 500 }}>Account</span>
           </Link>
         ) : (
-          <div className="row" style={{ gap: 6, flexShrink: 0 }}>
+          <div className="row header-auth-buttons" style={{ gap: 6, flexShrink: 0 }}>
             <Link href="/signin" className="btn btn-ghost btn-sm" style={{ padding: '10px 14px' }}>
               Sign in
             </Link>

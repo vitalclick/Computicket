@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Bricolage_Grotesque, Geist, Geist_Mono, Instrument_Serif } from 'next/font/google';
+import { MobileTabBar } from '@/components/MobileTabBar';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import { THEME_INIT_SCRIPT } from '@/components/ThemeToggle';
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <SiteFooter />
+        <MobileTabBar />
       </body>
     </html>
   );

@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { Icon, type IconName } from '@/components/Icon';
 import { api, formatDate, formatNgn, ticketQrUrl } from '@/lib/api';
 import { getToken, signOut } from '@/lib/auth';
@@ -33,8 +33,21 @@ const NOTIFICATIONS: Array<{ title: string; sub: string; when: string; icon: Ico
 ];
 
 export default function AccountPage() {
+  return (
+    <Suspense fallback={null}>
+      <AccountPageInner />
+    </Suspense>
+  );
+}
+
+function AccountPageInner() {
   const router = useRouter();
-  const [tab, setTab] = useState<TabId>('overview');
+  const searchParams = useSearchParams();
+  const initialTab = ((): TabId => {
+    const t = searchParams?.get('tab');
+    return t === 'tickets' || t === 'wallet' || t === 'settings' ? t : 'overview';
+  })();
+  const [tab, setTab] = useState<TabId>(initialTab);
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);

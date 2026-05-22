@@ -556,3 +556,158 @@ a.accent-text:hover { text-decoration-thickness: 2px; }
 .seat.selected { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .seat.vip { background: oklch(0.45 0.16 75); border-color: oklch(0.60 0.16 75); }
 .seat.vip.selected { background: var(--amber); border-color: var(--amber); }
+
+/* =========================================================
+   Mobile responsive layer (max-width: 768px)
+   Adopts the design/CompuTicket/mobile/ TabBar pattern.
+   ========================================================= */
+
+.mobile-only { display: none; }
+.desktop-only { display: revert; }
+
+.mobile-tabbar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+  background: color-mix(in oklch, var(--bg-void) 82%, transparent);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--line);
+}
+
+.mobile-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  padding: 6px 10px;
+  color: var(--ink-3);
+  font-size: 10px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color .15s;
+}
+.mobile-tab:hover { color: var(--ink); }
+.mobile-tab.active { color: var(--accent); }
+
+.mobile-tab-compass-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--accent),
+    oklch(0.70 0.18 170),
+    oklch(0.65 0.18 200),
+    oklch(0.60 0.16 230),
+    var(--accent)
+  );
+  animation: rotate 5s linear infinite;
+}
+
+@media (max-width: 768px) {
+  :root { --nav-h: 56px; }
+
+  .mobile-only { display: revert; }
+  .desktop-only { display: none !important; }
+
+  .mobile-tabbar { display: flex; }
+
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+
+  .wrap { padding: 0 16px; }
+
+  .section { padding: 56px 0; }
+  .section-sm { padding: 40px 0; }
+
+  /* Compact header for small viewports */
+  .header-city-pill { display: none !important; }
+  .header-search-pill { display: none !important; }
+  .header-org-pill { display: none !important; }
+  .header-ai-pill { display: none !important; }
+  .header-theme-toggle { display: none !important; }
+  .header-auth-buttons { display: none !important; }
+  .header-account-label { display: none !important; }
+  .header-mobile-search-icon { display: grid !important; }
+
+  /* Collapse Wordmark/account header padding */
+  header .wrap { gap: 8px; }
+
+  /* Big editorial type scales down */
+  .h-1 { font-size: clamp(32px, 9vw, 44px); }
+  .h-2 { font-size: clamp(24px, 7vw, 32px); }
+  .h-3 { font-size: 20px; }
+  .h-display { font-size: clamp(36px, 11vw, 56px); }
+
+  /* Collapse common multi-column grids to a single column.
+     Most pages set inline grid-template-columns via style={{}};
+     React turns the camelCase prop into kebab-case CSS, which this
+     attribute selector matches. The !important beats inline styles
+     without !important, so per-page grids fold to one column on
+     small viewports without each page needing a media query. */
+  .grid { grid-template-columns: 1fr !important; }
+  [style*="grid-template-columns"]:not(.keep-grid):not(.seat-grid) {
+    grid-template-columns: 1fr !important;
+  }
+  /* Common max-width caps used on marketing/dashboard sections
+     should collapse to 100% so the wrap padding isn't doubled. */
+  [style*="max-width: 1100"],
+  [style*="max-width: 1240"],
+  [style*="max-width: 1320"],
+  [style*="maxWidth: 1100"],
+  [style*="maxWidth: 1240"],
+  [style*="maxWidth: 1320"] {
+    max-width: 100% !important;
+  }
+
+  /* Footer collapses neatly */
+  .footer { padding: 48px 0 80px; margin-top: 56px; }
+
+  /* Make the hero search tabs scrollable horizontally so the
+     7-tab strip doesn't blow out the viewport. */
+  .search-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    max-width: 100%;
+  }
+  .search-tabs::-webkit-scrollbar { display: none; }
+  .search-tab { font-size: 14px; padding: 10px 16px; }
+
+  /* Search bar grid collapses to stacked rows on mobile */
+  .search-bar {
+    grid-template-columns: 1fr !important;
+    grid-auto-flow: row;
+    padding: 8px;
+  }
+  .search-field { padding: 12px 16px; }
+
+  /* Inputs feel native */
+  .input { font-size: 16px; padding: 14px 16px; }
+
+  /* Buttons grow tap targets */
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 38px; }
+
+  /* Rails get tighter padding so cards align to the edge */
+  .rail {
+    padding: 0 16px 8px 16px;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* Touch device: hover transforms feel sticky — disable them */
+@media (hover: none) {
+  .card-hover:hover { transform: none; }
+  .btn:hover { transform: none; }
+}
+
