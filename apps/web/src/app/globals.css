@@ -711,3 +711,150 @@ a.accent-text:hover { text-decoration-thickness: 2px; }
   .btn:hover { transform: none; }
 }
 
+/* ---------- Mobile swipe-to-buy bar (event detail) ---------- */
+.mobile-swipe-bar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  z-index: 55;
+  padding: 14px 16px 16px;
+  background: color-mix(in oklch, var(--surface) 92%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -12px 32px -16px oklch(0 0 0 / .25);
+}
+@media (max-width: 768px) {
+  .mobile-swipe-bar { display: block; }
+}
+
+.swipe-track {
+  position: relative;
+  height: 60px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in oklch, var(--accent) 30%, transparent);
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+}
+.swipe-track[aria-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+.swipe-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-size: 15px;
+  pointer-events: none;
+  transition: opacity .15s;
+}
+.swipe-thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px var(--accent-glow);
+  animation: swipe-hint 2.4s ease-in-out infinite;
+}
+[data-theme="light"] .swipe-thumb { color: white; }
+@keyframes swipe-hint {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(24px); }
+}
+.swipe-spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid oklch(1 0 0 / .3);
+  border-top-color: white;
+  animation: rotate 1s linear infinite;
+}
+
+/* When the swipe bar is visible, add extra bottom padding to the page
+   so the sticky aside / form footer isn't hidden underneath it. */
+@media (max-width: 768px) {
+  body.has-swipe-buy main { padding-bottom: 140px; }
+  /* Pages that use BuyForm clear enough room for the floating bar. */
+  .event-hero-section ~ section { padding-bottom: 160px !important; }
+}
+
+/* ---------- Mobile event hero ---------- */
+@media (max-width: 768px) {
+  /* The desktop event hero pads top: 80 and shows a wall of meta + glass
+     cards. On mobile we want the design's cinematic 420px photo with
+     the title pinned to the bottom-left — pull the meta and title down
+     so they sit on the photo, hide the secondary glass card, and let
+     the primary stats card flow below. */
+  .event-hero-section { min-height: 0 !important; }
+  .event-hero-wrap {
+    padding-top: 280px !important;
+    padding-bottom: 24px !important;
+    min-height: 460px !important;
+  }
+  .event-hero-photo { height: 460px !important; }
+  .event-hero-title {
+    font-size: clamp(28px, 8vw, 40px) !important;
+    margin: 6px 0 8px !important;
+  }
+  .event-hero-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12.5px;
+    color: oklch(1 0 0 / 0.9) !important;
+  }
+  .event-hero-secondary { display: none !important; }
+  .event-hero-primary {
+    padding: 18px !important;
+    margin-top: 16px !important;
+    color: var(--ink) !important;
+    background: var(--surface) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-color: var(--line) !important;
+  }
+  .event-hero-stats { gap: 14px !important; flex-wrap: wrap; }
+  .event-hero-stats > * { flex: 1 1 30%; }
+}
+
+/* Mobile-only floating hero action bar (back/heart/share) on event detail */
+.event-hero-actions {
+  display: none;
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: 12px;
+  right: 12px;
+  z-index: 10;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.event-hero-actions > * { pointer-events: auto; }
+.event-hero-actions .blur-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: oklch(0 0 0 / .4);
+  backdrop-filter: blur(10px);
+  color: white;
+  display: grid;
+  place-items: center;
+  border: 0;
+  cursor: pointer;
+}
+@media (max-width: 768px) {
+  .event-hero-actions { display: flex; }
+}
+

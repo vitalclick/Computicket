@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import type { EventDetail } from '@/lib/api';
 import { api, formatNgn } from '@/lib/api';
@@ -12,6 +12,7 @@ interface Props {
 }
 
 export function BuyForm({ event }: Props) {
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -93,7 +94,7 @@ export function BuyForm({ event }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="card" style={{ padding: 24 }}>
+    <form ref={formRef} onSubmit={handleSubmit} className="card" style={{ padding: 24 }}>
       <div className="between mb-3">
         <div className="eyebrow">Select ticket tier</div>
         <span className="ai-pill">
@@ -286,7 +287,7 @@ export function BuyForm({ event }: Props) {
       <button
         type="submit"
         disabled={submitting || subtotal === 0 || !email}
-        className="btn btn-accent btn-lg mt-4"
+        className="btn btn-accent btn-lg mt-4 desktop-only"
         style={{ width: '100%', justifyContent: 'center' }}
       >
         {submitting ? (
@@ -303,11 +304,133 @@ export function BuyForm({ event }: Props) {
       </button>
 
       <div
-        className="row gap-2 mt-3"
+        className="row gap-2 mt-3 desktop-only"
         style={{ justifyContent: 'center', color: 'var(--ink-3)', fontSize: 11 }}
       >
         <Icon name="shield" size={12} /> Buyer protection · Refund if cancelled
       </div>
+
+      <MobileSwipeToBuy
+        total={total}
+        ticketCount={ticketCount}
+        disabled={submitting || subtotal === 0 || !email}
+        submitting={submitting}
+        onConfirm={() => formRef.current?.requestSubmit()}
+      />
     </form>
+  );
+}
+
+function MobileSwipeToBuy({
+  total,
+  ticketCount,
+  disabled,
+  submitting,
+  onConfirm,
+}: {
+  total: number;
+  ticketCount: number;
+  disabled: boolean;
+  submitting: boolean;
+  onConfirm: () => void;
+}) {
+  const [progress, setProgress] = useState(0);
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const confirmedRef = useRef(false);
+
+  const reset = () => {
+    confirmedRef.current = false;
+    setProgress(0);
+  };
+
+  useEffect(() => {
+    if (!submitting) reset();
+  }, [submitting]);
+
+  const trackWidth = () => {
+    const el = trackRef.current;
+    if (!el) return 220;
+    return Math.max(120, el.getBoundingClientRect().width - 60);
+  };
+
+  const onStart = (clientX: number) => {
+    if (disabled || submitting || confirmedRef.current) return;
+    dragging.current = true;
+    startX.current = clientX;
+  };
+  const onMove = (clientX: number) => {
+    if (!dragging.current) return;
+    const dx = clientX - startX.current;
+    setProgress(Math.max(0, Math.min(1, dx / trackWidth())));
+  };
+  const onEnd = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    if (progress > 0.85 && !confirmedRef.current) {
+      confirmedRef.current = true;
+      setProgress(1);
+      onConfirm();
+    } else {
+      setProgress(0);
+    }
+  };
+
+  if (ticketCount === 0) return null;
+
+  return (
+    <div
+      className="mobile-swipe-bar"
+      role="region"
+      aria-label="Confirm purchase"
+    >
+      <div className="between mb-3">
+        <div>
+          <div className="text-xs muted">
+            {ticketCount} ticket{ticketCount === 1 ? '' : 's'}
+          </div>
+          <div className="h-3 tnum mt-1">{formatNgn(total)}</div>
+        </div>
+        <div
+          className="text-xs muted"
+          style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}
+        >
+          <Icon name="shield" size={12} />
+          <span>Buyer<br />protected</span>
+        </div>
+      </div>
+
+      <div
+        ref={trackRef}
+        className="swipe-track"
+        aria-disabled={disabled}
+        onMouseDown={(e) => onStart(e.clientX)}
+        onMouseMove={(e) => onMove(e.clientX)}
+        onMouseUp={onEnd}
+        onMouseLeave={() => dragging.current && onEnd()}
+        onTouchStart={(e) => onStart(e.touches[0]?.clientX ?? 0)}
+        onTouchMove={(e) => onMove(e.touches[0]?.clientX ?? 0)}
+        onTouchEnd={onEnd}
+      >
+        <div className="swipe-label" style={{ opacity: Math.max(0, 1 - progress * 1.4) }}>
+          {submitting ? 'Redirecting…' : disabled ? 'Add a ticket to continue' : 'Swipe to buy →'}
+        </div>
+        <div
+          className="swipe-thumb"
+          style={{
+            transform: `translateX(${progress * (trackWidth())}px)`,
+            transition: dragging.current ? 'none' : 'transform .2s',
+            animation: progress > 0.05 || submitting ? 'none' : undefined,
+          }}
+        >
+          {submitting ? (
+            <span className="swipe-spinner" aria-hidden="true" />
+          ) : (
+            <Icon name="arrow" size={18} />
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
