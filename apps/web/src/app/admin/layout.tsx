@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Icon } from '@/components/Icon';
 
 export const metadata = {
   title: 'Admin — Computicket Nigeria',
@@ -6,22 +7,64 @@ export const metadata = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-gray-900 text-white">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/admin" className="font-bold">
-              Computicket<span className="text-gray-400">.ng</span>{' '}
-              <span className="ml-1 text-xs uppercase tracking-wide text-amber-300">Admin</span>
+    <div>
+      <div
+        style={{
+          background: 'var(--bg-deep)',
+          borderBottom: '1px solid var(--line)',
+        }}
+      >
+        <div
+          className="wrap"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: 56,
+            gap: 16,
+          }}
+        >
+          <div className="row gap-4" style={{ alignItems: 'center' }}>
+            <Link
+              href="/admin"
+              className="row gap-2"
+              style={{ alignItems: 'center', textDecoration: 'none', fontWeight: 600 }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 'var(--r-1)',
+                  background:
+                    'linear-gradient(135deg, oklch(0.80 0.16 75), oklch(0.65 0.22 25))',
+                }}
+              />
+              <span>Computicket Admin</span>
             </Link>
-            <nav className="hidden md:flex items-center gap-4 text-sm">
-              <Link href="/admin" className="text-gray-300 hover:text-white">Organizers</Link>
-              <Link href="/admin/audit-log" className="text-gray-300 hover:text-white">Audit log</Link>
+            <nav
+              aria-label="Admin sections"
+              className="row gap-1 desktop-only"
+              style={{ alignItems: 'center' }}
+            >
+              <Link href="/admin" className="chip">
+                Organizers
+              </Link>
+              <Link href="/admin/audit-log" className="chip">
+                Audit log
+              </Link>
             </nav>
           </div>
-          <Link href="/" className="text-sm text-gray-300 hover:text-white">Public site →</Link>
+          <Link
+            href="/"
+            className="row gap-1 text-sm muted"
+            style={{ alignItems: 'center', textDecoration: 'none' }}
+          >
+            Public site
+            <Icon name="arrow" size={12} />
+          </Link>
         </div>
-      </header>
+      </div>
       <main>{children}</main>
     </div>
   );

@@ -858,6 +858,17 @@ a.accent-text:hover { text-decoration-thickness: 2px; }
   .event-hero-actions { display: flex; }
 }
 
+/* ---------- Live-stream watch screen ---------- */
+.watch-screen {
+  min-height: 100vh;
+  background: oklch(0.06 0.02 285);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
 /* ---------- Auth shell (signin/signup/forgot/reset/verify) ---------- */
 .auth-shell {
   min-height: calc(100vh - var(--nav-h));
