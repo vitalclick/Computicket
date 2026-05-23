@@ -858,6 +858,259 @@ a.accent-text:hover { text-decoration-thickness: 2px; }
   .event-hero-actions { display: flex; }
 }
 
+/* ---------- Boarding-pass ticket view ---------- */
+.pass-screen {
+  min-height: 100vh;
+  padding: 24px 0 96px;
+  background:
+    radial-gradient(60% 60% at 30% 20%, oklch(0.18 0.05 152), transparent 70%),
+    radial-gradient(50% 60% at 80% 80%, oklch(0.15 0.06 285), transparent 70%),
+    var(--bg-void);
+  color: white;
+}
+[data-theme="light"] .pass-screen {
+  background:
+    radial-gradient(60% 60% at 30% 20%, oklch(0.85 0.10 152), transparent 70%),
+    radial-gradient(50% 60% at 80% 80%, oklch(0.86 0.10 180), transparent 70%),
+    oklch(0.94 0.01 152);
+  color: var(--ink);
+}
+.pass-screen.pass-scanned {
+  background: linear-gradient(180deg, oklch(0.55 0.18 152), oklch(0.38 0.15 152));
+  color: white;
+  transition: background .6s;
+}
+.pass-wrap {
+  max-width: 560px;
+  padding: 0 16px;
+}
+.pass-progress {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+.pass-progress span {
+  width: 8px;
+  height: 4px;
+  border-radius: 2px;
+  background: oklch(1 0 0 / .35);
+}
+[data-theme="light"] .pass-progress span { background: oklch(0 0 0 / .25); }
+.pass-screen.pass-scanned .pass-progress span { background: oklch(1 0 0 / .35); }
+.pass-progress span.active { width: 24px; background: oklch(1 0 0 / .85); }
+[data-theme="light"] .pass-progress span.active { background: oklch(0.18 0.04 152); }
+.pass-screen.pass-scanned .pass-progress span.active { background: oklch(1 0 0 / .85); }
+.pass-progress-label {
+  text-align: center;
+  opacity: 0.7;
+  margin-bottom: 18px;
+}
+
+.pass-card {
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  color: oklch(0.18 0.04 152);
+  box-shadow: 0 30px 80px oklch(0 0 0 / .4);
+}
+.pass-header {
+  height: 140px;
+  position: relative;
+  color: white;
+}
+.pass-header-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 30%, oklch(0 0 0 / .65));
+}
+.pass-header-top {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.pass-brand {
+  filter: brightness(0) invert(1);
+  display: inline-flex;
+}
+.pass-header-meta {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  color: white;
+}
+.pass-details { padding: 18px 20px 0; }
+.pass-row { display: flex; gap: 16px; }
+.pass-row > * { flex: 1; min-width: 0; }
+.pass-row .muted { color: oklch(0.45 0.04 152); }
+
+.pass-perf {
+  position: relative;
+  height: 32px;
+  margin-top: 16px;
+}
+.pass-perf-notch {
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-void);
+  transform: translateY(-50%);
+}
+[data-theme="light"] .pass-perf-notch { background: oklch(0.94 0.01 152); }
+.pass-screen.pass-scanned .pass-perf-notch { background: oklch(0.40 0.15 152); }
+.pass-perf-notch.left { left: -10px; }
+.pass-perf-notch.right { right: -10px; }
+.pass-perf-line {
+  position: absolute;
+  top: 50%;
+  left: 20px;
+  right: 20px;
+  height: 0;
+  border-top: 1.5px dashed oklch(0.85 0.01 152);
+  transform: translateY(-50%);
+}
+
+.pass-qr-wrap { padding: 4px 20px 22px; }
+.pass-qr {
+  position: relative;
+  padding: 14px;
+  background: white;
+  border-radius: 14px;
+  border: 1px solid oklch(0.90 0.01 152);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.pass-scanline {
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  box-shadow: 0 0 18px var(--accent);
+  pointer-events: none;
+  animation: pass-scanline 2.6s ease-in-out infinite;
+  top: 24px;
+}
+@keyframes pass-scanline {
+  0%, 100% { top: 24px; opacity: 0.85; }
+  50%      { top: calc(100% - 24px); opacity: 1; }
+}
+.pass-success {
+  position: absolute;
+  inset: 14px;
+  background: oklch(0.55 0.18 152 / .96);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+  animation: pageIn .3s ease-out both;
+}
+.pass-success-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: oklch(1 0 0 / .2);
+  border: 2.5px solid white;
+  display: grid;
+  place-items: center;
+}
+
+.pass-glass-card {
+  padding: 14px;
+  border-radius: 16px;
+  background: oklch(1 0 0 / .1);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid oklch(1 0 0 / .15);
+  color: white;
+}
+[data-theme="light"] .pass-glass-card {
+  background: oklch(1 0 0 / .6);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.pass-screen.pass-scanned .pass-glass-card {
+  background: oklch(1 0 0 / .15);
+  border-color: oklch(1 0 0 / .25);
+  color: white;
+}
+
+.pass-actions .btn-glass { color: inherit; }
+.pass-screen.pass-scanned .pass-actions .btn-glass {
+  background: oklch(1 0 0 / .15);
+  border-color: oklch(1 0 0 / .25);
+  color: white;
+}
+
+.pass-collectible {
+  border-top: 1px solid oklch(1 0 0 / .1);
+  padding-top: 18px;
+}
+[data-theme="light"] .pass-collectible { border-top-color: var(--line); }
+.pass-collectible summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+.pass-collectible summary::-webkit-details-marker { display: none; }
+.pass-collectible[open] summary { padding-bottom: 12px; }
+.pass-collectible-body {
+  padding: 14px;
+  border-radius: 14px;
+  background: oklch(1 0 0 / .06);
+  border: 1px solid oklch(1 0 0 / .12);
+}
+[data-theme="light"] .pass-collectible-body {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+@media (max-width: 768px) {
+  .pass-screen { padding-top: 8px; padding-bottom: 120px; }
+  .pass-header { height: 120px; }
+  .pass-header-meta .serif { font-size: 22px !important; }
+}
+
+/* ---------- Mobile greeting strip (home page) ---------- */
+.mobile-greeting-strip { display: none; }
+.mobile-greeting-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), oklch(0.55 0.18 180));
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px -6px var(--accent-glow);
+}
+@media (max-width: 768px) {
+  .mobile-greeting-strip { display: block; }
+  /* The hero's AI pill + stat pills row crowds a phone — fold them. */
+  .hero-cinematic-stat-pills { display: none !important; }
+  .hero-cinematic-ai-pill-row { padding-top: 8px; }
+  /* Hero gets less vertical padding so the search bar lands above
+     the fold even on a 6.1" phone. */
+  .hero-cinematic-wrap {
+    padding-top: 20px !important;
+    padding-bottom: 32px !important;
+  }
+}
+
 /* ---------- Dashboard mobile reshape ---------- */
 @media (max-width: 768px) {
   /* "Create event" → just the plus icon on a phone. */

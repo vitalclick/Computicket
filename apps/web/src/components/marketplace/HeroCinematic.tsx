@@ -452,8 +452,11 @@ export function HeroCinematic() {
         }}
       />
 
-      <div className="wrap" style={{ position: 'relative', paddingTop: 60, paddingBottom: 60 }}>
-        <div className="between mb-6" style={{ alignItems: 'center' }}>
+      <div
+        className="wrap hero-cinematic-wrap"
+        style={{ position: 'relative', paddingTop: 60, paddingBottom: 60 }}
+      >
+        <div className="between mb-6 hero-cinematic-ai-pill-row" style={{ alignItems: 'center' }}>
           <div className="ai-pill">
             <span className="ai-dot" />
             <span>
@@ -461,7 +464,7 @@ export function HeroCinematic() {
               <b style={{ color: 'var(--accent)' }}>free</b>
             </span>
           </div>
-          <div className="row gap-2" style={{ alignItems: 'center' }}>
+          <div className="row gap-2 hero-cinematic-stat-pills" style={{ alignItems: 'center' }}>
             <span className="pill-stat">
               <span className="dot dot-live" /> 4,812 booking now
             </span>
