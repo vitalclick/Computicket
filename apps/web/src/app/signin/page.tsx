@@ -68,75 +68,96 @@ function SignInForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold">Sign in</h1>
-      <p className="mt-2 text-sm text-gray-600">
-        {challengeToken
-          ? 'Enter the 6-digit code from your authenticator app.'
-          : 'Access your tickets, bookings, and organizer dashboard.'}
-      </p>
-      {!challengeToken ? (
-        <div className="mt-8">
-          <SocialAuthButtons next={next} onSuccess={(n) => router.push(n)} />
-          <AuthDivider label="or use email" />
-        </div>
-      ) : null}
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4" noValidate>
-        {!challengeToken && (
-          <>
-            <div>
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h1 className="auth-card-title">Sign in</h1>
+        <p className="auth-card-sub">
+          {challengeToken
+            ? 'Enter the 6-digit code from your authenticator app.'
+            : 'Access your tickets, bookings, and organizer dashboard.'}
+        </p>
+        {!challengeToken ? (
+          <div className="mt-6">
+            <SocialAuthButtons next={next} onSuccess={(n) => router.push(n)} />
+            <AuthDivider label="or use email" />
+          </div>
+        ) : null}
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
+          {!challengeToken && (
+            <>
               <label htmlFor="signin-email" className="sr-only">Email address</label>
               <input
-                id="signin-email" type="email" required placeholder="Email" autoComplete="email"
-                value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                id="signin-email"
+                type="email"
+                required
+                placeholder="Email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input"
               />
-            </div>
-            <div>
               <label htmlFor="signin-password" className="sr-only">Password</label>
               <input
-                id="signin-password" type="password" required minLength={8}
-                placeholder="Password" autoComplete="current-password"
-                value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                id="signin-password"
+                type="password"
+                required
+                minLength={8}
+                placeholder="Password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input"
               />
+            </>
+          )}
+          {challengeToken && (
+            <>
+              <label htmlFor="signin-totp" className="sr-only">
+                Two-factor authentication code
+              </label>
+              <input
+                id="signin-totp"
+                type="text"
+                required
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                placeholder="6-digit code"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value)}
+                className="input mono"
+                style={{ textAlign: 'center', letterSpacing: '.4em', fontSize: 18 }}
+                autoFocus
+              />
+            </>
+          )}
+          {error ? (
+            <div className="text-sm" role="alert" aria-live="polite" style={{ color: 'var(--danger)' }}>
+              {error}
             </div>
-          </>
-        )}
-        {challengeToken && (
-          <div>
-            <label htmlFor="signin-totp" className="sr-only">Two-factor authentication code</label>
-            <input
-              id="signin-totp" type="text" required inputMode="numeric"
-              autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6}
-              placeholder="6-digit code"
-              value={totpCode} onChange={(e) => setTotpCode(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono tracking-widest text-center text-lg"
-              autoFocus
-            />
+          ) : null}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn btn-accent btn-lg"
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
+            {submitting ? 'Signing in…' : challengeToken ? 'Verify' : 'Sign in'}
+          </button>
+        </form>
+        {!challengeToken ? (
+          <div className="mt-6">
+            <AuthDivider label="passwordless" />
+            <div className="mt-3">
+              <MagicLinkForm />
+            </div>
           </div>
-        )}
-        {error && (
-          <div className="text-sm text-red-600" role="alert" aria-live="polite">{error}</div>
-        )}
-        <button
-          type="submit" disabled={submitting}
-          className="w-full bg-brand text-white font-medium py-2.5 rounded-md hover:bg-brand-dark disabled:bg-gray-300"
-        >
-          {submitting ? 'Signing in…' : challengeToken ? 'Verify' : 'Sign in'}
-        </button>
-      </form>
-      {!challengeToken ? (
-        <div className="mt-6">
-          <AuthDivider label="passwordless" />
-          <div className="mt-3">
-            <MagicLinkForm />
-          </div>
+        ) : null}
+        <div className="auth-card-foot">
+          <Link href="/signup">Create an account</Link>
+          <Link href="/forgot-password">Forgot password?</Link>
         </div>
-      ) : null}
-      <div className="mt-6 text-sm text-gray-600 flex justify-between">
-        <Link href="/signup" className="text-brand-dark hover:underline">Create an account</Link>
-        <Link href="/forgot-password" className="text-brand-dark hover:underline">Forgot password?</Link>
       </div>
     </div>
   );

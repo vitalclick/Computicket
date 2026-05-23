@@ -858,6 +858,75 @@ a.accent-text:hover { text-decoration-thickness: 2px; }
   .event-hero-actions { display: flex; }
 }
 
+/* ---------- Auth shell (signin/signup/forgot/reset/verify) ---------- */
+.auth-shell {
+  min-height: calc(100vh - var(--nav-h));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.auth-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(50% 60% at 30% 20%, oklch(0.85 0.10 152 / .35), transparent 60%),
+    radial-gradient(40% 50% at 80% 80%, oklch(0.85 0.08 180 / .25), transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+[data-theme="dark"] .auth-shell::before {
+  background:
+    radial-gradient(50% 60% at 30% 20%, oklch(0.45 0.18 152 / .35), transparent 60%),
+    radial-gradient(40% 50% at 80% 80%, oklch(0.40 0.16 180 / .25), transparent 65%);
+}
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  padding: 36px 32px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-4);
+  box-shadow: var(--shadow-md);
+}
+.auth-card-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
+}
+.auth-card-sub {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+.auth-card .input { font-size: 15px; }
+.auth-form { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.auth-card-foot {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.auth-card-foot a { color: var(--ink); }
+
+@media (max-width: 768px) {
+  .auth-shell { padding: 24px 12px; }
+  .auth-card { padding: 28px 22px; border-radius: var(--r-3); }
+  .auth-card-title { font-size: 24px; }
+}
+
 /* ---------- Scan screen (organizer venue gate) ---------- */
 .scan-screen {
   background: linear-gradient(180deg, oklch(0.08 0.04 152), oklch(0.10 0.05 285));
