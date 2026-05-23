@@ -102,7 +102,77 @@ export default function EventOrdersPage() {
             No paid orders yet.
           </div>
         ) : (
-          <div className="card" style={{ padding: 0, overflow: 'auto' }}>
+          <>
+            <div className="mobile-only col gap-2">
+              {data.orders.map((o) => {
+                const refundable = o.status === 'PAID' && o.totalKobo > o.refundedKobo;
+                return (
+                  <div key={o.id} className="card" style={{ padding: 16 }}>
+                    <div className="between" style={{ alignItems: 'flex-start' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div className="fw-600">{o.buyerName ?? o.buyerEmail}</div>
+                        {o.buyerName ? (
+                          <div className="text-xs muted mt-1">{o.buyerEmail}</div>
+                        ) : null}
+                        <div className="text-xs muted-2 mono mt-1">{o.paystackRef}</div>
+                      </div>
+                      <OrderStatusBadge status={o.status} />
+                    </div>
+                    <ul
+                      style={{
+                        margin: '12px 0 0',
+                        paddingLeft: 14,
+                        color: 'var(--ink-2)',
+                        fontSize: 13,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {o.items.map((it, i) => (
+                        <li key={i}>
+                          {it.quantity}× {it.ticketTypeName}{' '}
+                          <span className="muted-2">@ {formatNgn(it.unitPriceKobo)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div
+                      className="between mt-3"
+                      style={{ paddingTop: 12, borderTop: '1px solid var(--line)' }}
+                    >
+                      <div>
+                        <div className="fw-600 tnum">{formatNgn(o.totalKobo)}</div>
+                        {o.refundedKobo > 0 ? (
+                          <div
+                            className="text-xs mt-1"
+                            style={{ color: 'oklch(0.55 0.16 75)' }}
+                          >
+                            −{formatNgn(o.refundedKobo)} refunded
+                          </div>
+                        ) : null}
+                      </div>
+                      {refundable ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            refund(o.id, o.buyerEmail, o.totalKobo - o.refundedKobo)
+                          }
+                          disabled={refundingId === o.id}
+                          className="btn btn-ghost btn-sm"
+                          style={{ color: 'var(--danger)', borderColor: 'var(--line)' }}
+                        >
+                          {refundingId === o.id ? 'Refunding…' : 'Refund'}
+                        </button>
+                      ) : (
+                        <span className="text-xs muted">
+                          {o.status === 'REFUNDED' ? 'refunded' : 'no balance'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="card desktop-only" style={{ padding: 0, overflow: 'auto' }}>
             <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--line)' }}>
@@ -188,6 +258,7 @@ export default function EventOrdersPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
     </div>

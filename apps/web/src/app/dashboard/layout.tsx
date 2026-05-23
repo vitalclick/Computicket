@@ -158,15 +158,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         >
           <OrgSwitcher me={me} currentSlug={orgSlug} displayName={displayOrgName} />
           <div style={{ flex: 1 }} />
-          <Link href="/help" className="btn btn-ghost btn-sm">
+          <Link href="/help" className="btn btn-ghost btn-sm desktop-only">
             Help
           </Link>
           {resolvedSlug ? (
             <Link
               href={`/dashboard/o/${resolvedSlug}#new-event`}
               className="btn btn-accent btn-sm"
+              aria-label="Create event"
             >
-              <Icon name="plus" size={13} /> Create event
+              <Icon name="plus" size={13} />
+              <span className="dashboard-action-label"> Create event</span>
             </Link>
           ) : null}
           <button
@@ -175,10 +177,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               signOut();
               router.replace('/');
             }}
-            className="btn btn-ghost btn-sm"
+            className="btn btn-ghost btn-sm desktop-only"
             style={{ padding: '8px 12px' }}
           >
             Sign out
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              signOut();
+              router.replace('/');
+            }}
+            aria-label="Sign out"
+            className="icon-btn mobile-only"
+            style={{ width: 36, height: 36 }}
+          >
+            <Icon name="logout" size={15} />
           </button>
         </div>
       </div>

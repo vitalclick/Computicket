@@ -858,3 +858,40 @@ a.accent-text:hover { text-decoration-thickness: 2px; }
   .event-hero-actions { display: flex; }
 }
 
+/* ---------- Dashboard mobile reshape ---------- */
+@media (max-width: 768px) {
+  /* "Create event" → just the plus icon on a phone. */
+  .dashboard-action-label { display: none; }
+
+  /* The KPI strip on /dashboard/o/[slug] is 4 cols at the top —
+     collapse to a 2x2 grid (better than the generic 1-col fold). */
+  .dashboard-kpi-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  /* The "Manage" cards grid (3 cols) falls to 2x3 on a phone. */
+  .dashboard-manage-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  /* EventRow right-side actions: when the grid collapses, the
+     "text-align: right" pulls everything to the right edge in a
+     way that fights the title. Pin it left on mobile. */
+  .dashboard-event-row > div:last-child {
+    text-align: left !important;
+  }
+  .dashboard-event-row > div:last-child .row {
+    justify-content: flex-start !important;
+  }
+  /* Context bar shrinks: hide the slug + description meta line. */
+  .dashboard-org-meta-extra { display: none !important; }
+}
+
+/* When the mobile-only utility wraps an inline-flex button, the default
+   "display: revert" expands to block — keep button-class elements
+   inline so they sit in their parent row. */
+@media (max-width: 768px) {
+  button.mobile-only,
+  a.mobile-only,
+  span.mobile-only { display: inline-flex !important; }
+  .mobile-only.col { display: flex !important; }
+}
+

@@ -159,6 +159,7 @@ export default function OrganizerDashboard() {
 
         {/* KPI strip */}
         <div
+          className="dashboard-kpi-grid"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
@@ -255,6 +256,7 @@ export default function OrganizerDashboard() {
       <section className="wrap" style={{ paddingBottom: 64 }}>
         <h2 className="h-4 mb-4">Manage</h2>
         <div
+          className="dashboard-manage-grid"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
@@ -403,7 +405,7 @@ function EventRow({
   const pct = e.capacity > 0 ? Math.round((e.sold / e.capacity) * 100) : 0;
   return (
     <div
-      className="card card-hover"
+      className="card card-hover dashboard-event-row"
       style={{
         padding: 22,
         display: 'grid',
