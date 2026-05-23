@@ -2,10 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
-type ScanResult = Awaited<ReturnType<typeof api.scanTicket>> | { error: string };
+type ScanSuccess = Awaited<ReturnType<typeof api.scanTicket>>;
+type ScanResult = ScanSuccess | { error: string };
+type RecentEntry = { code: string; outcome: 'admit' | 'used' | 'voided' | 'error' };
 
 export default function ScannerPage() {
   const router = useRouter();
@@ -14,30 +17,52 @@ export default function ScannerPage() {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [recent, setRecent] = useState<string[]>([]);
+  const [stats, setStats] = useState({ admitted: 0, denied: 0 });
+  const [recent, setRecent] = useState<RecentEntry[]>([]);
   const lastScanRef = useRef<{ code: string; at: number } | null>(null);
 
-  const handleCode = useCallback(async (code: string) => {
-    const now = Date.now();
-    // Debounce: ignore the same code if seen in the last 2.5s
-    if (lastScanRef.current && lastScanRef.current.code === code && now - lastScanRef.current.at < 2500) {
-      return;
-    }
-    lastScanRef.current = { code, at: now };
+  const handleCode = useCallback(
+    async (code: string) => {
+      const now = Date.now();
+      if (
+        lastScanRef.current &&
+        lastScanRef.current.code === code &&
+        now - lastScanRef.current.at < 2500
+      ) {
+        return;
+      }
+      lastScanRef.current = { code, at: now };
 
-    const token = getToken();
-    if (!token) {
-      router.replace('/dashboard/signin');
-      return;
-    }
-    try {
-      const res = await api.scanTicket(token, code);
-      setResult(res);
-      setRecent((r) => [code, ...r.filter((c) => c !== code)].slice(0, 5));
-    } catch (e) {
-      setResult({ error: e instanceof Error ? e.message : 'Scan failed' });
-    }
-  }, [router]);
+      const token = getToken();
+      if (!token) {
+        router.replace('/dashboard/signin');
+        return;
+      }
+      try {
+        const res = await api.scanTicket(token, code);
+        setResult(res);
+        const outcome: RecentEntry['outcome'] =
+          res.ok ? 'admit' : res.reason === 'voided' ? 'voided' : 'used';
+        setRecent((r) =>
+          [{ code, outcome }, ...r.filter((x) => x.code !== code)].slice(0, 6),
+        );
+        setStats((s) => ({
+          admitted: s.admitted + (res.ok ? 1 : 0),
+          denied: s.denied + (res.ok ? 0 : 1),
+        }));
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Scan failed';
+        setResult({ error: message });
+        setRecent((r) =>
+          [
+            { code, outcome: 'error' as const },
+            ...r.filter((x) => x.code !== code),
+          ].slice(0, 6),
+        );
+      }
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (!getToken()) {
@@ -73,79 +98,224 @@ export default function ScannerPage() {
   }, [handleCode, router]);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
-      <h1 className="text-xl font-semibold">Scan tickets</h1>
-      <p className="text-sm text-gray-400 mt-1">
-        Point the camera at the QR on the ticket. Each ticket can only be scanned once.
-      </p>
-
-      <div className="mt-6 relative aspect-square bg-gray-900 rounded-lg overflow-hidden border border-gray-800">
-        <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
-        {!scanning && !error && (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            Requesting camera…
+    <div className="scan-screen">
+      <div className="scan-topbar">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="icon-btn"
+          aria-label="Back"
+          style={{ background: 'oklch(0 0 0 / .35)', color: 'white', border: 0 }}
+        >
+          <Icon name="chevron" size={18} style={{ transform: 'rotate(180deg)' }} />
+        </button>
+        <div className="scan-topbar-title">
+          <div className="text-xs" style={{ opacity: 0.7 }}>
+            Live scanning
           </div>
-        )}
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center text-red-400 text-sm px-4 text-center">
-            {error}
-          </div>
-        )}
+          <div className="fw-600">Gate entry</div>
+        </div>
+        <div className="row gap-2" style={{ fontSize: 12 }}>
+          <span className="scan-stat-pill scan-stat-admit">
+            <Icon name="check" size={12} stroke={3} /> {stats.admitted}
+          </span>
+          <span className="scan-stat-pill scan-stat-deny">
+            <Icon name="close" size={12} /> {stats.denied}
+          </span>
+        </div>
       </div>
 
-      {result && <ResultBanner result={result} />}
-
-      <ManualEntry onSubmit={handleCode} />
-
-      {recent.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-xs uppercase tracking-wide text-gray-500">Recent</h2>
-          <ul className="mt-2 space-y-1 text-sm font-mono text-gray-400">
-            {recent.map((c) => (
-              <li key={c}>{c}</li>
-            ))}
-          </ul>
+      <div className="scan-viewport">
+        <video ref={videoRef} muted playsInline className="scan-video" />
+        <div className="scan-frame" aria-hidden="true">
+          <span className="scan-corner tl" />
+          <span className="scan-corner tr" />
+          <span className="scan-corner bl" />
+          <span className="scan-corner br" />
+          {scanning && !result ? <span className="scan-pulse" /> : null}
         </div>
-      )}
+        {!scanning && !error ? (
+          <div className="scan-message">
+            <div className="scan-spinner" aria-hidden="true" />
+            Requesting camera…
+          </div>
+        ) : null}
+        {error ? (
+          <div className="scan-message scan-message-error">
+            <Icon name="info" size={20} />
+            <div>
+              <div className="fw-600 text-sm">{error}</div>
+              <div className="text-xs mt-1" style={{ opacity: 0.85 }}>
+                Use manual entry below or check camera permissions.
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      {result ? <ResultBanner result={result} onDismiss={() => setResult(null)} /> : null}
+
+      <div className="scan-controls">
+        <ManualEntry onSubmit={handleCode} />
+
+        {recent.length > 0 ? (
+          <div className="mt-4">
+            <div className="eyebrow mb-2">Recent scans</div>
+            <ul className="col gap-1" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {recent.map((r) => (
+                <li
+                  key={`${r.code}-${r.outcome}`}
+                  className="row"
+                  style={{
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '10px 12px',
+                    borderRadius: 'var(--r-2)',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--line)',
+                    fontSize: 13,
+                  }}
+                >
+                  <RecentIcon outcome={r.outcome} />
+                  <span className="mono" style={{ flex: 1 }}>
+                    {r.code}
+                  </span>
+                  <span className="text-xs muted">{labelFor(r.outcome)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
 
-function ResultBanner({ result }: { result: ScanResult }) {
+function labelFor(o: 'admit' | 'used' | 'voided' | 'error'): string {
+  if (o === 'admit') return 'admitted';
+  if (o === 'voided') return 'voided';
+  if (o === 'used') return 'already scanned';
+  return 'error';
+}
+
+function RecentIcon({ outcome }: { outcome: 'admit' | 'used' | 'voided' | 'error' }) {
+  if (outcome === 'admit') {
+    return (
+      <span
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: '50%',
+          background: 'var(--accent)',
+          display: 'grid',
+          placeItems: 'center',
+          color: 'white',
+        }}
+      >
+        <Icon name="check" size={12} stroke={3} />
+      </span>
+    );
+  }
+  if (outcome === 'voided' || outcome === 'error') {
+    return (
+      <span
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: '50%',
+          background: 'var(--danger)',
+          display: 'grid',
+          placeItems: 'center',
+          color: 'white',
+        }}
+      >
+        <Icon name="close" size={12} stroke={3} />
+      </span>
+    );
+  }
+  return (
+    <span
+      style={{
+        width: 22,
+        height: 22,
+        borderRadius: '50%',
+        background: 'oklch(0.80 0.16 75)',
+        display: 'grid',
+        placeItems: 'center',
+        color: 'oklch(0.2 0.05 60)',
+      }}
+    >
+      <Icon name="info" size={12} stroke={2.5} />
+    </span>
+  );
+}
+
+function ResultBanner({
+  result,
+  onDismiss,
+}: {
+  result: ScanResult;
+  onDismiss: () => void;
+}) {
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 3500);
+    return () => clearTimeout(t);
+  }, [onDismiss]);
+
   if ('error' in result) {
     return (
-      <div className="mt-4 rounded-lg p-4 bg-red-950 border border-red-800 text-red-200">
-        <div className="font-semibold">Error</div>
-        <div className="text-sm mt-1">{result.error}</div>
+      <div className="scan-banner scan-banner-error" role="alert">
+        <Icon name="info" size={28} stroke={2.5} />
+        <div>
+          <div className="fw-600" style={{ fontSize: 18 }}>
+            Error
+          </div>
+          <div className="text-sm mt-1">{result.error}</div>
+        </div>
       </div>
     );
   }
   const { ok, reason, ticket } = result;
   if (ok) {
     return (
-      <div className="mt-4 rounded-lg p-4 bg-green-950 border border-green-800">
-        <div className="text-green-300 font-semibold text-lg">ADMIT</div>
-        <div className="text-sm mt-1 text-green-200">
-          {ticket.ticketTypeName} · {ticket.eventTitle}
+      <div className="scan-banner scan-banner-admit" role="status">
+        <div className="scan-banner-icon">
+          <Icon name="check" size={32} stroke={3} />
         </div>
-        <div className="text-xs mt-1 font-mono text-green-400">{ticket.code}</div>
+        <div>
+          <div className="fw-600" style={{ fontSize: 22 }}>
+            ADMIT
+          </div>
+          <div className="text-sm mt-1" style={{ opacity: 0.95 }}>
+            {ticket.ticketTypeName} · {ticket.eventTitle}
+          </div>
+          <div className="mono text-xs mt-1" style={{ opacity: 0.75 }}>
+            {ticket.code}
+          </div>
+        </div>
       </div>
     );
   }
-  const isVoided = reason === 'voided';
-  const classes = isVoided
-    ? 'bg-red-950 border-red-800 text-red-200'
-    : 'bg-amber-950 border-amber-800 text-amber-200';
-  const titleClass = isVoided ? 'text-red-300' : 'text-amber-300';
-  const codeClass = isVoided ? 'text-red-400' : 'text-amber-400';
-  const label = isVoided ? 'VOIDED' : 'ALREADY SCANNED';
+  const voided = reason === 'voided';
   return (
-    <div className={`mt-4 rounded-lg p-4 border ${classes}`}>
-      <div className={`font-semibold text-lg ${titleClass}`}>{label}</div>
-      <div className="text-sm mt-1">
-        {ticket.ticketTypeName} · {ticket.eventTitle}
+    <div
+      className={`scan-banner ${voided ? 'scan-banner-voided' : 'scan-banner-used'}`}
+      role="alert"
+    >
+      <div className="scan-banner-icon">
+        <Icon name={voided ? 'close' : 'info'} size={28} stroke={2.5} />
       </div>
-      <div className={`text-xs mt-1 font-mono ${codeClass}`}>{ticket.code}</div>
+      <div>
+        <div className="fw-600" style={{ fontSize: 20 }}>
+          {voided ? 'VOIDED' : 'ALREADY SCANNED'}
+        </div>
+        <div className="text-sm mt-1" style={{ opacity: 0.95 }}>
+          {ticket.ticketTypeName} · {ticket.eventTitle}
+        </div>
+        <div className="mono text-xs mt-1" style={{ opacity: 0.75 }}>
+          {ticket.code}
+        </div>
+      </div>
     </div>
   );
 }
@@ -157,21 +327,27 @@ function ManualEntry({ onSubmit }: { onSubmit: (code: string) => void }) {
       onSubmit={(e) => {
         e.preventDefault();
         if (code.trim()) {
-          onSubmit(code.trim());
+          onSubmit(code.trim().toUpperCase());
           setCode('');
         }
       }}
-      className="mt-6 flex gap-2"
+      className="row gap-2"
+      style={{ alignItems: 'stretch' }}
     >
       <input
         type="text"
+        inputMode="text"
+        autoComplete="off"
+        autoCapitalize="characters"
         placeholder="Or type ticket code"
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        className="flex-1 bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-sm font-mono"
+        className="input mono"
+        style={{ flex: 1, textTransform: 'uppercase' }}
+        aria-label="Manual ticket code"
       />
-      <button type="submit" className="px-4 py-2 bg-white text-black text-sm font-medium rounded-md">
-        Check
+      <button type="submit" className="btn btn-accent" style={{ flexShrink: 0 }}>
+        Check <Icon name="arrow" size={13} />
       </button>
     </form>
   );
