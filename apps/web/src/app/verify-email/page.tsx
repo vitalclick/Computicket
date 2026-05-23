@@ -29,21 +29,41 @@ function VerifyEmailInner() {
   }, [token]);
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16 text-center">
-      <h1 className="text-2xl font-bold">Email verification</h1>
-      {state === 'pending' && <p className="mt-4 text-sm text-gray-600">Confirming your email…</p>}
-      {state === 'ok' && (
-        <>
-          <p className="mt-4 text-emerald-700">Your email is verified.</p>
-          <Link href="/account" className="mt-6 inline-block text-brand-dark hover:underline">Continue to your account</Link>
-        </>
-      )}
-      {state === 'fail' && (
-        <>
-          <p className="mt-4 text-red-600">{error}</p>
-          <Link href="/account" className="mt-6 inline-block text-brand-dark hover:underline">Go to account</Link>
-        </>
-      )}
+    <div className="auth-shell">
+      <div className="auth-card" style={{ textAlign: 'center' }}>
+        <h1 className="auth-card-title">Email verification</h1>
+        {state === 'pending' ? (
+          <p className="auth-card-sub">Confirming your email…</p>
+        ) : null}
+        {state === 'ok' ? (
+          <>
+            <p className="auth-card-sub" style={{ color: 'var(--accent)' }}>
+              Your email is verified.
+            </p>
+            <Link
+              href="/account"
+              className="btn btn-accent mt-6"
+              style={{ justifyContent: 'center' }}
+            >
+              Continue to your account
+            </Link>
+          </>
+        ) : null}
+        {state === 'fail' ? (
+          <>
+            <p className="auth-card-sub" style={{ color: 'var(--danger)' }}>
+              {error}
+            </p>
+            <Link
+              href="/account"
+              className="btn btn-ghost mt-6"
+              style={{ justifyContent: 'center' }}
+            >
+              Go to account
+            </Link>
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }

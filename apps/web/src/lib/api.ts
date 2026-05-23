@@ -7,6 +7,9 @@ export interface TicketType {
   priceKobo: number;
   capacity: number;
   sold: number;
+  // When set, the buyer picks specific seats from the venue map. When null,
+  // the tier is general-admission and BuyForm shows a quantity stepper.
+  seatMap?: Array<{ row: string; seats: string[] }> | null;
 }
 
 export interface EventSummary {
@@ -191,7 +194,7 @@ export const api = {
     callbackUrl?: string;
     promoCode?: string;
     payFromWallet?: boolean;
-    items: Array<{ ticketTypeId: string; quantity: number }>;
+    items: Array<{ ticketTypeId: string; quantity: number; seatIds?: string[] }>;
   }, token?: string) =>
     request<CreateOrderResponse>('/orders', {
       method: 'POST',
@@ -206,6 +209,31 @@ export const api = {
   signin: (body: { email: string; password: string }) =>
     request<AuthResponse>('/auth/signin', { method: 'POST', body: JSON.stringify(body) }),
   me: (token: string) => request<Me>('/auth/me', { token }),
+
+  /** Exchange a Google ID token (from GIS) for a Computicket session. */
+  googleSignin: (idToken: string) =>
+    request<AuthResponse>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ idToken }),
+    }),
+  /** Exchange an Apple ID token (from AppleID JS) for a Computicket session. */
+  appleSignin: (idToken: string, name?: string) =>
+    request<AuthResponse>('/auth/apple', {
+      method: 'POST',
+      body: JSON.stringify({ idToken, ...(name ? { name } : {}) }),
+    }),
+  /** Email the user a passwordless sign-in link. Always returns { sent: true }. */
+  magicLinkRequest: (email: string) =>
+    request<{ sent: true }>('/auth/magic-link/request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+  /** Consume a magic-link token. Single-use, expires in 15 minutes. */
+  magicLinkConfirm: (token: string) =>
+    request<AuthResponse>('/auth/magic-link/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
 
   walletOverview: (token: string) =>
     request<{
@@ -379,6 +407,119 @@ export const api = {
       `/dashboard/organizers/${organizerSlug}/events/${eventSlug}/orders`,
       { token },
     ),
+  createTicketTransfer: (
+    token: string,
+    code: string,
+    body: { recipientEmail?: string },
+  ) =>
+    request<{ token: string; link: string; expiresAt: string }>(
+      `/tickets/${code}/transfer`,
+      { method: 'POST', token, body: JSON.stringify(body) },
+    ),
+  cancelTicketTransfer: (token: string, code: string) =>
+    request<{ cancelled: number }>(`/tickets/${code}/transfer`, {
+      method: 'DELETE',
+      token,
+    }),
+  describeTicketTransfer: (token: string) =>
+    request<{
+      state: 'pending' | 'expired' | 'claimed' | 'cancelled';
+      expiresAt: string;
+      recipientEmail: string | null;
+      ticket: {
+        code: string;
+        ticketTypeName: string;
+        event: { title: string; venue: string; city: string; startsAt: string };
+      };
+    }>(`/tickets/transfer/${token}`),
+  claimTicketTransfer: (token: string, transferToken: string) =>
+    request<{ ticketCode: string; eventTitle?: string; alreadyClaimed: boolean }>(
+      '/tickets/transfer/claim',
+      { method: 'POST', token, body: JSON.stringify({ token: transferToken }) },
+    ),
+
+  // Resale marketplace — buyers re-listing paid tickets at face value.
+  listResaleMarketplace: () =>
+    request<
+      Array<{
+        id: string;
+        askKobo: number;
+        createdAt: string;
+        ticket: { code: string; tierName: string; originalPriceKobo: number };
+        event: {
+          slug: string;
+          title: string;
+          startsAt: string;
+          venue: string;
+          city: string;
+        };
+      }>
+    >('/resale'),
+  listMyResale: (token: string) =>
+    request<
+      Array<{
+        id: string;
+        ticketId: string;
+        askKobo: number;
+        status: 'LISTED' | 'SOLD' | 'CANCELLED';
+        createdAt: string;
+        soldAt: string | null;
+        ticket: { code: string };
+      }>
+    >('/resale/mine', { token }),
+  createResaleListing: (
+    token: string,
+    body: { ticketCode: string; askKobo: number },
+  ) =>
+    request<{ id: string; askKobo: number; status: string }>('/resale', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+  cancelResaleListing: (token: string, id: string) =>
+    request<{ id: string; status: 'CANCELLED' }>(`/resale/${id}`, {
+      method: 'DELETE',
+      token,
+    }),
+  buyResaleListing: (token: string, id: string) =>
+    request<{
+      listingId: string;
+      ticketCode: string;
+      askKobo: number;
+      sellerCreditKobo: number;
+      platformFeeKobo: number;
+    }>(`/resale/${id}/buy`, { method: 'POST', token }),
+
+  // Push notifications — register an FCM token (Android/iOS/Web).
+  registerPushDevice: (
+    token: string,
+    body: { token: string; platform: 'ANDROID' | 'IOS' | 'WEB' },
+  ) =>
+    request<{ id: string }>('/me/devices', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+  unregisterPushDevice: (token: string, deviceToken: string) =>
+    request<{ ok: true }>(`/me/devices/${encodeURIComponent(deviceToken)}`, {
+      method: 'DELETE',
+      token,
+    }),
+
+  // Compass support chat — calls the Anthropic-backed support service.
+  // The server-side tool runner can look up the caller's own orders and
+  // ticket QRs; we just shuttle the conversation.
+  supportChat: (
+    token: string,
+    message: string,
+    history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  ) =>
+    request<{ reply: string; fallback?: boolean }>('/me/support', {
+      method: 'POST',
+      token,
+      body: JSON.stringify({ message, history }),
+    }),
+
   scanTicket: (token: string, code: string) =>
     request<{
       ok: boolean;

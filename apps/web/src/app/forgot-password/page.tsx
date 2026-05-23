@@ -32,34 +32,48 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold">Forgot password</h1>
-      {sent ? (
-        <p className="mt-4 text-sm text-gray-700">
-          If an account exists for that email, a reset link is on its way. The link
-          expires in 1 hour.
-        </p>
-      ) : (
-        <>
-          <p className="mt-2 text-sm text-gray-600">
-            Enter your email and we&apos;ll send you a link to set a new password.
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h1 className="auth-card-title">Forgot password</h1>
+        {sent ? (
+          <p className="auth-card-sub">
+            If an account exists for that email, a reset link is on its way. The link
+            expires in 1 hour.
           </p>
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-            <input
-              type="email" required placeholder="Email"
-              value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2"
-            />
-            {error && <div className="text-sm text-red-600">{error}</div>}
-            <button
-              type="submit" disabled={submitting}
-              className="w-full bg-brand text-white font-medium py-2.5 rounded-md hover:bg-brand-dark disabled:bg-gray-300"
-            >
-              {submitting ? 'Sending…' : 'Send reset link'}
-            </button>
-          </form>
-        </>
-      )}
+        ) : (
+          <>
+            <p className="auth-card-sub">
+              Enter your email and we&apos;ll send you a link to set a new password.
+            </p>
+            <form onSubmit={handleSubmit} className="auth-form">
+              <label htmlFor="forgot-email" className="sr-only">Email</label>
+              <input
+                id="forgot-email"
+                type="email"
+                required
+                placeholder="Email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input"
+              />
+              {error ? (
+                <div className="text-sm" style={{ color: 'var(--danger)' }}>
+                  {error}
+                </div>
+              ) : null}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn btn-accent btn-lg"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                {submitting ? 'Sending…' : 'Send reset link'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
     </div>
   );
 }

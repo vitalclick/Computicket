@@ -1,11 +1,17 @@
 import type { Metadata } from 'next';
 import { Icon, type IconName } from '@/components/Icon';
-import { CategoryHero } from '@/components/marketplace/CategoryHero';
+import {
+  ContentCTA,
+  ContentHero,
+  ContentSubNav,
+  FAQBlock,
+  StatsStrip,
+} from '@/components/marketplace/Editorial';
 import { SectionHead } from '@/components/marketplace/SectionHead';
 
 export const metadata: Metadata = {
   title: 'Help Centre — Computicket Nigeria',
-  description: 'Answers to the most asked questions about events, tickets, payments and refunds.',
+  description: '80+ articles covering tickets, payments, refunds, scanning and organizer questions. Live chat 24/7.',
 };
 
 interface Topic {
@@ -16,69 +22,105 @@ interface Topic {
 }
 
 const TOPICS: Topic[] = [
-  { icon: 'qr',     title: 'My tickets & QR codes', count: 12, sub: 'Where to find them, transferring, screen-locks' },
-  { icon: 'wallet', title: 'Payments & wallet',     count: 14, sub: 'Cards, transfer, USSD, wallet top-ups' },
-  { icon: 'refresh',title: 'Refunds & cancellations',count: 9,  sub: 'Refund timing, who owes what' },
-  { icon: 'plane',  title: 'Bus, flight & hotel',    count: 11, sub: 'Booking the travel side of the marketplace' },
-  { icon: 'shield', title: 'Account & security',     count: 8,  sub: 'Sign-in, 2FA, password resets, devices' },
-  { icon: 'pulse',  title: 'Scanning at venues',     count: 6,  sub: 'What happens at the gate, scanning issues' },
-  { icon: 'gift',   title: 'Compass points & rewards',count: 7, sub: 'Tiers, earning, redeeming' },
-  { icon: 'chart',  title: 'For organizers',         count: 18, sub: 'Dashboard, payouts, scanning, refunds' },
+  { icon: 'qr',     title: 'My tickets & QR codes', count: 14, sub: 'Finding, transferring, re-issuing, screen-locks' },
+  { icon: 'wallet', title: 'Payments & wallet',     count: 16, sub: 'Cards, transfer, USSD, wallet top-ups, failed charges' },
+  { icon: 'refresh',title: 'Refunds & cancellations',count: 11, sub: 'Refund timing, partial refunds, who owes what' },
+  { icon: 'plane',  title: 'Bus, flight & hotel',    count: 12, sub: 'Booking the travel side of the marketplace' },
+  { icon: 'shield', title: 'Account & security',     count: 9,  sub: 'Sign-in, 2FA, password resets, devices, sessions' },
+  { icon: 'pulse',  title: 'Scanning at venues',     count: 7,  sub: 'What happens at the gate, scan failures, bypass codes' },
+  { icon: 'gift',   title: 'Compass points & rewards',count: 8, sub: 'Tiers, earning, redeeming, expiry' },
+  { icon: 'chart',  title: 'For organizers',         count: 19, sub: 'Dashboard, payouts, scanning, refunds, team roles' },
 ];
 
-interface FAQ {
-  q: string;
-  a: string;
-}
-
-const TOP: FAQ[] = [
+const TOP = [
   {
     q: "I paid but didn't get my ticket — what now?",
-    a: "Open your account page and check the order status. If it's PAID but you don't see tickets, hit 'Resend QR'. If still nothing within 5 minutes, contact support with your Paystack reference (starts with `ct_`).",
+    a: (
+      <>
+        Open your account page and check the order status. If it&apos;s <span className="mono">PAID</span> but you
+        don&apos;t see tickets, tap &ldquo;Resend QR&rdquo;. If still nothing within 5 minutes, contact support with
+        your Paystack reference (starts with <span className="mono">ct_</span>). 99% of cases resolve within the
+        first chat reply.
+      </>
+    ),
   },
   {
     q: 'Can I transfer my ticket to someone else?',
-    a: 'Yes — open the ticket in your account, tap Transfer, enter the new owner\'s email and phone. The QR rotates to a new code; the original stops scanning at the gate.',
+    a: (
+      <>
+        Yes — open the ticket in your account, tap Transfer, enter the new owner&apos;s email and phone. The QR
+        rotates to a new code; the original stops scanning at the gate. The new owner gets an email + WhatsApp
+        confirmation. Transfers are free; you can transfer up to 3 times per ticket.
+      </>
+    ),
   },
   {
     q: 'How fast do refunds land?',
-    a: 'Refunds to wallet are instant. Refunds to card take 5–10 business days depending on the issuing bank (Paystack handles the disbursement). Bank-transfer refunds: 1–3 business days.',
+    a: (
+      <>
+        Refunds to wallet are instant. Refunds to card take 5–10 business days depending on the issuing bank
+        (Paystack handles disbursement). Bank-transfer refunds: 1–3 business days. We start the refund the moment
+        we approve — your bank dictates the rest.
+      </>
+    ),
   },
   {
     q: 'What happens if the event is cancelled?',
-    a: "You get a 100% refund automatically — no form to fill, no wait. The Buyer Protection page has the full policy.",
+    a: (
+      <>
+        You get a 100% refund automatically — no form to fill, no wait. The funds land back where they came from
+        (or to wallet if you opted in). The <a className="accent-text" href="/buyer-protection">Buyer Protection</a>{' '}
+        page has the full policy.
+      </>
+    ),
   },
   {
     q: 'Can I buy without an account?',
-    a: 'Yes — checkout works as a guest. But you get faster checkout, wallet credit, group bookings and order history if you sign up. Free.',
+    a: (
+      <>
+        Yes — checkout works as a guest. But you get faster checkout, wallet credit, group bookings, order history
+        and Compass points only if you sign up. Free, and we don&apos;t spam.
+      </>
+    ),
   },
   {
-    q: 'My QR code won\'t scan at the venue — help?',
-    a: "Have the scanner re-scan; sometimes it's the angle. If still nothing, show staff the order page in your account — they can validate manually using your reference. Travel light: don't screenshot the QR; the in-app code rotates and screenshots stop being valid.",
+    q: "My QR code won't scan at the venue — help?",
+    a: (
+      <>
+        Have the scanner re-scan; often the angle. If still nothing, show staff the order page in your account —
+        they can validate manually using your reference. <strong>Don&apos;t screenshot the QR;</strong> the in-app
+        code rotates every 30 seconds and screenshots stop being valid almost immediately. WhatsApp the trust line
+        for a 60-second bypass code if all else fails.
+      </>
+    ),
   },
 ];
 
 export default function HelpPage() {
   return (
     <div className="page-enter">
-      <CategoryHero
+      <ContentSubNav group="support" active="help" />
+
+      <ContentHero
         eyebrow="Help Centre"
-        title="Got a question? Most answers are here."
-        subtitle="Searchable knowledge base, 80+ articles, in-app chat 24/7. The faster your question — the faster the resolution."
-        ph="ph-3"
-        primaryCta={{ label: 'Chat with support', href: '/support' }}
-        secondaryCta={{ label: 'Email us', href: '/contact' }}
-        badges={[
-          { icon: 'pulse', label: '24/7 in-app chat' },
-          { icon: 'check', label: 'Avg response < 4 min' },
+        title="Most questions answered here. The rest answered in chat."
+        lede="80+ articles, eight topic areas, 24/7 in-app chat. Tier-1 agents pick up most questions in under 4 minutes — and we resolve 92% in the first reply."
+      />
+
+      <StatsStrip
+        stats={[
+          { n: '80+',  l: 'Help articles, updated weekly' },
+          { n: '< 4 min', l: 'Avg first response on chat' },
+          { n: '92%',     l: 'Resolved on first reply' },
+          { n: '24/7',    l: 'Live chat, every day' },
         ]}
       />
 
-      <section className="wrap section-sm">
+      <section className="wrap section">
         <div
           className="card"
           style={{
-            padding: '12px 22px',
+            padding: '14px 22px',
             display: 'grid',
             gridTemplateColumns: 'auto minmax(0,1fr) auto',
             gap: 16,
@@ -87,13 +129,13 @@ export default function HelpPage() {
             boxShadow: 'var(--shadow-md)',
           }}
         >
-          <Icon name="search" size={18} />
+          <Icon name="search" size={20} />
           <input
             type="search"
             aria-label="Search help centre articles"
             placeholder="Search the help centre — e.g. refund, QR, transfer"
             className="input"
-            style={{ border: 0, background: 'transparent', padding: '14px 0', fontSize: 17 }}
+            style={{ border: 0, background: 'transparent', padding: '14px 0', fontSize: 18 }}
           />
           <button type="button" className="btn btn-accent">
             Search
@@ -101,7 +143,7 @@ export default function HelpPage() {
         </div>
       </section>
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
+      <section className="wrap section" style={{ paddingTop: 0 }}>
         <SectionHead eyebrow="Browse" title="Topics." />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
           {TOPICS.map((t) => (
@@ -109,12 +151,12 @@ export default function HelpPage() {
               key={t.title}
               href={`/help#${t.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
               className="card card-hover"
-              style={{ padding: 22, display: 'block' }}
+              style={{ padding: 24, display: 'block' }}
             >
               <div
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   borderRadius: 'var(--r-2)',
                   background: 'var(--accent-soft)',
                   color: 'var(--accent)',
@@ -122,9 +164,9 @@ export default function HelpPage() {
                   placeItems: 'center',
                 }}
               >
-                <Icon name={t.icon} size={16} />
+                <Icon name={t.icon} size={18} />
               </div>
-              <div className="h-4 mt-3" style={{ fontSize: 14 }}>
+              <div className="h-4 mt-3" style={{ fontSize: 15 }}>
                 {t.title}
               </div>
               <div className="text-xs muted mt-1">{t.count} articles</div>
@@ -134,74 +176,15 @@ export default function HelpPage() {
         </div>
       </section>
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
-        <SectionHead
-          eyebrow="Top questions"
-          title="What buyers ask most."
-        />
-        <div className="col gap-3">
-          {TOP.map((f) => (
-            <details
-              key={f.q}
-              className="card"
-              style={{ padding: '20px 24px', cursor: 'pointer' }}
-            >
-              <summary
-                style={{
-                  listStyle: 'none',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: 15,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
-              >
-                {f.q}
-                <Icon name="chevronDown" size={14} />
-              </summary>
-              <p
-                style={{
-                  marginTop: 12,
-                  color: 'var(--ink-3)',
-                  fontSize: 14,
-                  lineHeight: 1.7,
-                }}
-              >
-                {f.a}
-              </p>
-            </details>
-          ))}
-        </div>
-      </section>
+      <FAQBlock eyebrow="Top questions" title="What buyers ask most." items={TOP} />
 
-      <section className="wrap" style={{ paddingBottom: 96 }}>
-        <div
-          className="card"
-          style={{
-            padding: 32,
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0,1fr) auto',
-            gap: 24,
-            alignItems: 'center',
-            background: 'linear-gradient(135deg, var(--accent-soft), transparent)',
-            border: '1px solid oklch(0.68 0.18 152 / .3)',
-          }}
-        >
-          <div>
-            <div className="eyebrow accent-text mb-1">Still stuck?</div>
-            <div className="h-3">In-app chat is always faster than email.</div>
-            <p className="muted mt-2" style={{ fontSize: 14, lineHeight: 1.6 }}>
-              Tier-1 agents pick up most questions in under 4 minutes.
-              For order issues, have your reference handy (it starts with{' '}
-              <code className="mono">ct_</code>).
-            </p>
-          </div>
-          <a href="/support" className="btn btn-accent btn-lg">
-            Chat with support <Icon name="arrow" size={14} />
-          </a>
-        </div>
-      </section>
+      <ContentCTA
+        eyebrow="Still stuck?"
+        title="In-app chat is always faster than email."
+        sub="Tier-1 agents pick up most questions in under 4 minutes. For order issues, have your reference handy (it starts with ct_)."
+        primary={{ label: 'Chat with support', href: '/support' }}
+        secondary={{ label: 'Email us', href: '/contact' }}
+      />
     </div>
   );
 }

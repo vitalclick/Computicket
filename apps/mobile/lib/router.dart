@@ -8,6 +8,7 @@ import 'screens/kyc_screen.dart';
 import 'screens/my_tickets_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/refunds_screen.dart';
+import 'screens/resale_screen.dart';
 import 'screens/scanner_screen.dart';
 import 'screens/shell.dart';
 import 'screens/signin_screen.dart';
@@ -75,6 +76,7 @@ GoRouter buildRouter(AuthStore auth) {
         ],
       ),
       GoRoute(path: '/scanner', builder: (_, __) => const ScannerScreen()),
+      GoRoute(path: '/resale', builder: (_, __) => const ResaleScreen()),
       GoRoute(
         path: '/dashboard',
         builder: (_, __) => const DashboardScreen(),

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ContentPage, ContentSection } from '@/components/marketplace/ContentPage';
+import { ContentSubNav } from '@/components/marketplace/Editorial';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -11,7 +12,9 @@ const LAST_UPDATED = '21 May 2026';
 
 export default function PrivacyPage() {
   return (
-    <ContentPage
+    <>
+      <ContentSubNav group="support" active="privacy" />
+      <ContentPage
       eyebrow="Legal · Privacy"
       title="Privacy Policy"
       subtitle="What we collect, why, how long we keep it, and how to ask us to delete it. Written by humans, not by lawyers — but reviewed by both."
@@ -127,6 +130,7 @@ export default function PrivacyPage() {
           Computicket Nigeria Ltd, Plot 12B, Adeola Odeku St., Victoria Island, Lagos.
         </p>
       </ContentSection>
-    </ContentPage>
+      </ContentPage>
+    </>
   );
 }

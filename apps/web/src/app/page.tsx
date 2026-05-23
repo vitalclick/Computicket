@@ -8,6 +8,7 @@ import { FlightRail } from '@/components/marketplace/FlightRail';
 import { ForYouRail } from '@/components/marketplace/ForYouRail';
 import { HeroCinematic } from '@/components/marketplace/HeroCinematic';
 import { LiveTicker } from '@/components/marketplace/LiveTicker';
+import { MobileGreetingStrip } from '@/components/MobileGreetingStrip';
 import { SectionHead } from '@/components/marketplace/SectionHead';
 import { TrustStrip } from '@/components/marketplace/TrustStrip';
 import { WeekendBlock } from '@/components/marketplace/WeekendBlock';
@@ -38,6 +39,7 @@ export default async function HomePage() {
 
   return (
     <div className="page-enter">
+      <MobileGreetingStrip />
       <HeroCinematic />
       <LiveTicker />
       <CategoryTiles />
@@ -67,7 +69,7 @@ export default async function HomePage() {
 
       <ForYouRail />
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
+      <section className="wrap section-sm" style={{ paddingTop: 0, maxWidth: 1240 }}>
         <SectionHead
           eyebrow="Featured Concerts"
           title="The tour bus is parked here."

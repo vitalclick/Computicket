@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { api, formatNgn } from '@/lib/api';
 import type { AdminOrganizer, AdminStats } from '@/lib/api';
 import { getToken } from '@/lib/auth';
@@ -92,56 +93,110 @@ export default function AdminHome() {
     }
   }
 
-  if (error) return <div className="max-w-5xl mx-auto px-4 py-16 text-red-600">{error}</div>;
-  if (!stats || !orgs) return <div className="max-w-5xl mx-auto px-4 py-16 text-gray-500">Loading…</div>;
+  if (error) {
+    return (
+      <div className="wrap" style={{ paddingTop: 48, paddingBottom: 96, maxWidth: 1080 }}>
+        <p style={{ color: 'var(--danger)' }}>{error}</p>
+      </div>
+    );
+  }
+  if (!stats || !orgs) {
+    return (
+      <div className="wrap" style={{ paddingTop: 48, paddingBottom: 96, maxWidth: 1080 }}>
+        <p className="muted">Loading…</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold">Platform overview</h1>
+    <div className="page-enter wrap" style={{ paddingTop: 32, paddingBottom: 96, maxWidth: 1080 }}>
+      <div className="eyebrow mb-2">Platform admin</div>
+      <h1 className="h-2" style={{ margin: 0 }}>
+        Platform overview
+      </h1>
 
-      <ul className="mt-6 grid sm:grid-cols-3 gap-3">
+      <ul
+        className="dashboard-kpi-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 12,
+          listStyle: 'none',
+          padding: 0,
+          margin: '24px 0 0',
+        }}
+      >
         <Stat label="Organizers" value={stats.organizers.toLocaleString()} />
         <Stat label="Events" value={stats.events.toLocaleString()} />
         <Stat label="Paid orders" value={stats.paidOrders.toLocaleString()} />
         <Stat label="Refunded orders" value={stats.refundedOrders.toLocaleString()} />
         <Stat label="Gross revenue" value={formatNgn(stats.grossKobo)} />
-        <Stat label="Buyer fees (kobo)" value={formatNgn(stats.buyerFeesKobo)} />
+        <Stat label="Buyer fees" value={formatNgn(stats.buyerFeesKobo)} />
       </ul>
 
-      <h2 className="mt-12 text-xl font-semibold">Organizers</h2>
-      <ul className="mt-4 space-y-4">
+      <div className="between mt-8 mb-4">
+        <h2 className="h-3" style={{ margin: 0 }}>
+          Organizers
+        </h2>
+        <span className="text-sm muted">{orgs.length} total</span>
+      </div>
+      <ul className="col gap-3" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {orgs.map((o) => (
-          <li key={o.id} className="border border-gray-200 rounded-lg p-5 bg-white">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="font-semibold">{o.name}</div>
-                <div className="text-xs text-gray-500 mt-0.5 font-mono">{o.slug}</div>
-                {o.owner && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    Owner: {o.owner.name ? `${o.owner.name} <${o.owner.email}>` : o.owner.email}
+          <li key={o.id} className="card" style={{ padding: 22 }}>
+            <div
+              className="between"
+              style={{ alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}
+            >
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div className="fw-600">{o.name}</div>
+                <div className="text-xs muted mono mt-1">{o.slug}</div>
+                {o.owner ? (
+                  <div className="text-xs muted mt-1">
+                    Owner:{' '}
+                    {o.owner.name ? `${o.owner.name} <${o.owner.email}>` : o.owner.email}
                   </div>
-                )}
-                <div className="text-xs text-gray-500 mt-1">
+                ) : null}
+                <div className="text-xs muted mt-1">
                   Created {new Date(o.createdAt).toLocaleDateString('en-NG')} ·{' '}
                   {o.eventCount} event{o.eventCount === 1 ? '' : 's'}
                 </div>
               </div>
-              <span className={statusBadge(o.status)}>{o.status}</span>
+              <StatusPill status={o.status} />
             </div>
 
             {o.payout.accountNumber ? (
-              <div className="mt-3 text-sm text-gray-700">
-                Payout: <strong>{o.payout.accountName ?? '—'}</strong> · {o.payout.accountNumber} ·{' '}
-                {o.payout.bankCode ?? '—'} ·{' '}
-                <span className="font-mono text-xs">{o.payout.subaccountCode ?? 'no sub-account'}</span>
+              <div className="text-sm mt-3" style={{ color: 'var(--ink-2)' }}>
+                Payout:{' '}
+                <span className="fw-600" style={{ color: 'var(--ink)' }}>
+                  {o.payout.accountName ?? '—'}
+                </span>{' '}
+                · {o.payout.accountNumber} · {o.payout.bankCode ?? '—'} ·{' '}
+                <span className="mono text-xs">
+                  {o.payout.subaccountCode ?? 'no sub-account'}
+                </span>
               </div>
             ) : (
-              <div className="mt-3 text-sm text-amber-700">No payout bank configured yet</div>
+              <div
+                className="text-sm mt-3"
+                style={{ color: 'oklch(0.55 0.18 50)' }}
+              >
+                No payout bank configured yet
+              </div>
             )}
 
-            <div className="mt-4 grid sm:grid-cols-2 gap-3">
-              <label className="text-sm">
-                <span className="block text-xs text-gray-600 mb-1">Commission (basis points; 100 = 1%)</span>
+            <div
+              className="dashboard-kpi-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 12,
+                marginTop: 16,
+              }}
+            >
+              <label className="col gap-1">
+                <span className="text-xs muted">
+                  Commission (basis points; 100 = 1%)
+                </span>
                 <input
                   type="number"
                   min={0}
@@ -152,45 +207,50 @@ export default function AdminHome() {
                       setCommission(o.slug, e.target.value);
                     }
                   }}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="input"
                 />
               </label>
-              <label className="text-sm">
-                <span className="block text-xs text-gray-600 mb-1">KYC notes</span>
+              <label className="col gap-1">
+                <span className="text-xs muted">KYC notes</span>
                 <input
                   type="text"
                   defaultValue={o.kycNotes ?? ''}
-                  onChange={(e) => setNotesDraft((d) => ({ ...d, [o.slug]: e.target.value }))}
+                  onChange={(e) =>
+                    setNotesDraft((d) => ({ ...d, [o.slug]: e.target.value }))
+                  }
                   onBlur={() => {
                     if ((notesDraft[o.slug] ?? '') !== (o.kycNotes ?? '')) {
                       saveNotes(o.slug);
                     }
                   }}
                   placeholder="Reviewed CAC, BVN matches…"
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="input"
                 />
               </label>
             </div>
 
-            <div className="mt-4 flex gap-2">
-              {o.status !== 'APPROVED' && (
+            <div className="row gap-2 mt-4">
+              {o.status !== 'APPROVED' ? (
                 <button
+                  type="button"
                   onClick={() => approve(o.slug)}
                   disabled={busy === o.slug}
-                  className="bg-green-600 text-white text-sm px-4 py-2 rounded-md hover:bg-green-700 disabled:bg-gray-300"
+                  className="btn btn-accent btn-sm"
                 >
-                  Approve
+                  <Icon name="check" size={13} stroke={2.5} /> Approve
                 </button>
-              )}
-              {o.status === 'APPROVED' && (
+              ) : null}
+              {o.status === 'APPROVED' ? (
                 <button
+                  type="button"
                   onClick={() => suspend(o.slug)}
                   disabled={busy === o.slug}
-                  className="bg-red-600 text-white text-sm px-4 py-2 rounded-md hover:bg-red-700 disabled:bg-gray-300"
+                  className="btn btn-ghost btn-sm"
+                  style={{ color: 'var(--danger)' }}
                 >
                   Suspend
                 </button>
-              )}
+              ) : null}
             </div>
           </li>
         ))}
@@ -201,16 +261,25 @@ export default function AdminHome() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <li className="bg-white border border-gray-200 rounded-lg p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
+    <li className="card" style={{ padding: 18 }}>
+      <div className="eyebrow">{label}</div>
+      <div className="h-2 tnum mt-2" style={{ fontSize: 24, lineHeight: 1 }}>
+        {value}
+      </div>
     </li>
   );
 }
 
-function statusBadge(status: string): string {
-  const base = 'px-2 py-0.5 rounded-md text-xs font-medium';
-  if (status === 'APPROVED') return `${base} bg-green-50 text-green-700`;
-  if (status === 'SUSPENDED') return `${base} bg-red-50 text-red-700`;
-  return `${base} bg-amber-50 text-amber-800`;
+function StatusPill({ status }: { status: string }) {
+  const tone: { bg: string; color: string } =
+    status === 'APPROVED'
+      ? { bg: 'var(--accent-soft)', color: 'var(--accent)' }
+      : status === 'SUSPENDED'
+        ? { bg: 'oklch(0.65 0.22 25 / 0.12)', color: 'var(--danger)' }
+        : { bg: 'oklch(0.80 0.16 75 / 0.18)', color: 'oklch(0.55 0.16 50)' };
+  return (
+    <span className="badge" style={{ background: tone.bg, color: tone.color }}>
+      {status}
+    </span>
+  );
 }

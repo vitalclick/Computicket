@@ -1,94 +1,126 @@
 import type { Metadata } from 'next';
 import { Icon, type IconName } from '@/components/Icon';
-import { CategoryHero } from '@/components/marketplace/CategoryHero';
-import { PillarGrid } from '@/components/marketplace/ContentPage';
+import {
+  ContentBlock,
+  ContentCTA,
+  ContentHero,
+  ContentSubNav,
+  PillarsBlock,
+  StatsStrip,
+  TeamBlock,
+} from '@/components/marketplace/Editorial';
 import { SectionHead } from '@/components/marketplace/SectionHead';
 
 export const metadata: Metadata = {
   title: 'Careers at Computicket Nigeria',
   description:
-    'Engineering, product, design, organizer success — open roles in Lagos, Abuja and remote.',
+    'Engineering, product, design, organizer success. Lagos, Abuja, Port Harcourt and remote. Build the platform Nigeria books on.',
 };
 
-const ROLES = [
-  { team: 'Engineering', title: 'Senior Backend Engineer', location: 'Lagos · Hybrid',  type: 'Full-time', tag: 'NestJS · Postgres' },
-  { team: 'Engineering', title: 'Mobile Engineer (Flutter)', location: 'Remote NG',      type: 'Full-time', tag: 'Flutter · Offline-first' },
-  { team: 'Engineering', title: 'Staff SRE',                 location: 'Lagos',           type: 'Full-time', tag: 'AWS · Observability' },
-  { team: 'Product',     title: 'Product Manager · Travel',  location: 'Lagos',           type: 'Full-time', tag: 'Flights & buses' },
-  { team: 'Design',      title: 'Senior Product Designer',   location: 'Lagos · Hybrid',  type: 'Full-time', tag: 'Marketplace · Native' },
-  { team: 'Operations',  title: 'Scanning Operations Lead',  location: 'Lagos',           type: 'Full-time', tag: 'Venue ops' },
-  { team: 'Success',     title: 'Organizer Success Manager', location: 'Abuja',           type: 'Full-time', tag: 'Account management' },
-  { team: 'Support',     title: 'Customer Support Specialist', location: 'Remote NG',     type: 'Full-time', tag: 'Tier 1 / 2 · WhatsApp' },
+interface Role {
+  team: string;
+  title: string;
+  location: string;
+  type: string;
+  tag: string;
+}
+
+const ROLES: Role[] = [
+  { team: 'Engineering', title: 'Senior Backend Engineer',  location: 'Lagos · Hybrid', type: 'Full-time', tag: 'NestJS · Postgres · Kafka' },
+  { team: 'Engineering', title: 'Mobile Engineer (Flutter)', location: 'Remote NG',     type: 'Full-time', tag: 'Flutter · Offline-first' },
+  { team: 'Engineering', title: 'Staff SRE',                 location: 'Lagos',          type: 'Full-time', tag: 'AWS · Observability' },
+  { team: 'Engineering', title: 'ML Engineer · Compass AI',  location: 'Lagos · Hybrid', type: 'Full-time', tag: 'Personalisation · Search' },
+  { team: 'Product',     title: 'Product Manager · Travel',  location: 'Lagos',          type: 'Full-time', tag: 'Flights, buses, hotels' },
+  { team: 'Product',     title: 'Product Manager · Trust',   location: 'Lagos',          type: 'Full-time', tag: 'Fraud, payments, refunds' },
+  { team: 'Design',      title: 'Senior Product Designer',   location: 'Lagos · Hybrid', type: 'Full-time', tag: 'Marketplace · Native' },
+  { team: 'Design',      title: 'Brand Designer',            location: 'Lagos',          type: 'Full-time', tag: 'Editorial, video, motion' },
+  { team: 'Operations',  title: 'Scanning Operations Lead',  location: 'Lagos',          type: 'Full-time', tag: 'Venue ops' },
+  { team: 'Success',     title: 'Organizer Success Manager', location: 'Abuja',          type: 'Full-time', tag: 'Account management' },
+  { team: 'Support',     title: 'Tier 2 Support Specialist', location: 'Remote NG',      type: 'Full-time', tag: 'Tier 1 → 2 · WhatsApp' },
+  { team: 'Finance',     title: 'Treasury Manager',          location: 'Lagos',          type: 'Full-time', tag: 'Payouts · NGN/USD ops' },
 ];
 
-const BENEFITS: Array<{ icon: IconName; title: string; body: string }> = [
-  { icon: 'wallet',  title: 'Above-market salary',  body: 'Top-decile NG comp, paid in NGN with USD-pegged review.' },
-  { icon: 'shield', title: 'Private healthcare',   body: 'Reliance HMO for you, your spouse and up to four dependents.' },
-  { icon: 'gift',    title: 'Equity',               body: 'Real equity for every full-time hire — 4-year vest, 1-year cliff.' },
-  { icon: 'sun',     title: 'Leave that means it',  body: '24 days paid leave + 12 public holidays + a paid week at year-end.' },
-  { icon: 'sparkle', title: 'Learning stipend',     body: '₦300k/year for conferences, courses, books — whatever sharpens you.' },
-  { icon: 'pulse',   title: 'Wellness',             body: 'Therapy access via 1Mind, gym stipend, mental-health days.' },
+const BENEFITS: Array<{ icon: IconName; title: string; body: string; color: string }> = [
+  { icon: 'wallet',  title: 'Top-decile NG comp',    body: 'Above-market salary in NGN, with USD-pegged review every 12 months. Real equity for every full-time hire — 4-year vest, 1-year cliff.',                       color: 'oklch(0.62 0.18 152)' },
+  { icon: 'shield',  title: 'Reliance HMO platinum', body: 'Private healthcare for you, your spouse and up to four dependents. Mental-health cover via 1Mind, optical and dental on the same plan.',                       color: 'oklch(0.60 0.16 230)' },
+  { icon: 'sun',     title: 'Leave you actually take', body: '24 days paid leave + 12 public holidays. The whole company shuts down for one week at the end of December. We mean it — Slack is offline.',                color: 'oklch(0.65 0.15 75)' },
+  { icon: 'sparkle', title: 'Learning stipend',      body: '₦300,000 per year for conferences, courses, books, coaching — whatever sharpens you. Sponsorship for African and global tech conferences.',                   color: 'oklch(0.55 0.18 305)' },
+  { icon: 'heart',   title: 'Parental leave',        body: "16 weeks paid for primary caregivers, 8 weeks for partners. Flexible return-to-work arrangements — we'll fit life around the job, not the other way around.", color: 'oklch(0.65 0.20 25)' },
+  { icon: 'pulse',   title: 'Wellness budget',       body: '₦40,000/month gym, yoga, therapy or coaching stipend. Two paid mental-health days per quarter, no questions asked.',                                          color: 'oklch(0.62 0.14 200)' },
+];
+
+const PROCESS = [
+  { step: '01', title: 'Intro call · 30 min',        body: 'Quick chat with a hiring manager about your story and what you want next. Two-way — bring your questions.' },
+  { step: '02', title: 'Exercise · 90 min',          body: 'Take-home or live, paid if take-home, capped at 4 hours. Designed to reflect real work — not riddles.' },
+  { step: '03', title: 'Technical deep-dive · 90 min', body: 'System design, your previous work, edge cases. Two senior team members; collaborative not adversarial.' },
+  { step: '04', title: 'Meet the team · 60 min',     body: 'Coffee or lunch in the Lagos office (we cover travel). Meet 3–4 future teammates outside of the interview frame.' },
 ];
 
 export default function CareersPage() {
   return (
     <div className="page-enter">
-      <CategoryHero
-        eyebrow="Careers"
+      <ContentSubNav group="company" active="careers" />
+
+      <ContentHero
+        eyebrow="Careers · We're hiring"
         title="Build the platform Nigeria books on."
-        subtitle="Eight open roles across engineering, product, design and operations. Lagos and Abuja offices, full-remote welcome for engineering."
-        ph="ph-7"
-        primaryCta={{ label: 'See open roles', href: '#roles' }}
-        secondaryCta={{ label: 'About Computicket', href: '/about' }}
-        badges={[
-          { icon: 'fire', label: '8 open roles' },
-          { icon: 'pin', label: 'Lagos · Abuja · Remote' },
+        lede="Twelve open roles across engineering, product, design and operations. Lagos and Abuja offices, full-remote for engineering, and a culture that takes craft as seriously as it takes the work."
+      />
+
+      <StatsStrip
+        stats={[
+          { n: '84',  l: 'People across NG and Cape Town' },
+          { n: '12',  l: 'Open roles, all senior or staff' },
+          { n: '4',   l: 'Days end-to-end interview' },
+          { n: '₦300k', l: 'Per-year learning stipend' },
         ]}
       />
 
-      <section className="wrap section-sm">
-        <SectionHead
-          eyebrow="The work"
-          title="Why this place is different."
-          sub="Computicket is the rare Nigerian tech company shipping real, complex consumer infrastructure at scale. Real users, real money, real venues."
-        />
-        <PillarGrid
-          columns={3}
-          items={[
-            {
-              icon: 'pulse',
-              title: 'Real users, real money',
-              body:
-                '1.2M tickets sold this year. Every line of code you ship touches actual buyers and organizers within hours.',
-            },
-            {
-              icon: 'chart',
-              title: 'Hard problems',
-              body:
-                'Concurrency-safe ticket inventory at scale, anti-fraud across 2G networks, AI search, payments routing — the genuinely interesting stuff.',
-            },
-            {
-              icon: 'check',
-              title: 'Senior bar, junior welcome',
-              body:
-                'Most engineers here are senior or staff. We hire juniors when we have the capacity to actually mentor — never to plug gaps.',
-            },
-          ]}
-        />
-      </section>
+      <ContentBlock
+        eyebrow="Why Computicket"
+        title="The rare Nigerian tech company shipping real consumer infrastructure at scale."
+        image="ph-7"
+        imageCaption="Engineering room · Lagos HQ"
+        body={
+          <>
+            <p>
+              We are not a wrapper, an aggregator, or an arbitrage play. Every line of code,
+              every pixel, every refund flow we ship reaches 1.2 million Nigerians within hours
+              of merge.
+            </p>
+            <p className="mt-4">
+              The hard problems are genuinely hard: concurrency-safe ticket inventory at scale,
+              anti-fraud across 2G networks, payments routing that survives every Nigerian rail
+              outage, AI search that&apos;s actually useful — not slop.
+            </p>
+            <p className="mt-4">
+              Most of our engineers are senior or staff. We hire juniors only when we have the
+              capacity to mentor — never to plug gaps.
+            </p>
+          </>
+        }
+      />
 
-      <section id="roles" className="wrap section-sm" style={{ paddingTop: 0 }}>
+      <PillarsBlock
+        eyebrow="Benefits"
+        title="What you actually get."
+        sub="Above-market comp, real ownership, and the kind of leave you'll feel uncomfortable taking — until you do."
+        cols={3}
+        pillars={BENEFITS}
+      />
+
+      <section className="wrap section">
         <SectionHead
-          eyebrow="Open roles"
-          title="Eight ways to join."
-          sub="Don't see a fit? Email careers@computicket.ng — we keep candidates warm."
+          eyebrow="Open roles · 12"
+          title="Pick your seat."
+          sub="Don't see a fit? careers@computicket.ng — we keep candidates warm and reach back when the right role opens."
         />
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           {ROLES.map((r, i) => (
             <div
               key={r.title}
               style={{
-                padding: '18px 22px',
+                padding: '20px 24px',
                 display: 'grid',
                 gridTemplateColumns: 'auto minmax(0,1fr) auto auto auto',
                 gap: 18,
@@ -96,7 +128,7 @@ export default function CareersPage() {
                 borderTop: i === 0 ? 'none' : '1px solid var(--line)',
               }}
             >
-              <span className="chip chip-accent" style={{ minWidth: 110, justifyContent: 'center' }}>
+              <span className="chip chip-accent" style={{ minWidth: 120, justifyContent: 'center' }}>
                 {r.team}
               </span>
               <div>
@@ -109,7 +141,10 @@ export default function CareersPage() {
                 <Icon name="pin" size={12} /> {r.location}
               </div>
               <div className="text-xs muted">{r.type}</div>
-              <a href="/contact" className="btn btn-accent btn-sm">
+              <a
+                href={`mailto:careers@computicket.ng?subject=${encodeURIComponent(r.title)}`}
+                className="btn btn-accent btn-sm"
+              >
                 Apply <Icon name="arrow" size={12} />
               </a>
             </div>
@@ -117,40 +152,47 @@ export default function CareersPage() {
         </div>
       </section>
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
+      <section className="wrap section">
         <SectionHead
-          eyebrow="Benefits"
-          title="What you actually get."
+          eyebrow="Hiring process"
+          title="Four steps. Two weeks. No ghosting."
+          sub="Decisions land within 48 hours of the final round. If we're a no, we say so — with feedback if you want it."
         />
-        <PillarGrid items={BENEFITS} />
-      </section>
-
-      <section className="wrap" style={{ paddingBottom: 96 }}>
-        <div
-          className="card"
-          style={{
-            padding: 32,
-            background: 'linear-gradient(135deg, var(--accent-soft), transparent)',
-            border: '1px solid oklch(0.68 0.18 152 / .3)',
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0,1fr) auto',
-            gap: 24,
-            alignItems: 'center',
-          }}
-        >
-          <div>
-            <div className="eyebrow accent-text mb-2">Hiring process</div>
-            <p style={{ fontSize: 14, color: 'var(--ink-2)', lineHeight: 1.7, maxWidth: 640 }}>
-              30-minute intro call → take-home or live exercise (capped at 4 hours) →
-              technical deep-dive (90 min) → meet the team. Two weeks end to end. Decisions
-              within 48 hours of the final round.
-            </p>
-          </div>
-          <a href="mailto:careers@computicket.ng" className="btn btn-accent">
-            careers@computicket.ng
-          </a>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          {PROCESS.map((s) => (
+            <div key={s.step} className="card" style={{ padding: 24 }}>
+              <div className="mono accent-text fw-600" style={{ fontSize: 24 }}>
+                {s.step}
+              </div>
+              <div className="h-4 mt-3" style={{ fontSize: 15 }}>
+                {s.title}
+              </div>
+              <p className="text-sm muted mt-2" style={{ lineHeight: 1.65 }}>
+                {s.body}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
+
+      <TeamBlock
+        eyebrow="Who you'll work with"
+        title="A small bench, intentionally."
+        people={[
+          { name: 'Adaeze Okafor',  role: 'Co-founder, CEO',                from: 'Paystack',       ph: 'ph-2' },
+          { name: 'Tobi Adesanya',  role: 'Co-founder, CTO',                from: 'Flutterwave',    ph: 'ph-7' },
+          { name: 'Chika Nwankwo',  role: 'VP Product',                      from: 'Spotify',        ph: 'ph-3' },
+          { name: 'Folake Adeyemi', role: 'Head of Design',                  from: 'Andela',         ph: 'ph-6' },
+        ]}
+      />
+
+      <ContentCTA
+        eyebrow="Apply"
+        title="Cold email beats the form."
+        sub="Write us a paragraph about the most ambitious thing you've shipped — careers@computicket.ng. We read every one inside 48 hours."
+        primary={{ label: 'careers@computicket.ng', href: 'mailto:careers@computicket.ng' }}
+        secondary={{ label: 'About Computicket', href: '/about' }}
+      />
     </div>
   );
 }

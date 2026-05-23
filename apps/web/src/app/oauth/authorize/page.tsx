@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { API_URL } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
@@ -75,41 +76,82 @@ function ConsentInner() {
     window.location.href = url.toString();
   }
 
-  if (error) return <div className="max-w-md mx-auto px-4 py-16 text-red-600">{error}</div>;
-  if (!info) return <div className="max-w-md mx-auto px-4 py-16 text-gray-500">Loading…</div>;
+  if (error) {
+    return (
+      <div className="auth-shell">
+        <div className="auth-card">
+          <h1 className="auth-card-title">Couldn&apos;t authorize</h1>
+          <p className="auth-card-sub" style={{ color: 'var(--danger)' }}>
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
+  if (!info) {
+    return (
+      <div className="auth-shell">
+        <div className="auth-card">
+          <p className="muted">Loading consent…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold">Authorize {info.client.name}</h1>
-      <p className="mt-3 text-gray-700">
-        <strong>{info.client.name}</strong> wants to access your Computicket account with the
-        following permissions:
-      </p>
-      <ul className="mt-4 space-y-2">
-        {info.scopes.map((s) => (
-          <li key={s} className="flex gap-2 text-sm">
-            <span className="text-brand-dark">●</span>
-            <code className="font-mono">{s}</code>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-6 text-xs text-gray-500">
-        You will be redirected to <code className="break-all">{info.redirectUri}</code>
-      </p>
-      <div className="mt-8 flex gap-3">
-        <button
-          onClick={approve}
-          disabled={busy}
-          className="flex-1 bg-brand text-white font-medium py-2.5 rounded-md hover:bg-brand-dark disabled:bg-gray-300"
+    <div className="auth-shell">
+      <div className="auth-card">
+        <div className="eyebrow mb-2">OAuth consent</div>
+        <h1 className="auth-card-title">Authorize {info.client.name}</h1>
+        <p className="auth-card-sub">
+          <strong style={{ color: 'var(--ink)' }}>{info.client.name}</strong> wants to
+          access your Computicket account with the following permissions:
+        </p>
+        <ul
+          className="col gap-2 mt-4"
+          style={{ listStyle: 'none', margin: '16px 0 0', padding: 0 }}
         >
-          {busy ? 'Authorizing…' : 'Authorize'}
-        </button>
-        <button
-          onClick={deny}
-          className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-md hover:bg-gray-50"
-        >
-          Cancel
-        </button>
+          {info.scopes.map((s) => (
+            <li
+              key={s}
+              className="row gap-2"
+              style={{
+                alignItems: 'center',
+                padding: '10px 12px',
+                background: 'var(--surface-2)',
+                borderRadius: 'var(--r-2)',
+              }}
+            >
+              <Icon name="check" size={13} stroke={2.5} style={{ color: 'var(--accent)' }} />
+              <code className="mono text-sm">{s}</code>
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs muted mt-4" style={{ lineHeight: 1.55 }}>
+          You will be redirected to{' '}
+          <code className="mono" style={{ wordBreak: 'break-all', color: 'var(--ink-2)' }}>
+            {info.redirectUri}
+          </code>
+        </p>
+        <div className="row gap-3 mt-6" style={{ alignItems: 'stretch' }}>
+          <button
+            type="button"
+            onClick={approve}
+            disabled={busy}
+            className="btn btn-accent btn-lg"
+            style={{ flex: 1, justifyContent: 'center' }}
+          >
+            {busy ? 'Authorizing…' : 'Authorize'}
+          </button>
+          <button
+            type="button"
+            onClick={deny}
+            className="btn btn-ghost btn-lg"
+            style={{ flex: 1, justifyContent: 'center' }}
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );

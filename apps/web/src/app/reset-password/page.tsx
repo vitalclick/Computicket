@@ -42,41 +42,71 @@ function ResetForm() {
 
   if (!token) {
     return (
-      <div className="max-w-md mx-auto px-4 py-16">
-        <h1 className="text-2xl font-bold">Missing reset token</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          The reset link is invalid. <Link href="/forgot-password" className="text-brand-dark underline">Request a new one</Link>.
-        </p>
+      <div className="auth-shell">
+        <div className="auth-card">
+          <h1 className="auth-card-title">Missing reset token</h1>
+          <p className="auth-card-sub">
+            The reset link is invalid.{' '}
+            <Link href="/forgot-password" className="accent-text">
+              Request a new one
+            </Link>
+            .
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold">Set a new password</h1>
-      {done ? (
-        <p className="mt-4 text-sm text-emerald-700">Password updated. Redirecting to sign in…</p>
-      ) : (
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-          <input
-            type="password" required minLength={8} placeholder="New password"
-            value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
-          <input
-            type="password" required minLength={8} placeholder="Confirm new password"
-            value={confirm} onChange={(e) => setConfirm(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
-          {error && <div className="text-sm text-red-600">{error}</div>}
-          <button
-            type="submit" disabled={submitting}
-            className="w-full bg-brand text-white font-medium py-2.5 rounded-md hover:bg-brand-dark disabled:bg-gray-300"
-          >
-            {submitting ? 'Saving…' : 'Update password'}
-          </button>
-        </form>
-      )}
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h1 className="auth-card-title">Set a new password</h1>
+        {done ? (
+          <p className="auth-card-sub" style={{ color: 'var(--accent)' }}>
+            Password updated. Redirecting to sign in…
+          </p>
+        ) : (
+          <form onSubmit={handleSubmit} className="auth-form">
+            <label htmlFor="reset-password" className="sr-only">New password</label>
+            <input
+              id="reset-password"
+              type="password"
+              required
+              minLength={8}
+              placeholder="New password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input"
+            />
+            <label htmlFor="reset-confirm" className="sr-only">Confirm new password</label>
+            <input
+              id="reset-confirm"
+              type="password"
+              required
+              minLength={8}
+              placeholder="Confirm new password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="input"
+            />
+            {error ? (
+              <div className="text-sm" style={{ color: 'var(--danger)' }}>
+                {error}
+              </div>
+            ) : null}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="btn btn-accent btn-lg"
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              {submitting ? 'Saving…' : 'Update password'}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

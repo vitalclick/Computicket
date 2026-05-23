@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { api } from '@/lib/api';
 
@@ -42,11 +43,46 @@ function Seat({ taken, selected }: { taken: boolean; selected: boolean }) {
   );
 }
 
-export default function BusesPage() {
+/**
+ * Bus terminal labels coming from the hero (`Lagos (Jibowu)`) carry a
+ * parenthetical the API doesn't store — strip it before sending so the
+ * city match still hits.
+ */
+function normaliseCity(raw: string | null): string {
+  if (!raw) return '';
+  return raw.replace(/\s*\(.*\)\s*/, '').trim();
+}
+
+/** Pull and lightly sanitise the hero's query params. */
+function readHeroParams(sp: URLSearchParams) {
+  const dateRaw = sp.get('depart') ?? '';
+  // The hero may pass a free-form "This weekend" chip; the bus search
+  // only understands ISO dates, so only forward the date when it
+  // matches yyyy-mm-dd. Anything else stays visible on the form as a
+  // hint but doesn't gate the API call.
+  const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(dateRaw) ? dateRaw : '';
+  return {
+    from: normaliseCity(sp.get('from')),
+    to: normaliseCity(sp.get('to')),
+    date: isoDate,
+    dateHint: !isoDate && dateRaw ? dateRaw : '',
+    passengers: Math.max(1, Math.min(9, Number(sp.get('passengers') ?? 1) || 1)),
+  };
+}
+
+function BusesContent() {
+  const searchParams = useSearchParams();
+  const initial = useMemo(
+    () => readHeroParams(searchParams),
+    [searchParams],
+  );
+
   const [cities, setCities] = useState<string[]>([]);
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const [date, setDate] = useState('');
+  const [from, setFrom] = useState(initial.from);
+  const [to, setTo] = useState(initial.to);
+  const [date, setDate] = useState(initial.date);
+  const [dateHint, setDateHint] = useState(initial.dateHint);
+  const [passengers, setPassengers] = useState(initial.passengers);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -55,14 +91,20 @@ export default function BusesPage() {
 
   useEffect(() => {
     api.busCities().then((r) => setCities(r.cities)).catch(() => undefined);
+    // Initial fetch uses whatever params the hero handed us — so the
+    // results list opens already filtered to the user's intent.
     api
-      .searchBuses({})
+      .searchBuses({
+        from: initial.from || undefined,
+        to: initial.to || undefined,
+        date: initial.date || undefined,
+      })
       .then((t) => {
         setTrips(t);
         if (t[0]) setSelected(t[0].slug);
       })
       .catch(() => undefined);
-  }, []);
+  }, [initial.from, initial.to, initial.date]);
 
   async function search(e?: React.FormEvent) {
     e?.preventDefault();
@@ -191,7 +233,9 @@ export default function BusesPage() {
             </label>
             <div className="search-field">
               <span className="search-label">Passengers</span>
-              <span className="search-value">1 adult</span>
+              <span className="search-value">
+                {passengers} adult{passengers === 1 ? '' : 's'}
+              </span>
             </div>
             <button
               type="submit"
@@ -537,5 +581,13 @@ export default function BusesPage() {
         </aside>
       </section>
     </div>
+  );
+}
+
+export default function BusesPage() {
+  return (
+    <Suspense fallback={null}>
+      <BusesContent />
+    </Suspense>
   );
 }
