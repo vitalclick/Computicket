@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
@@ -259,9 +260,7 @@ export default function CollectiblePage() {
         {/* Actions */}
         <div className="row gap-2 mt-4 pass-actions">
           <TransferButton code={data.code} />
-          <button type="button" className="btn btn-glass" style={{ flex: 1, justifyContent: 'center' }}>
-            <Icon name="wallet" size={14} /> Add to Wallet
-          </button>
+          <ResellButton code={data.code} ticketType={data.ticketType} />
         </div>
 
         {/* NFT collectible (secondary, opt-in) */}
@@ -515,6 +514,158 @@ function TransferButton({ code }: { code: string }) {
                     We also emailed {email}. They have 72 hours to accept.
                   </p>
                 ) : null}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function ResellButton({ code, ticketType }: { code: string; ticketType: string }) {
+  const [open, setOpen] = useState(false);
+  const [ask, setAsk] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [listed, setListed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const token = getToken();
+    if (!token) return;
+    const ngn = parseFloat(ask);
+    if (!isFinite(ngn) || ngn < 100) {
+      setError('Ask must be at least ₦100.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await api.createResaleListing(token, {
+        ticketCode: code,
+        askKobo: Math.round(ngn * 100),
+      });
+      setListed(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to list');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="btn btn-glass"
+        style={{ flex: 1, justifyContent: 'center' }}
+      >
+        <Icon name="wallet" size={14} /> Resell
+      </button>
+      {open ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="resell-dialog-title"
+          className="transfer-modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setOpen(false);
+              setListed(false);
+            }
+          }}
+        >
+          <div className="transfer-modal-card">
+            <div className="between" style={{ alignItems: 'center' }}>
+              <h2 id="resell-dialog-title" className="h-4" style={{ margin: 0 }}>
+                List this ticket for resale
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setListed(false);
+                }}
+                aria-label="Close"
+                className="icon-btn"
+                style={{ width: 32, height: 32 }}
+              >
+                <Icon name="close" size={14} />
+              </button>
+            </div>
+            {!listed ? (
+              <form onSubmit={submit} className="mt-4">
+                <p className="text-sm muted" style={{ lineHeight: 1.55 }}>
+                  Set your ask price in Naira. Buyers pay from their wallet;
+                  you receive the ask minus a 10% platform fee. Cancel any
+                  time before someone buys.
+                </p>
+                <div className="text-xs muted mt-3">
+                  Tier: <span className="fw-600" style={{ color: 'var(--ink)' }}>{ticketType}</span>
+                </div>
+                <label htmlFor="resell-ask" className="sr-only">
+                  Ask price (NGN)
+                </label>
+                <input
+                  id="resell-ask"
+                  type="number"
+                  min={100}
+                  step={50}
+                  required
+                  placeholder="Ask price (NGN)"
+                  value={ask}
+                  onChange={(e) => setAsk(e.target.value)}
+                  className="input mt-4"
+                />
+                {error ? (
+                  <p className="text-sm mt-3" style={{ color: 'var(--danger)' }}>
+                    {error}
+                  </p>
+                ) : null}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="btn btn-accent btn-lg mt-4"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  {busy ? 'Listing…' : 'List on resale floor'}
+                </button>
+                <p className="text-xs muted mt-3" style={{ lineHeight: 1.55 }}>
+                  Listings are public and capped at face value. Your QR stops
+                  scanning the moment a buyer pays.
+                </p>
+              </form>
+            ) : (
+              <div className="mt-4" style={{ textAlign: 'center' }}>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    background: 'var(--accent)',
+                    color: 'white',
+                    display: 'grid',
+                    placeItems: 'center',
+                    margin: '0 auto 12px',
+                  }}
+                >
+                  <Icon name="check" size={26} stroke={3} />
+                </div>
+                <h3 className="h-4">Listed</h3>
+                <p className="text-sm muted mt-2" style={{ lineHeight: 1.55 }}>
+                  Your ticket is now on the resale floor. We&apos;ll credit
+                  your wallet the moment it sells.
+                </p>
+                <Link
+                  href="/resale"
+                  className="btn btn-ghost mt-4"
+                  style={{ justifyContent: 'center' }}
+                >
+                  View resale marketplace <Icon name="arrow" size={13} />
+                </Link>
               </div>
             )}
           </div>

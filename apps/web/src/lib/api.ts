@@ -7,6 +7,9 @@ export interface TicketType {
   priceKobo: number;
   capacity: number;
   sold: number;
+  // When set, the buyer picks specific seats from the venue map. When null,
+  // the tier is general-admission and BuyForm shows a quantity stepper.
+  seatMap?: Array<{ row: string; seats: string[] }> | null;
 }
 
 export interface EventSummary {
@@ -191,7 +194,7 @@ export const api = {
     callbackUrl?: string;
     promoCode?: string;
     payFromWallet?: boolean;
-    items: Array<{ ticketTypeId: string; quantity: number }>;
+    items: Array<{ ticketTypeId: string; quantity: number; seatIds?: string[] }>;
   }, token?: string) =>
     request<CreateOrderResponse>('/orders', {
       method: 'POST',
@@ -434,6 +437,74 @@ export const api = {
       '/tickets/transfer/claim',
       { method: 'POST', token, body: JSON.stringify({ token: transferToken }) },
     ),
+
+  // Resale marketplace — buyers re-listing paid tickets at face value.
+  listResaleMarketplace: () =>
+    request<
+      Array<{
+        id: string;
+        askKobo: number;
+        createdAt: string;
+        ticket: { code: string; tierName: string; originalPriceKobo: number };
+        event: {
+          slug: string;
+          title: string;
+          startsAt: string;
+          venue: string;
+          city: string;
+        };
+      }>
+    >('/resale'),
+  listMyResale: (token: string) =>
+    request<
+      Array<{
+        id: string;
+        ticketId: string;
+        askKobo: number;
+        status: 'LISTED' | 'SOLD' | 'CANCELLED';
+        createdAt: string;
+        soldAt: string | null;
+        ticket: { code: string };
+      }>
+    >('/resale/mine', { token }),
+  createResaleListing: (
+    token: string,
+    body: { ticketCode: string; askKobo: number },
+  ) =>
+    request<{ id: string; askKobo: number; status: string }>('/resale', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+  cancelResaleListing: (token: string, id: string) =>
+    request<{ id: string; status: 'CANCELLED' }>(`/resale/${id}`, {
+      method: 'DELETE',
+      token,
+    }),
+  buyResaleListing: (token: string, id: string) =>
+    request<{
+      listingId: string;
+      ticketCode: string;
+      askKobo: number;
+      sellerCreditKobo: number;
+      platformFeeKobo: number;
+    }>(`/resale/${id}/buy`, { method: 'POST', token }),
+
+  // Push notifications — register an FCM token (Android/iOS/Web).
+  registerPushDevice: (
+    token: string,
+    body: { token: string; platform: 'ANDROID' | 'IOS' | 'WEB' },
+  ) =>
+    request<{ id: string }>('/me/devices', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
+  unregisterPushDevice: (token: string, deviceToken: string) =>
+    request<{ ok: true }>(`/me/devices/${encodeURIComponent(deviceToken)}`, {
+      method: 'DELETE',
+      token,
+    }),
 
   // Compass support chat — calls the Anthropic-backed support service.
   // The server-side tool runner can look up the caller's own orders and

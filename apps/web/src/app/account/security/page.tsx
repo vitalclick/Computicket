@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
+import { PushNotificationToggle } from '@/components/PushNotificationToggle';
 import { API_URL } from '@/lib/api';
 import { getToken, signOut } from '@/lib/auth';
 
@@ -361,6 +362,8 @@ export default function SecurityPage() {
           ) : null}
         </div>
       </section>
+
+      <PushNotificationToggle />
 
       {/* Sessions */}
       <section className="card mt-3" style={{ padding: 22 }}>

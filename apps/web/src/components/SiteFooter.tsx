@@ -55,6 +55,7 @@ const COLUMNS: Column[] = [
     heading: 'Support',
     items: [
       { label: 'Help Centre', href: '/help' },
+      { label: 'Resale marketplace', href: '/resale' },
       { label: 'Buyer Protection', href: '/buyer-protection' },
       { label: 'Refunds', href: '/refunds' },
       { label: 'Privacy', href: '/privacy' },

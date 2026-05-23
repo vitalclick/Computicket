@@ -279,6 +279,59 @@ UI surfaces:
 - Recipient landing — `/transfer/[token]` describes the ticket and
   routes through `/signin?next=…` if needed.
 
+## 6.6 Resale marketplace
+
+Buyers re-list paid, unscanned tickets at any price up to face value.
+The API lives in `apps/api/src/resale/` and was already wired before
+this UI pass.
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| `GET` | `/v1/resale` | Public | List active marketplace listings. |
+| `GET` | `/v1/resale/mine` | Bearer | List the caller's own listings. |
+| `POST` | `/v1/resale` | Bearer (owner) | Create a listing. Min ask ₦100. |
+| `DELETE` | `/v1/resale/:id` | Bearer (seller) | Cancel an active listing. |
+| `POST` | `/v1/resale/:id/buy` | Bearer (buyer) | Atomic: debit wallet, transfer ticket, credit seller minus 10% platform fee. |
+
+UI surfaces:
+- `/resale` — public marketplace page with cinematic event covers, "save vs face value" hints, wallet-only purchase button.
+- Boarding pass `/tickets/[code]/collectible` — "Resell" modal sets an ask, lists instantly.
+- Account → My tickets — Resell sits alongside Transfer.
+
+## 6.7 Push notifications (web)
+
+Web Push subscribe button at `/account/security`. Uses the standard
+`PushManager` + a service worker at `/push-sw.js`. Subscription
+endpoints are sent to the existing `POST /me/devices` with
+`platform: WEB`; the FCM HTTP v1 send path supports the Web Push
+protocol natively.
+
+Required env:
+- `NEXT_PUBLIC_FCM_VAPID_KEY` — the public VAPID key from Firebase
+  console → Cloud Messaging → Web Push certificates.
+- `NEXT_PUBLIC_FCM_PROJECT_ID` — same as `FIREBASE_SERVICE_ACCOUNT_JSON.project_id`.
+
+Without these env vars the toggle still renders but is disabled with
+an explanation, so the surface doesn't appear broken in dev.
+
+The mobile app uses `firebase_messaging` directly (see
+`apps/mobile/lib/state/push_client.dart`).
+
+## 6.8 Seat-map selection
+
+Reserved-seating ticket tiers carry a `seatMap` JSON column. Buyers
+hit the existing `GET /v1/ticket-types/:id/seats` endpoint and pass
+the chosen seat ids back in `POST /v1/orders` as
+`items[].seatIds`. Holds release on a TTL if the Paystack hop is
+abandoned.
+
+UI surfaces:
+- Web BuyForm — each tier with `seatMap` shows "Pick seats" instead
+  of a quantity stepper, opening a modal seat picker (stage indicator,
+  row-by-row dots, legend).
+- Mobile — existing tier selector for reserved seating in the Flutter
+  app's event detail screen.
+
 ## 7. Webhooks
 
 | Provider | URL | Notes |

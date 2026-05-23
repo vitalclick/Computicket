@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
+import { SeatPicker } from '@/components/SeatPicker';
 import type { EventDetail } from '@/lib/api';
 import { api, formatNgn } from '@/lib/api';
 import { getToken } from '@/lib/auth';
@@ -14,6 +15,10 @@ interface Props {
 export function BuyForm({ event }: Props) {
   const formRef = useRef<HTMLFormElement | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  // Per-tier seat picks. When a tier has a seatMap, the quantity is
+  // derived from seats[tt.id].length and the stepper is hidden.
+  const [seats, setSeats] = useState<Record<string, { ids: string[]; labels: string[] }>>({});
+  const [seatPickerFor, setSeatPickerFor] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [promoCode, setPromoCode] = useState('');
@@ -41,7 +46,12 @@ export function BuyForm({ event }: Props) {
   }, []);
 
   const items = event.ticketTypes
-    .map((tt) => ({ tt, qty: quantities[tt.id] ?? 0 }))
+    .map((tt) => {
+      const seated = Boolean(tt.seatMap && tt.seatMap.length > 0);
+      const pickedSeats = seats[tt.id]?.ids ?? [];
+      const qty = seated ? pickedSeats.length : quantities[tt.id] ?? 0;
+      return { tt, qty, seated, seatIds: seated ? pickedSeats : undefined };
+    })
     .filter((i) => i.qty > 0);
 
   const subtotal = useMemo(
@@ -78,7 +88,11 @@ export function BuyForm({ event }: Props) {
           promoCode: promoCode.trim() || undefined,
           payFromWallet,
           callbackUrl: `${origin}/checkout/return`,
-          items: items.map((i) => ({ ticketTypeId: i.tt.id, quantity: i.qty })),
+          items: items.map((i) => ({
+            ticketTypeId: i.tt.id,
+            quantity: i.qty,
+            ...(i.seatIds ? { seatIds: i.seatIds } : {}),
+          })),
         },
         token,
       );
@@ -107,7 +121,9 @@ export function BuyForm({ event }: Props) {
         {event.ticketTypes.map((tt) => {
           const remaining = tt.capacity - tt.sold;
           const soldOut = remaining <= 0;
-          const qty = quantities[tt.id] ?? 0;
+          const seated = Boolean(tt.seatMap && tt.seatMap.length > 0);
+          const seatPick = seats[tt.id];
+          const qty = seated ? seatPick?.ids.length ?? 0 : quantities[tt.id] ?? 0;
           const selected = qty > 0;
           return (
             <div
@@ -124,6 +140,14 @@ export function BuyForm({ event }: Props) {
                 <div style={{ minWidth: 0 }}>
                   <div className="row gap-2" style={{ alignItems: 'center' }}>
                     <span className="fw-600">{tt.name}</span>
+                    {seated ? (
+                      <span
+                        className="badge"
+                        style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
+                      >
+                        Reserved seating
+                      </span>
+                    ) : null}
                     {soldOut ? (
                       <span className="badge badge-soon">Sold out</span>
                     ) : remaining < 10 ? (
@@ -138,46 +162,80 @@ export function BuyForm({ event }: Props) {
                   {tt.description ? (
                     <div className="text-xs muted mt-1">{tt.description}</div>
                   ) : null}
+                  {seated && seatPick && seatPick.labels.length > 0 ? (
+                    <div className="text-xs mt-2 mono" style={{ color: 'var(--accent)' }}>
+                      Seats: {seatPick.labels.join(', ')}
+                    </div>
+                  ) : null}
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div className="h-4 tnum">{formatNgn(tt.priceKobo)}</div>
-                  <div
-                    className="row gap-2 mt-2"
-                    style={{ alignItems: 'center', justifyContent: 'flex-end' }}
-                  >
+                  {seated ? (
                     <button
                       type="button"
-                      className="icon-btn"
-                      style={{ width: 28, height: 28 }}
-                      onClick={() => bump(tt.id, -1, Math.min(10, remaining))}
-                      disabled={qty === 0}
-                      aria-label={`Decrease ${tt.name}`}
+                      onClick={() => setSeatPickerFor(tt.id)}
+                      disabled={soldOut}
+                      className="btn btn-ghost btn-sm mt-2"
+                      style={{ padding: '6px 12px' }}
                     >
-                      <Icon name="minus" size={12} />
+                      {qty > 0 ? `${qty} seat${qty === 1 ? '' : 's'} · Edit` : 'Pick seats'}
                     </button>
-                    <span
-                      className="fw-600 tnum"
-                      style={{ minWidth: 18, textAlign: 'center' }}
+                  ) : (
+                    <div
+                      className="row gap-2 mt-2"
+                      style={{ alignItems: 'center', justifyContent: 'flex-end' }}
                     >
-                      {qty}
-                    </span>
-                    <button
-                      type="button"
-                      className="icon-btn"
-                      style={{ width: 28, height: 28 }}
-                      onClick={() => bump(tt.id, 1, Math.min(10, remaining))}
-                      disabled={soldOut || qty >= Math.min(10, remaining)}
-                      aria-label={`Increase ${tt.name}`}
-                    >
-                      <Icon name="plus" size={12} />
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        style={{ width: 28, height: 28 }}
+                        onClick={() => bump(tt.id, -1, Math.min(10, remaining))}
+                        disabled={qty === 0}
+                        aria-label={`Decrease ${tt.name}`}
+                      >
+                        <Icon name="minus" size={12} />
+                      </button>
+                      <span
+                        className="fw-600 tnum"
+                        style={{ minWidth: 18, textAlign: 'center' }}
+                      >
+                        {qty}
+                      </span>
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        style={{ width: 28, height: 28 }}
+                        onClick={() => bump(tt.id, 1, Math.min(10, remaining))}
+                        disabled={soldOut || qty >= Math.min(10, remaining)}
+                        aria-label={`Increase ${tt.name}`}
+                      >
+                        <Icon name="plus" size={12} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {seatPickerFor ? (
+        <SeatPicker
+          ticketTypeId={seatPickerFor}
+          max={Math.min(
+            10,
+            (event.ticketTypes.find((t) => t.id === seatPickerFor)?.capacity ?? 10) -
+              (event.ticketTypes.find((t) => t.id === seatPickerFor)?.sold ?? 0),
+          )}
+          initialSelected={seats[seatPickerFor]?.ids ?? []}
+          onClose={() => setSeatPickerFor(null)}
+          onConfirm={(ids, labels) => {
+            setSeats((s) => ({ ...s, [seatPickerFor]: { ids, labels } }));
+            setSeatPickerFor(null);
+          }}
+        />
+      ) : null}
 
       <div className="hr mt-4 mb-4" />
 
