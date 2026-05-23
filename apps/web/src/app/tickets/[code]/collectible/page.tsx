@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { Wordmark } from '@/components/Wordmark';
-import { API_URL } from '@/lib/api';
+import { API_URL, api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 import { phForId } from '@/lib/design-data';
 
@@ -258,9 +258,7 @@ export default function CollectiblePage() {
 
         {/* Actions */}
         <div className="row gap-2 mt-4 pass-actions">
-          <button type="button" className="btn btn-glass" style={{ flex: 1, justifyContent: 'center' }}>
-            <Icon name="send" size={14} /> Transfer
-          </button>
+          <TransferButton code={data.code} />
           <button type="button" className="btn btn-glass" style={{ flex: 1, justifyContent: 'center' }}>
             <Icon name="wallet" size={14} /> Add to Wallet
           </button>
@@ -367,5 +365,161 @@ export default function CollectiblePage() {
         </details>
       </div>
     </div>
+  );
+}
+
+function TransferButton({ code }: { code: string }) {
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [link, setLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function generate(e: React.FormEvent) {
+    e.preventDefault();
+    const token = getToken();
+    if (!token) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api.createTicketTransfer(token, code, {
+        recipientEmail: email || undefined,
+      });
+      setLink(res.link);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function copyLink() {
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* user can copy manually */
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="btn btn-glass"
+        style={{ flex: 1, justifyContent: 'center' }}
+      >
+        <Icon name="send" size={14} /> Transfer
+      </button>
+      {open ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="transfer-dialog-title"
+          className="transfer-modal-backdrop"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setOpen(false);
+          }}
+        >
+          <div className="transfer-modal-card">
+            <div className="between" style={{ alignItems: 'center' }}>
+              <h2 id="transfer-dialog-title" className="h-4" style={{ margin: 0 }}>
+                Transfer this ticket
+              </h2>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="icon-btn"
+                style={{ width: 32, height: 32 }}
+              >
+                <Icon name="close" size={14} />
+              </button>
+            </div>
+            {!link ? (
+              <form onSubmit={generate} className="mt-4">
+                <p className="text-sm muted" style={{ lineHeight: 1.55 }}>
+                  Send a single-use claim link. If you add an email, we&apos;ll send
+                  them an invite too. The moment they accept, your copy stops
+                  scanning.
+                </p>
+                <label htmlFor="transfer-email" className="sr-only">
+                  Recipient email
+                </label>
+                <input
+                  id="transfer-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Recipient email (optional)"
+                  autoComplete="email"
+                  className="input mt-4"
+                />
+                {error ? (
+                  <p className="text-sm mt-3" style={{ color: 'var(--danger)' }}>
+                    {error}
+                  </p>
+                ) : null}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="btn btn-accent btn-lg mt-4"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  {busy ? 'Generating link…' : 'Generate transfer link'}
+                </button>
+                <p className="text-xs muted mt-3" style={{ lineHeight: 1.55 }}>
+                  Link is single-use, expires in 72 hours, and replaces any
+                  previous pending transfer for this ticket.
+                </p>
+              </form>
+            ) : (
+              <div className="mt-4">
+                <div className="eyebrow accent-text">Share this link</div>
+                <div
+                  className="card mt-2"
+                  style={{
+                    padding: 12,
+                    background: 'var(--surface-2)',
+                    border: 0,
+                    wordBreak: 'break-all',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 12,
+                  }}
+                >
+                  {link}
+                </div>
+                <div className="row gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={copyLink}
+                    className="btn btn-accent"
+                    style={{ flex: 1, justifyContent: 'center' }}
+                  >
+                    {copied ? 'Copied' : 'Copy link'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="btn btn-ghost"
+                  >
+                    Done
+                  </button>
+                </div>
+                {email ? (
+                  <p className="text-xs muted mt-3" style={{ lineHeight: 1.55 }}>
+                    We also emailed {email}. They have 72 hours to accept.
+                  </p>
+                ) : null}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

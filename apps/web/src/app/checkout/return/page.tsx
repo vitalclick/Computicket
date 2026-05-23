@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Icon } from '@/components/Icon';
+import { GroupShareCallout } from './GroupShareCallout';
 import { api, formatNgn, ticketQrUrl } from '@/lib/api';
 
 interface PageProps {
@@ -99,6 +100,12 @@ export default async function CheckoutReturnPage({ searchParams }: PageProps) {
           </span>
         </div>
       </div>
+
+      {order.tickets.length > 1 ? (
+        <GroupShareCallout
+          tickets={order.tickets.map((t) => ({ code: t.code }))}
+        />
+      ) : null}
 
       <div className="between mt-8 mb-4">
         <h2 className="h-3" style={{ margin: 0 }}>

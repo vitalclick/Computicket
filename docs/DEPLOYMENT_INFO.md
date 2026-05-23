@@ -252,6 +252,33 @@ makes server-side revoke effective without waiting for token expiry.
 
 ---
 
+## 6.5 Ticket transfers (group-buy)
+
+Buyers can hand a paid ticket to another buyer via a single-use,
+sha256-hashed link. The plaintext token is shown exactly once at
+creation; the DB only stores its hash so a DB read can't claim a
+pending transfer.
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| `POST` | `/v1/tickets/:code/transfer` | Bearer (owner) | Generate a one-time link. Optional `recipientEmail` triggers an invite email via Postmark. Replaces any previous pending transfer for the ticket. |
+| `DELETE` | `/v1/tickets/:code/transfer` | Bearer (owner) | Cancel all pending transfers for a ticket. |
+| `GET` | `/v1/tickets/transfer/:token` | Public | Describe the transfer (event, tier, state) so the recipient can preview before signing in. |
+| `POST` | `/v1/tickets/transfer/claim` | Bearer (recipient) | Atomically claims the transfer: flips `Ticket.ownerUserId`, marks `TicketTransfer.claimedAt`, and cancels any other pending links for that ticket so the outgoing owner can't claw it back. |
+
+Tokens live 72 hours. On claim, the ticket's NFT collectible wallet
+binding (if any) is cleared so the new owner can re-attach. Audit log
+records `ticket.transfer.{created,claimed,cancelled}` with the
+relevant metadata.
+
+UI surfaces:
+- Boarding pass (`/tickets/[code]/collectible`) — "Transfer" modal with
+  optional recipient email + copyable link.
+- Checkout return — multi-ticket buyers get a "Going as a group?"
+  callout that shares extras inline per-ticket.
+- Recipient landing — `/transfer/[token]` describes the ticket and
+  routes through `/signin?next=…` if needed.
+
 ## 7. Webhooks
 
 | Provider | URL | Notes |

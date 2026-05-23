@@ -43,6 +43,7 @@ const COLUMNS: Column[] = [
     heading: 'Company',
     items: [
       { label: 'About Us', href: '/about' },
+      { label: 'Get the app', href: '/app' },
       { label: 'Careers', href: '/careers' },
       { label: 'Press', href: '/press' },
       { label: 'Trust & Safety', href: '/trust' },

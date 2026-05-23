@@ -404,6 +404,51 @@ export const api = {
       `/dashboard/organizers/${organizerSlug}/events/${eventSlug}/orders`,
       { token },
     ),
+  createTicketTransfer: (
+    token: string,
+    code: string,
+    body: { recipientEmail?: string },
+  ) =>
+    request<{ token: string; link: string; expiresAt: string }>(
+      `/tickets/${code}/transfer`,
+      { method: 'POST', token, body: JSON.stringify(body) },
+    ),
+  cancelTicketTransfer: (token: string, code: string) =>
+    request<{ cancelled: number }>(`/tickets/${code}/transfer`, {
+      method: 'DELETE',
+      token,
+    }),
+  describeTicketTransfer: (token: string) =>
+    request<{
+      state: 'pending' | 'expired' | 'claimed' | 'cancelled';
+      expiresAt: string;
+      recipientEmail: string | null;
+      ticket: {
+        code: string;
+        ticketTypeName: string;
+        event: { title: string; venue: string; city: string; startsAt: string };
+      };
+    }>(`/tickets/transfer/${token}`),
+  claimTicketTransfer: (token: string, transferToken: string) =>
+    request<{ ticketCode: string; eventTitle?: string; alreadyClaimed: boolean }>(
+      '/tickets/transfer/claim',
+      { method: 'POST', token, body: JSON.stringify({ token: transferToken }) },
+    ),
+
+  // Compass support chat — calls the Anthropic-backed support service.
+  // The server-side tool runner can look up the caller's own orders and
+  // ticket QRs; we just shuttle the conversation.
+  supportChat: (
+    token: string,
+    message: string,
+    history: Array<{ role: 'user' | 'assistant'; content: string }>,
+  ) =>
+    request<{ reply: string; fallback?: boolean }>('/me/support', {
+      method: 'POST',
+      token,
+      body: JSON.stringify({ message, history }),
+    }),
+
   scanTicket: (token: string, code: string) =>
     request<{
       ok: boolean;
