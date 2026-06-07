@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useMemo, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { FilterGroup } from '@/components/marketplace/FilterGroup';
 import { formatNaira } from '@/lib/design-data';
@@ -37,8 +38,34 @@ const CALENDAR = [
   { day: 'Sun', n: 26, price: 74900 },
 ];
 
-export default function FlightsPage() {
-  const [selected, setSelected] = useState('f1');
+function FlightsContent() {
+  const sp = useSearchParams();
+  // Hero-driven landing: the home page pushes ?from=…&to=…&depart=…&passengers=…
+  // We pre-fill the search summary card so it reflects the intent, and
+  // filter the static result list to airline routes matching the
+  // requested IATA pair when one is present.
+  const heroFrom = sp.get('from') ?? 'Lagos (LOS)';
+  const heroTo = sp.get('to') ?? 'Abuja (ABV)';
+  const heroDepart = sp.get('depart') ?? 'Fri 23 May';
+  const heroPassengers = Math.max(1, Math.min(9, Number(sp.get('passengers') ?? 1) || 1));
+  const iata = (label: string): string => {
+    const m = label.match(/\(([^)]+)\)/);
+    return (m?.[1] ?? '').toUpperCase();
+  };
+  const fromIata = iata(heroFrom);
+  const toIata = iata(heroTo);
+  const matching = useMemo(
+    () =>
+      !fromIata || !toIata
+        ? RESULTS
+        : RESULTS.filter((r) => r.from === fromIata && r.to === toIata),
+    [fromIata, toIata],
+  );
+  // If the filter wipes the list (e.g. user picked a route we don't
+  // have sample data for), fall back to the unfiltered set rather than
+  // showing a blank canvas.
+  const visible = matching.length > 0 ? matching : RESULTS;
+  const [selected, setSelected] = useState(visible[0]?.id ?? 'f1');
 
   return (
     <div className="page-enter">
@@ -62,11 +89,11 @@ export default function FlightsPage() {
             }}
           >
             {[
-              { l: 'From',       v: 'Lagos (LOS)' },
-              { l: 'To',         v: 'Abuja (ABV)' },
-              { l: 'Depart',     v: 'Fri 23 May' },
+              { l: 'From',       v: heroFrom },
+              { l: 'To',         v: heroTo },
+              { l: 'Depart',     v: heroDepart },
               { l: 'Return',     v: 'Sun 25 May' },
-              { l: 'Passengers', v: '1 adult · Economy' },
+              { l: 'Passengers', v: `${heroPassengers} adult${heroPassengers === 1 ? '' : 's'} · Economy` },
             ].map((f, i, a) => (
               <div
                 key={f.l}
@@ -189,7 +216,10 @@ export default function FlightsPage() {
           <div>
             <div className="between mb-4">
               <span className="text-sm muted">
-                <b className="text-gradient">{RESULTS.length} flights</b> on Fri 23 May
+                <b className="text-gradient">{visible.length} flights</b>
+                {fromIata && toIata && matching.length > 0
+                  ? ` ${fromIata} → ${toIata}`
+                  : ' on Fri 23 May'}
               </span>
               <div className="row gap-2">
                 <button type="button" className="chip active">Cheapest</button>
@@ -198,7 +228,7 @@ export default function FlightsPage() {
               </div>
             </div>
             <div className="col gap-3">
-              {RESULTS.map((r) => (
+              {visible.map((r) => (
                 <button
                   key={r.id}
                   type="button"
@@ -437,5 +467,14 @@ export default function FlightsPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+
+export default function FlightsPage() {
+  return (
+    <Suspense fallback={null}>
+      <FlightsContent />
+    </Suspense>
   );
 }

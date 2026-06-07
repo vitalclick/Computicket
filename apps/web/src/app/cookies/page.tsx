@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ContentPage, ContentSection } from '@/components/marketplace/ContentPage';
+import { ContentSubNav } from '@/components/marketplace/Editorial';
 
 export const metadata: Metadata = {
   title: 'Cookie Policy',
@@ -19,7 +20,9 @@ const COOKIES = [
 
 export default function CookiesPage() {
   return (
-    <ContentPage
+    <>
+      <ContentSubNav group="support" active="cookies" />
+      <ContentPage
       eyebrow="Legal · Cookies"
       title="Cookie Policy"
       subtitle="What we store on your device, why, and how to opt out. We try to keep this list short."
@@ -115,6 +118,7 @@ export default function CookiesPage() {
           <a className="accent-text" href="mailto:privacy@computicket.ng">privacy@computicket.ng</a>.
         </p>
       </ContentSection>
-    </ContentPage>
+      </ContentPage>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ContentPage, ContentSection } from '@/components/marketplace/ContentPage';
+import { ContentSubNav } from '@/components/marketplace/Editorial';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
@@ -11,7 +12,9 @@ const LAST_UPDATED = '21 May 2026';
 
 export default function TermsPage() {
   return (
-    <ContentPage
+    <>
+      <ContentSubNav group="support" active="terms" />
+      <ContentPage
       eyebrow="Legal · Terms"
       title="Terms of Service"
       subtitle="The agreement between you and Computicket. Plain language, contract-grade. By using the platform, you agree to these terms."
@@ -145,6 +148,7 @@ export default function TermsPage() {
           <a className="accent-text" href="mailto:legal@computicket.ng">legal@computicket.ng</a>
         </p>
       </ContentSection>
-    </ContentPage>
+      </ContentPage>
+    </>
   );
 }

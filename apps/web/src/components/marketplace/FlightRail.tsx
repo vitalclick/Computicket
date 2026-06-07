@@ -5,7 +5,7 @@ import { SectionHead } from './SectionHead';
 
 export function FlightRail() {
   return (
-    <section className="wrap section">
+    <section className="wrap section" style={{ maxWidth: 1240 }}>
       <SectionHead
         eyebrow="Flight Deals"
         title="Domestic deals dropping today."

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useMemo, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { DESIGN_HOTELS, formatNaira } from '@/lib/design-data';
 
@@ -8,6 +9,12 @@ const FILTERS = [
   'Lagos', 'Abuja', 'Port Harcourt', 'Calabar', 'Lekki', 'Victoria Island', 'Ikoyi', 'Maitama',
 ];
 const FEATURES = ['5★', 'Pool', 'Beach', 'Spa', 'Pet-friendly', 'Free cancel'];
+
+function formatHotelDate(iso: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+  const d = new Date(`${iso}T00:00:00`);
+  return d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
+}
 
 const MAP_PINS = [
   { x: 30, y: 35, price: '₦185k', selected: true },
@@ -17,9 +24,29 @@ const MAP_PINS = [
   { x: 80, y: 75, price: '₦98k' },
 ];
 
-export default function HotelsPage() {
-  const [selected, setSelected] = useState('h1');
-  const hotel = DESIGN_HOTELS.find((h) => h.id === selected) ?? DESIGN_HOTELS[0]!;
+function HotelsContent() {
+  const sp = useSearchParams();
+  // Hero-driven landing: ?destination=…&checkin=YYYY-MM-DD&checkout=…&guests=N
+  const destination = sp.get('destination')?.trim() || 'Victoria Island, Lagos';
+  const checkin = sp.get('checkin') ?? '';
+  const checkout = sp.get('checkout') ?? '';
+  const guests = Math.max(1, Math.min(16, Number(sp.get('guests') ?? 2) || 2));
+
+  const heroTitleDates =
+    checkin && checkout ? `${formatHotelDate(checkin)} – ${formatHotelDate(checkout)}` : '23 May – 25 May';
+  const destinationCityHint = destination.split(',').pop()?.trim() ?? destination;
+
+  // Lightly filter the displayed list to hotels whose city matches the
+  // destination's last city token. Falls back to the full list if
+  // nothing matches so we never show a blank surface.
+  const visibleHotels = useMemo(() => {
+    const needle = destinationCityHint.toLowerCase();
+    const filtered = DESIGN_HOTELS.filter((h) => h.city.toLowerCase().includes(needle));
+    return filtered.length > 0 ? filtered : DESIGN_HOTELS;
+  }, [destinationCityHint]);
+
+  const [selected, setSelected] = useState<string>(visibleHotels[0]?.id ?? 'h1');
+  const hotel = DESIGN_HOTELS.find((h) => h.id === selected) ?? visibleHotels[0] ?? DESIGN_HOTELS[0]!;
 
   return (
     <div className="page-enter">
@@ -28,7 +55,10 @@ export default function HotelsPage() {
           <div className="between mb-4">
             <div>
               <div className="eyebrow mb-1">Stays</div>
-              <h1 className="h-2">Lagos · 23 May – 25 May · 2 guests</h1>
+              <h1 className="h-2">
+                {destinationCityHint} · {heroTitleDates} · {guests}{' '}
+                {guests === 1 ? 'guest' : 'guests'}
+              </h1>
             </div>
             <span className="ai-pill">
               <span className="ai-dot" />
@@ -70,7 +100,7 @@ export default function HotelsPage() {
         <div>
           <div className="between mb-4">
             <span className="text-sm muted">
-              <b className="text-gradient">{DESIGN_HOTELS.length} stays</b> in Lagos
+              <b className="text-gradient">{visibleHotels.length} stays</b> in {destinationCityHint}
             </span>
             <button type="button" className="chip">
               Best match <Icon name="chevronDown" size={11} />
@@ -78,7 +108,7 @@ export default function HotelsPage() {
           </div>
 
           <div className="col gap-4">
-            {DESIGN_HOTELS.map((h) => (
+            {visibleHotels.map((h) => (
               <button
                 key={h.id}
                 type="button"
@@ -362,5 +392,13 @@ export default function HotelsPage() {
         </aside>
       </section>
     </div>
+  );
+}
+
+export default function HotelsPage() {
+  return (
+    <Suspense fallback={null}>
+      <HotelsContent />
+    </Suspense>
   );
 }

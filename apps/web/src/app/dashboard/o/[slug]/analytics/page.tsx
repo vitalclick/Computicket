@@ -3,6 +3,12 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
+import {
+  DashboardError,
+  DashboardLoading,
+  DashboardPageHeader,
+} from '@/components/dashboard/DashboardPageHeader';
 import { API_URL, formatNgn } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
@@ -53,144 +59,203 @@ export default function AnalyticsPage() {
       if (!res.ok) throw new Error((await res.json()).message ?? `HTTP ${res.status}`);
       setData((await res.json()) as Analytics);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Couldn\'t load analytics');
+      setError(e instanceof Error ? e.message : "Couldn't load analytics");
     }
   }, [params.slug, days]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
-  if (error) {
-    return <div className="max-w-6xl mx-auto px-4 py-12 text-red-600">{error}</div>;
-  }
-  if (!data) {
-    return <div className="max-w-6xl mx-auto px-4 py-12 text-gray-500">Loading…</div>;
-  }
+  if (error) return <DashboardError message={error} />;
+  if (!data) return <DashboardLoading />;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <Link href={`/dashboard/o/${params.slug}`} className="text-sm text-brand-dark hover:underline">
-            ← Back to dashboard
-          </Link>
-          <h1 className="mt-1 text-2xl font-semibold">{data.organizer.name} · analytics</h1>
-          <p className="text-sm text-gray-500">
-            Last {data.range.days} day{data.range.days === 1 ? '' : 's'}
-          </p>
-        </div>
-        <div className="flex gap-2" role="tablist" aria-label="Range">
-          {[7, 30, 90, 365].map((d) => (
-            <button
-              key={d}
-              role="tab"
-              aria-selected={days === d}
-              onClick={() => setDays(d)}
-              className={`px-3 py-1.5 text-sm rounded-md border ${
-                days === d ? 'bg-brand text-white border-brand' : 'border-gray-300 text-gray-700'
-              }`}
-            >
-              {d === 365 ? '1y' : `${d}d`}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="page-enter">
+      <DashboardPageHeader
+        orgSlug={params.slug}
+        eyebrow="Reports"
+        title={`${data.organizer.name} · Analytics`}
+        sub={`Last ${data.range.days} day${data.range.days === 1 ? '' : 's'} of revenue, orders, refunds and top events.`}
+        actions={
+          <div role="tablist" aria-label="Range" className="row gap-1">
+            {[7, 30, 90, 365].map((d) => (
+              <button
+                key={d}
+                type="button"
+                role="tab"
+                aria-selected={days === d}
+                onClick={() => setDays(d)}
+                className={`chip ${days === d ? 'active' : ''}`}
+              >
+                {d === 365 ? '1y' : `${d}d`}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
-      <section className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Gross revenue" value={formatNgn(data.totals.grossKobo)} />
-        <StatCard label="Net (after refunds)" value={formatNgn(data.totals.netKobo)} />
-        <StatCard label="Paid orders" value={data.totals.paidOrders.toLocaleString('en-NG')} />
-        <StatCard label="Tickets sold" value={data.totals.ticketsSold.toLocaleString('en-NG')} />
-        <StatCard label="Avg. order value" value={formatNgn(data.totals.averageOrderKobo)} />
-        <StatCard
-          label="Refund rate"
-          value={`${data.totals.refundRatePct.toFixed(1)}%`}
-          // 5%+ refund rate is worth flagging — colour the value red.
-          danger={data.totals.refundRatePct >= 5}
-        />
-        <StatCard label="Refunded" value={formatNgn(data.totals.refundedKobo)} />
-        <StatCard label="Refunded orders" value={data.totals.refundedOrders.toLocaleString('en-NG')} />
+      <section className="wrap" style={{ paddingBottom: 24 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: 16,
+          }}
+        >
+          <StatCard label="Gross revenue" value={formatNgn(data.totals.grossKobo)} />
+          <StatCard label="Net (after refunds)" value={formatNgn(data.totals.netKobo)} />
+          <StatCard label="Paid orders" value={data.totals.paidOrders.toLocaleString('en-NG')} />
+          <StatCard label="Tickets sold" value={data.totals.ticketsSold.toLocaleString('en-NG')} />
+          <StatCard label="Avg. order value" value={formatNgn(data.totals.averageOrderKobo)} />
+          <StatCard
+            label="Refund rate"
+            value={`${data.totals.refundRatePct.toFixed(1)}%`}
+            danger={data.totals.refundRatePct >= 5}
+          />
+          <StatCard label="Refunded" value={formatNgn(data.totals.refundedKobo)} />
+          <StatCard
+            label="Refunded orders"
+            value={data.totals.refundedOrders.toLocaleString('en-NG')}
+          />
+        </div>
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold">Revenue by day</h2>
+      <section className="wrap" style={{ paddingBottom: 24 }}>
+        <h2 className="h-3 mb-4">Revenue by day</h2>
         <RevenueChart daily={data.daily} />
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold">Orders by hour (UTC)</h2>
-        <p className="text-sm text-gray-500 mb-2">When buyers are checking out — useful for timing pushes + ad spend.</p>
+      <section className="wrap" style={{ paddingBottom: 24 }}>
+        <h2 className="h-3">Orders by hour (UTC)</h2>
+        <p className="text-sm muted mb-3" style={{ marginTop: 4 }}>
+          When buyers are checking out — useful for timing pushes + ad spend.
+        </p>
         <HourChart hourly={data.ordersByHour} />
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold">Top events by revenue</h2>
+      <section className="wrap" style={{ paddingBottom: 64 }}>
+        <h2 className="h-3 mb-4">Top events by revenue</h2>
         {data.topEvents.length === 0 ? (
-          <p className="text-gray-500 mt-2">No events yet.</p>
+          <div className="card" style={{ padding: 32, textAlign: 'center', color: 'var(--ink-3)' }}>
+            No events in this range.
+          </div>
         ) : (
-          <ul className="mt-4 space-y-3">
+          <div className="col gap-2">
             {data.topEvents.map((e) => (
-              <li key={e.slug} className="rounded-lg border border-gray-200 p-4 bg-white">
-                <div className="flex justify-between items-baseline gap-4">
-                  <div className="min-w-0">
-                    <Link href={`/events/${e.slug}`} className="font-medium hover:underline truncate block">
-                      {e.title}
-                    </Link>
-                    <div className="text-xs text-gray-500 mt-0.5">
-                      {e.sold.toLocaleString('en-NG')} / {e.capacity.toLocaleString('en-NG')} sold ·
-                      {' '}
-                      {e.sellThroughPct.toFixed(1)}% sell-through
-                    </div>
+              <div
+                key={e.slug}
+                className="card"
+                style={{
+                  padding: 18,
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(0,1fr) auto',
+                  gap: 16,
+                  alignItems: 'center',
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <Link
+                    href={`/events/${e.slug}`}
+                    className="fw-600"
+                    style={{ fontSize: 15, display: 'block' }}
+                  >
+                    {e.title}
+                  </Link>
+                  <div className="text-xs muted mt-1">
+                    {e.sold.toLocaleString('en-NG')} /{' '}
+                    {e.capacity.toLocaleString('en-NG')} sold ·{' '}
+                    {e.sellThroughPct.toFixed(1)}% sell-through
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold">{formatNgn(e.revenueKobo)}</div>
-                  </div>
-                </div>
-                <div
-                  className="mt-3 h-1.5 rounded bg-gray-100 overflow-hidden"
-                  role="progressbar"
-                  aria-label={`${e.title} sell-through`}
-                  aria-valuenow={Math.round(e.sellThroughPct)}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                >
                   <div
-                    className="h-full bg-brand"
-                    style={{ width: `${Math.min(100, e.sellThroughPct)}%` }}
-                  />
+                    className="mt-3"
+                    style={{
+                      height: 4,
+                      background: 'var(--surface-2)',
+                      borderRadius: 99,
+                      overflow: 'hidden',
+                    }}
+                    role="progressbar"
+                    aria-label={`${e.title} sell-through`}
+                    aria-valuenow={Math.round(e.sellThroughPct)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
+                    <div
+                      style={{
+                        height: '100%',
+                        width: `${Math.min(100, e.sellThroughPct)}%`,
+                        background:
+                          e.sellThroughPct >= 90
+                            ? 'var(--danger)'
+                            : 'linear-gradient(90deg, var(--accent), oklch(0.65 0.18 180))',
+                      }}
+                    />
+                  </div>
                 </div>
-              </li>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="h-3 tnum">{formatNgn(e.revenueKobo)}</div>
+                  <Link
+                    href={`/events/${e.slug}`}
+                    className="text-xs accent-text mt-1"
+                    style={{ display: 'inline-block' }}
+                  >
+                    View public <Icon name="arrow" size={11} />
+                  </Link>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </section>
     </div>
   );
 }
 
-function StatCard({ label, value, danger = false }: { label: string; value: string; danger?: boolean }) {
+function StatCard({
+  label,
+  value,
+  danger = false,
+}: {
+  label: string;
+  value: string;
+  danger?: boolean;
+}) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
-      <div className={`mt-1 text-xl font-semibold ${danger ? 'text-red-600' : ''}`}>{value}</div>
+    <div className="card" style={{ padding: 22 }}>
+      <div className="eyebrow">{label}</div>
+      <div
+        className="h-1 tnum mt-2"
+        style={{ fontSize: 28, lineHeight: 1, color: danger ? 'var(--danger)' : undefined }}
+      >
+        {value}
+      </div>
     </div>
   );
 }
 
 function RevenueChart({ daily }: { daily: Analytics['daily'] }) {
   const max = Math.max(1, ...daily.map((d) => d.revenueKobo));
-  // Inline SVG sparkline + per-bucket CSS bars. Avoids pulling in a
-  // chart library for what's effectively two-dozen rectangles.
   return (
-    <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
-      <div className="flex items-end gap-[2px] h-32" role="img" aria-label="Revenue per day">
+    <div className="card" style={{ padding: 20 }}>
+      <div
+        style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 128 }}
+        role="img"
+        aria-label="Revenue per day"
+      >
         {daily.map((d) => {
           const h = Math.max(2, Math.round((d.revenueKobo / max) * 120));
           return (
             <div
               key={d.date}
-              className="flex-1 bg-brand/80 rounded-t-sm relative group"
-              style={{ height: h }}
               title={`${d.date}: ${formatNgn(d.revenueKobo)} from ${d.orders} order${d.orders === 1 ? '' : 's'}`}
+              style={{
+                flex: 1,
+                height: h,
+                background:
+                  'linear-gradient(180deg, var(--accent), oklch(0.55 0.16 180))',
+                borderRadius: '4px 4px 0 0',
+              }}
             >
               <span className="sr-only">
                 {d.date}: {formatNgn(d.revenueKobo)} from {d.orders} orders
@@ -199,7 +264,7 @@ function RevenueChart({ daily }: { daily: Analytics['daily'] }) {
           );
         })}
       </div>
-      <div className="mt-2 flex justify-between text-xs text-gray-500">
+      <div className="row mt-3 muted text-xs" style={{ justifyContent: 'space-between' }}>
         <span>{daily[0]?.date}</span>
         <span>{daily[daily.length - 1]?.date}</span>
       </div>
@@ -210,20 +275,42 @@ function RevenueChart({ daily }: { daily: Analytics['daily'] }) {
 function HourChart({ hourly }: { hourly: Analytics['ordersByHour'] }) {
   const max = Math.max(1, ...hourly.map((h) => h.orders));
   return (
-    <div className="mt-2 rounded-lg border border-gray-200 bg-white p-4">
-      <div className="flex items-end gap-1 h-24" role="img" aria-label="Orders by hour of day, UTC">
+    <div className="card" style={{ padding: 20 }}>
+      <div
+        style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100 }}
+        role="img"
+        aria-label="Orders by hour of day, UTC"
+      >
         {hourly.map((h) => {
           const heightPct = Math.round((h.orders / max) * 100);
           return (
-            <div key={h.hour} className="flex-1 flex flex-col items-center">
-              <div className="w-full bg-gray-100 rounded relative" style={{ height: 80 }}>
+            <div
+              key={h.hour}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  background: 'var(--surface-2)',
+                  borderRadius: 'var(--r-1)',
+                  position: 'relative',
+                  height: 80,
+                }}
+              >
                 <div
-                  className="absolute bottom-0 left-0 right-0 bg-brand rounded-b"
-                  style={{ height: `${Math.max(2, heightPct)}%` }}
                   title={`${h.hour.toString().padStart(2, '0')}:00 UTC — ${h.orders} order${h.orders === 1 ? '' : 's'}`}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: `${Math.max(2, heightPct)}%`,
+                    background: 'var(--accent)',
+                    borderRadius: '0 0 var(--r-1) var(--r-1)',
+                  }}
                 />
               </div>
-              <span className="mt-1 text-[10px] text-gray-500">
+              <span className="mt-1 muted" style={{ fontSize: 10, fontFamily: 'var(--font-mono)' }}>
                 {h.hour.toString().padStart(2, '0')}
               </span>
             </div>

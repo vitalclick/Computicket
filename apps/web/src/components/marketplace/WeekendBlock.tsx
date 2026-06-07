@@ -5,7 +5,7 @@ import { SectionHead } from './SectionHead';
 export function WeekendBlock() {
   const picks = DESIGN_EXPERIENCES.slice(0, 2);
   return (
-    <section className="wrap section">
+    <section className="wrap section" style={{ maxWidth: 1240 }}>
       <SectionHead
         eyebrow="Weekend Experiences"
         title="Aspirational, Naija-coded."

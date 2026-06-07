@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Icon } from '@/components/Icon';
 import { CategoryHero } from '@/components/marketplace/CategoryHero';
+import { HeroSearchBadges } from '@/components/marketplace/HeroSearchBadges';
 import { SectionHead } from '@/components/marketplace/SectionHead';
 import { DESIGN_EXPERIENCES, formatNaira } from '@/lib/design-data';
 
@@ -39,6 +40,15 @@ export default function ExperiencesPage() {
         badges={[
           { icon: 'sparkle', label: 'Curated' },
           { icon: 'star', label: 'Editor-vetted' },
+        ]}
+      />
+
+      <HeroSearchBadges
+        specs={[
+          { key: 'q',      icon: 'search',   prefix: 'Looking for:' },
+          { key: 'where',  icon: 'pin' },
+          { key: 'when',   icon: 'calendar' },
+          { key: 'guests', icon: 'user',     suffix: ' guests' },
         ]}
       />
 

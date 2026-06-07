@@ -309,6 +309,24 @@ export class AuthService {
     return rows.map((r) => ({ ...r, current: r.id === currentSessionId }));
   }
 
+  /**
+   * Public entry point for external sign-in flows (social login,
+   * magic link) once the email is provider-verified. Looks the user
+   * up and delegates to issueToken — same session + JWT shape as
+   * password sign-in.
+   */
+  async issueSessionForUserId(
+    userId: string,
+    meta?: { ip?: string; userAgent?: string },
+  ): Promise<SigninSuccess> {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { id: true, email: true, name: true, deletedAt: true },
+    });
+    if (user.deletedAt) throw new UnauthorizedException('Account closed');
+    return this.issueToken({ id: user.id, email: user.email, name: user.name }, meta);
+  }
+
   private async issueToken(
     user: { id: string; email: string; name: string | null },
     meta?: { ip?: string; userAgent?: string },

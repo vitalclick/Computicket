@@ -50,64 +50,166 @@ export default function AuditLogPage() {
   useEffect(() => { void load(); }, [load]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Audit log</h1>
-        <div className="flex gap-2">
+    <div className="page-enter wrap" style={{ paddingTop: 32, paddingBottom: 96, maxWidth: 1200 }}>
+      <div
+        className="between"
+        style={{ alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}
+      >
+        <div>
+          <div className="eyebrow mb-2">Platform admin</div>
+          <h1 className="h-2" style={{ margin: 0 }}>
+            Audit log
+          </h1>
+        </div>
+        <div className="row gap-2" style={{ alignItems: 'stretch' }}>
+          <label htmlFor="audit-filter" className="sr-only">
+            Filter by action
+          </label>
           <input
+            id="audit-filter"
             value={action}
             onChange={(e) => setAction(e.target.value)}
             placeholder="Filter by action (e.g. admin.organizer.approved)"
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm w-80"
+            className="input mono"
+            style={{ width: 360 }}
           />
           <button
+            type="button"
             onClick={() => void load(action || undefined)}
-            className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm"
+            className="btn btn-ghost"
           >
             Filter
           </button>
         </div>
       </div>
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {error ? (
+        <p className="text-sm mt-4" role="alert" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      ) : null}
       {rows === null ? (
-        <p className="mt-6 text-sm text-gray-500">Loading…</p>
+        <p className="muted mt-6">Loading…</p>
       ) : rows.length === 0 ? (
-        <p className="mt-6 text-sm text-gray-500">No entries.</p>
-      ) : (
-        <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-3 py-2 text-left">When</th>
-                <th className="px-3 py-2 text-left">Actor</th>
-                <th className="px-3 py-2 text-left">Action</th>
-                <th className="px-3 py-2 text-left">Target</th>
-                <th className="px-3 py-2 text-left">IP</th>
-                <th className="px-3 py-2 text-left">Metadata</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {rows.map((r) => (
-                <tr key={r.id}>
-                  <td className="px-3 py-2 whitespace-nowrap text-gray-600">
-                    {new Date(r.createdAt).toLocaleString('en-NG')}
-                  </td>
-                  <td className="px-3 py-2 whitespace-nowrap">
-                    {r.actorEmail ?? <span className="text-gray-400">—</span>}
-                  </td>
-                  <td className="px-3 py-2 font-mono text-xs">{r.action}</td>
-                  <td className="px-3 py-2 text-xs text-gray-600">
-                    {r.targetType && r.targetId ? `${r.targetType}:${r.targetId}` : '—'}
-                  </td>
-                  <td className="px-3 py-2 text-xs font-mono text-gray-500">{r.ip ?? '—'}</td>
-                  <td className="px-3 py-2 text-xs font-mono text-gray-500">
-                    {r.metadata ? JSON.stringify(r.metadata) : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div
+          className="card mt-6"
+          style={{ padding: 32, textAlign: 'center', color: 'var(--ink-3)' }}
+        >
+          No entries.
         </div>
+      ) : (
+        <>
+          {/* Mobile card list */}
+          <div className="mobile-only col gap-2 mt-6">
+            {rows.map((r) => (
+              <div key={r.id} className="card" style={{ padding: 14 }}>
+                <div className="between" style={{ alignItems: 'flex-start' }}>
+                  <div className="mono text-xs muted">
+                    {new Date(r.createdAt).toLocaleString('en-NG')}
+                  </div>
+                  {r.actorEmail ? (
+                    <span className="text-xs muted">{r.actorEmail}</span>
+                  ) : null}
+                </div>
+                <div className="mono text-sm mt-2" style={{ wordBreak: 'break-all' }}>
+                  {r.action}
+                </div>
+                <div className="text-xs muted mt-1">
+                  {r.targetType && r.targetId
+                    ? `${r.targetType}:${r.targetId}`
+                    : 'No target'}
+                </div>
+                {r.metadata ? (
+                  <pre
+                    className="mono text-xs mt-2"
+                    style={{
+                      background: 'var(--surface-2)',
+                      padding: 8,
+                      borderRadius: 'var(--r-1)',
+                      overflowX: 'auto',
+                      margin: 0,
+                      maxWidth: '100%',
+                    }}
+                  >
+                    {JSON.stringify(r.metadata)}
+                  </pre>
+                ) : null}
+                {r.ip ? (
+                  <div className="mono text-xs muted mt-2">IP {r.ip}</div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+
+          <div
+            className="card desktop-only mt-6"
+            style={{ padding: 0, overflow: 'auto' }}
+          >
+            <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--line)' }}>
+                  {['When', 'Actor', 'Action', 'Target', 'IP', 'Metadata'].map((h) => (
+                    <th
+                      key={h}
+                      style={{
+                        textAlign: 'left',
+                        padding: '10px 14px',
+                        fontSize: 11,
+                        textTransform: 'uppercase',
+                        letterSpacing: '.08em',
+                        color: 'var(--ink-3)',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                    <td
+                      style={{ padding: '10px 14px', whiteSpace: 'nowrap', color: 'var(--ink-2)' }}
+                    >
+                      {new Date(r.createdAt).toLocaleString('en-NG')}
+                    </td>
+                    <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                      {r.actorEmail ?? <span className="muted">—</span>}
+                    </td>
+                    <td className="mono" style={{ padding: '10px 14px', fontSize: 12 }}>
+                      {r.action}
+                    </td>
+                    <td style={{ padding: '10px 14px', fontSize: 12, color: 'var(--ink-2)' }}>
+                      {r.targetType && r.targetId
+                        ? `${r.targetType}:${r.targetId}`
+                        : '—'}
+                    </td>
+                    <td
+                      className="mono"
+                      style={{ padding: '10px 14px', fontSize: 12, color: 'var(--ink-3)' }}
+                    >
+                      {r.ip ?? '—'}
+                    </td>
+                    <td
+                      className="mono"
+                      style={{
+                        padding: '10px 14px',
+                        fontSize: 12,
+                        color: 'var(--ink-3)',
+                        maxWidth: 320,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {r.metadata ? JSON.stringify(r.metadata) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

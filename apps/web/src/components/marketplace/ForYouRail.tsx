@@ -10,7 +10,7 @@ const PICKS = [
 
 export function ForYouRail() {
   return (
-    <section className="wrap section">
+    <section className="wrap section" style={{ maxWidth: 1240 }}>
       <SectionHead
         eyebrow="✦ Trending in Nigeria"
         title="What everyone's booking right now."

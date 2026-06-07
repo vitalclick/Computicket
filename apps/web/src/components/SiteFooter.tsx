@@ -31,18 +31,19 @@ const COLUMNS: Column[] = [
   {
     heading: 'Organizers',
     items: [
-      { label: 'Sell Tickets', href: '/for-organizers#sell-tickets' },
-      { label: 'Promoter Hub', href: '/for-organizers#promoter-hub' },
-      { label: 'API Access', href: '/for-organizers#api-access' },
-      { label: 'Payouts', href: '/for-organizers#payouts' },
-      { label: 'Analytics', href: '/for-organizers#analytics' },
-      { label: 'Onboarding', href: '/for-organizers#onboarding' },
+      { label: 'Sell Tickets', href: '/for-organizers/sell-tickets' },
+      { label: 'Promoter Hub', href: '/for-organizers/promoter-hub' },
+      { label: 'API Access', href: '/for-organizers/api-access' },
+      { label: 'Payouts', href: '/for-organizers/payouts' },
+      { label: 'Analytics', href: '/for-organizers/analytics' },
+      { label: 'Onboarding', href: '/for-organizers/onboarding' },
     ],
   },
   {
     heading: 'Company',
     items: [
       { label: 'About Us', href: '/about' },
+      { label: 'Get the app', href: '/app' },
       { label: 'Careers', href: '/careers' },
       { label: 'Press', href: '/press' },
       { label: 'Trust & Safety', href: '/trust' },
@@ -54,6 +55,7 @@ const COLUMNS: Column[] = [
     heading: 'Support',
     items: [
       { label: 'Help Centre', href: '/help' },
+      { label: 'Resale marketplace', href: '/resale' },
       { label: 'Buyer Protection', href: '/buyer-protection' },
       { label: 'Refunds', href: '/refunds' },
       { label: 'Privacy', href: '/privacy' },

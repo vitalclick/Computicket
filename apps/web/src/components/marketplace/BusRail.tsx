@@ -4,7 +4,7 @@ import { SectionHead } from './SectionHead';
 
 export function BusRail() {
   return (
-    <section className="wrap section-sm" style={{ paddingTop: 0 }}>
+    <section className="wrap section-sm" style={{ paddingTop: 0, maxWidth: 1240 }}>
       <SectionHead
         eyebrow="Bus Travel"
         title="Comfort class, every major route."

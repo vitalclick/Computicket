@@ -341,6 +341,118 @@ class ApiClient {
 
   String ticketQrUrl(String code) =>
       baseUrl.replace(path: '${baseUrl.path}/tickets/$code/qr.png').toString();
+
+  // ---------- Ticket transfers ----------
+
+  /// Generate a one-time transfer link for [code]. Optionally emails the
+  /// recipient. Returns the plaintext token + the shareable web link.
+  Future<TicketTransferTicket> createTicketTransfer({
+    required String token,
+    required String code,
+    String? recipientEmail,
+  }) async {
+    final raw = await _send(
+      'POST',
+      '/tickets/$code/transfer',
+      token: token,
+      body: {
+        if (recipientEmail != null && recipientEmail.isNotEmpty)
+          'recipientEmail': recipientEmail,
+      },
+    );
+    return TicketTransferTicket(
+      token: raw['token'] as String,
+      link: raw['link'] as String,
+      expiresAt: DateTime.parse(raw['expiresAt'] as String),
+    );
+  }
+
+  Future<void> cancelTicketTransfer({
+    required String token,
+    required String code,
+  }) async {
+    await _send('DELETE', '/tickets/$code/transfer', token: token);
+  }
+
+  // ---------- Resale marketplace ----------
+
+  Future<List<ResaleListing>> listResale() async {
+    final raw = await _send('GET', '/resale');
+    return ((raw['data'] ?? raw) as List<dynamic>)
+        .map((m) => ResaleListing.fromJson(m as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<Map<String, dynamic>> createResaleListing({
+    required String token,
+    required String ticketCode,
+    required int askKobo,
+  }) async {
+    return _send('POST', '/resale', token: token, body: {
+      'ticketCode': ticketCode,
+      'askKobo': askKobo,
+    });
+  }
+
+  Future<Map<String, dynamic>> buyResaleListing({
+    required String token,
+    required String listingId,
+  }) async {
+    return _send('POST', '/resale/$listingId/buy', token: token);
+  }
+}
+
+class TicketTransferTicket {
+  TicketTransferTicket({
+    required this.token,
+    required this.link,
+    required this.expiresAt,
+  });
+  final String token;
+  final String link;
+  final DateTime expiresAt;
+}
+
+class ResaleListing {
+  ResaleListing({
+    required this.id,
+    required this.askKobo,
+    required this.ticketCode,
+    required this.tierName,
+    required this.originalPriceKobo,
+    required this.eventSlug,
+    required this.eventTitle,
+    required this.startsAt,
+    required this.city,
+    required this.venue,
+  });
+  factory ResaleListing.fromJson(Map<String, dynamic> j) {
+    final ticket = (j['ticket'] ?? const {}) as Map<String, dynamic>;
+    final event = (j['event'] ?? const {}) as Map<String, dynamic>;
+    return ResaleListing(
+      id: j['id'] as String,
+      askKobo: (j['askKobo'] as num).toInt(),
+      ticketCode: ticket['code'] as String? ?? '',
+      tierName: ticket['tierName'] as String? ?? '',
+      originalPriceKobo: (ticket['originalPriceKobo'] as num?)?.toInt() ?? 0,
+      eventSlug: event['slug'] as String? ?? '',
+      eventTitle: event['title'] as String? ?? '',
+      startsAt: DateTime.tryParse(event['startsAt'] as String? ?? '') ??
+          DateTime.now(),
+      city: event['city'] as String? ?? '',
+      venue: event['venue'] as String? ?? '',
+    );
+  }
+  final String id;
+  final int askKobo;
+  final String ticketCode;
+  final String tierName;
+  final int originalPriceKobo;
+  final String eventSlug;
+  final String eventTitle;
+  final DateTime startsAt;
+  final String city;
+  final String venue;
 }
 
 @visibleForTesting

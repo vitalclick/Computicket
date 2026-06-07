@@ -7,7 +7,7 @@ export type IconName =
   | 'check' | 'close' | 'star' | 'lock' | 'shield' | 'qr' | 'wallet'
   | 'gift' | 'chart' | 'pulse' | 'play' | 'fire' | 'pin' | 'clock'
   | 'info' | 'send' | 'grid' | 'filter' | 'eye' | 'mic' | 'wifi'
-  | 'ac' | 'settings' | 'logout' | 'minus' | 'plus' | 'refresh';
+  | 'ac' | 'settings' | 'logout' | 'minus' | 'plus' | 'refresh' | 'bolt';
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name' | 'stroke'> {
   name: IconName;
@@ -63,6 +63,7 @@ const PATHS: Record<IconName, React.ReactNode> = {
   minus: <path d="M5 12h14" />,
   plus: <path d="M12 5v14m-7-7h14" />,
   refresh: (<><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5" /></>),
+  bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,
 };
 
 export function Icon({ name, size = 18, stroke = 1.5, ...rest }: IconProps) {

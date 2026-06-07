@@ -1,171 +1,209 @@
 import type { Metadata } from 'next';
-import { Icon } from '@/components/Icon';
-import { CategoryHero } from '@/components/marketplace/CategoryHero';
-import { PillarGrid } from '@/components/marketplace/ContentPage';
-import { SectionHead } from '@/components/marketplace/SectionHead';
+import {
+  ContentBlock,
+  ContentCTA,
+  ContentHero,
+  ContentSubNav,
+  FAQBlock,
+  PillarsBlock,
+  StatsStrip,
+} from '@/components/marketplace/Editorial';
 
 export const metadata: Metadata = {
   title: 'Trust & Safety — Computicket Nigeria',
   description:
-    'How Computicket protects buyers and organizers — PCI-DSS, NDPR, anti-fraud, refund guarantees.',
+    'Your booking is protected end-to-end. Every payment is insured, every ticket is QR-verified, every refund is guaranteed.',
 };
-
-const PILLARS = [
-  {
-    icon: 'shield' as const,
-    title: 'Buyer protection',
-    body:
-      "Every paid order is backed. If the event is cancelled, your money comes back. If the organizer disappears, we step in. No appeals process — we're the receipt.",
-  },
-  {
-    icon: 'qr' as const,
-    title: 'Anti-fraud ticketing',
-    body:
-      "QR codes rotate every 5 minutes. Screenshot validation. Device fingerprinting. Tickets can't be cloned, scalped through bots, or 'shared' to multiple phones.",
-  },
-  {
-    icon: 'lock' as const,
-    title: 'PCI-DSS certified',
-    body:
-      'Card data never touches our infrastructure. Paystack and Flutterwave handle the rails; we hold encrypted tokens only. AES-256 at rest, TLS 1.3 in transit.',
-  },
-  {
-    icon: 'eye' as const,
-    title: 'NDPR-compliant',
-    body:
-      "We're registered with the Nigeria Data Protection Commission. Your data stays in NG-hosted infrastructure. Full export and deletion on request.",
-  },
-  {
-    icon: 'check' as const,
-    title: 'Verified organizers',
-    body:
-      "Every organizer is KYC'd before publishing. CAC registration, ID verification, payout bank confirmation. Suspicious orgs get suspended fast.",
-  },
-  {
-    icon: 'pulse' as const,
-    title: 'On-call 24/7',
-    body:
-      'Real humans on the trust hotline 24 hours a day. Venue incidents, suspected fraud, lost-and-found, account compromise — phone, email or WhatsApp.',
-  },
-];
-
-const REPORTING = [
-  { t: 'Suspect fraud',           who: 'A fake event, a fake organizer, a phishing ticket', cta: 'trust@computicket.ng', href: 'mailto:trust@computicket.ng' },
-  { t: 'Lost or stolen account',  who: 'Account taken over, password reset spam',           cta: 'trust@computicket.ng', href: 'mailto:trust@computicket.ng' },
-  { t: 'Venue incident',           who: 'Safety, refusal of entry, dispute at the door',     cta: 'On-call hotline · 0700 268 425 38', href: 'tel:+2347002684253' },
-  { t: 'Vulnerability report',     who: 'Security researchers — bug bounty active',          cta: 'security@computicket.ng', href: 'mailto:security@computicket.ng' },
-];
-
-const SCANS_PER_MONTH = 1_280_000;
-const FRAUD_RATE = 0.0008;
 
 export default function TrustPage() {
   return (
     <div className="page-enter">
-      <CategoryHero
+      <ContentSubNav group="company" active="trust" />
+
+      <ContentHero
         eyebrow="Trust & Safety"
-        title="Booking on Computicket should feel like banking."
-        subtitle="Verified organizers, anti-fraud tickets, PCI-DSS, NDPR — and a real person on the trust hotline 24 hours a day."
-        ph="ph-4"
-        primaryCta={{ label: 'Report a concern', href: '#reporting' }}
-        secondaryCta={{ label: 'Buyer protection', href: '/buyer-protection' }}
-        badges={[
-          { icon: 'shield', label: 'PCI-DSS certified' },
-          { icon: 'check', label: 'NDPR compliant' },
+        title="Your booking is protected end-to-end."
+        lede="Every payment is insured, every ticket is QR-verified, every refund is guaranteed. Here's exactly how we keep your money, your data, and your night out safe."
+      />
+
+      <StatsStrip
+        stats={[
+          { n: '₦0',      l: 'Lost to fraud in 2025' },
+          { n: '<48h',    l: 'Median refund time' },
+          { n: 'AES-256', l: 'Encryption at rest & transit' },
+          { n: '24/7',    l: 'WhatsApp support response' },
         ]}
       />
 
-      <section className="wrap section-sm">
-        <SectionHead eyebrow="Pillars" title="Six things we never compromise." />
-        <PillarGrid items={PILLARS} />
-      </section>
+      <PillarsBlock
+        eyebrow="Six layers of protection"
+        title="Defence in depth — from your phone to the venue gate."
+        cols={3}
+        pillars={[
+          {
+            icon: 'shield',
+            title: 'Buyer Protection',
+            body:
+              '100% refund if an event is cancelled or significantly changed. No questions asked, no forms to fill — just one tap in your wallet.',
+            color: 'oklch(0.62 0.18 152)',
+          },
+          {
+            icon: 'qr',
+            title: 'Verified QR tickets',
+            body:
+              "Each ticket carries a rotating, device-bound QR. Scalpers can't duplicate it. Bots can't farm it. Every scan is logged in real time.",
+            color: 'oklch(0.60 0.16 230)',
+          },
+          {
+            icon: 'lock',
+            title: 'Bank-grade payments',
+            body:
+              'PCI-DSS Level 1 certified. 3-D Secure on every card. OTP and biometric verification. Nothing leaves your phone unencrypted.',
+            color: 'oklch(0.65 0.15 75)',
+          },
+          {
+            icon: 'wallet',
+            title: 'Escrow & NDIC cover',
+            body:
+              "Organizer payouts sit in NDIC-insured escrow until the event delivers. Your money is never co-mingled with anyone's runway.",
+            color: 'oklch(0.55 0.18 305)',
+          },
+          {
+            icon: 'check',
+            title: 'NDPR compliant',
+            body:
+              'We are registered with the Nigerian Data Protection Bureau. Your data is yours — we never sell it, and you can export or delete it anytime.',
+            color: 'oklch(0.62 0.14 200)',
+          },
+          {
+            icon: 'sparkle',
+            title: 'AI fraud sentinel',
+            body:
+              'Compass watches every transaction in real time. Suspicious patterns are flagged in under 200ms — without slowing legitimate buyers.',
+            color: 'oklch(0.65 0.20 25)',
+          },
+        ]}
+      />
 
-      <section className="wrap section-sm" style={{ paddingTop: 0 }}>
-        <div className="card" style={{ padding: 32 }}>
-          <div className="row" style={{ gap: 48, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div className="eyebrow">Scans this month</div>
-              <div className="h-1 tnum mt-2" style={{ fontSize: 40 }}>
-                {SCANS_PER_MONTH.toLocaleString()}
-              </div>
-              <div className="text-xs muted mt-1">across 280 venues</div>
-            </div>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div className="eyebrow">Fraud rate</div>
-              <div className="h-1 tnum mt-2" style={{ fontSize: 40 }}>
-                {(FRAUD_RATE * 100).toFixed(2)}%
-              </div>
-              <div className="text-xs muted mt-1">vs. 1.2% industry baseline</div>
-            </div>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div className="eyebrow">Refund SLA</div>
-              <div className="h-1 tnum mt-2" style={{ fontSize: 40 }}>
-                &lt; 5 days
-              </div>
-              <div className="text-xs muted mt-1">90th percentile for card refunds</div>
-            </div>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div className="eyebrow">Disputes resolved</div>
-              <div className="h-1 tnum mt-2" style={{ fontSize: 40 }}>
-                99.4%
-              </div>
-              <div className="text-xs muted mt-1">in buyer&apos;s favour when valid</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <ContentBlock
+        eyebrow="Buyer Protection"
+        title="If your event cancels, we refund — instantly."
+        image="ph-3"
+        imageCaption="QR ticket vault · Compass app"
+        body={
+          <>
+            <p>
+              You should never have to chase a refund. When an organizer cancels or significantly
+              changes an event, we automatically credit your Computicket wallet within 48 hours —
+              usually within minutes.
+            </p>
+            <p className="mt-4">
+              <strong>What&apos;s covered:</strong> Full ticket value, including service fees and
+              VAT. Travel and hotel bookings purchased through Computicket bundles are covered up
+              to ₦500,000.
+            </p>
+            <p className="mt-4">
+              <strong>What&apos;s not:</strong> Personal change-of-mind. Acts of God impacting
+              individual ticket use (we recommend the optional ₦600 travel insurance add-on at
+              checkout).
+            </p>
+          </>
+        }
+      />
 
-      <section id="reporting" className="wrap section-sm" style={{ paddingTop: 0 }}>
-        <SectionHead
-          eyebrow="Reporting"
-          title="See something? Tell us."
-          sub="Pick the right channel. Trust incidents get triaged first — we don't queue them behind tier-1 support."
-        />
-        <div className="col gap-3">
-          {REPORTING.map((r) => (
-            <div
-              key={r.t}
-              className="card card-hover"
-              style={{
-                padding: 22,
-                display: 'grid',
-                gridTemplateColumns: '200px minmax(0,1fr) auto',
-                gap: 24,
-                alignItems: 'center',
-              }}
-            >
-              <div className="h-4">{r.t}</div>
-              <div className="text-sm muted">{r.who}</div>
-              <a href={r.href} className="btn btn-accent btn-sm">
-                {r.cta}
-              </a>
-            </div>
-          ))}
-        </div>
-      </section>
+      <ContentBlock
+        eyebrow="Reporting & response"
+        title="A real human responds in under 5 minutes — on WhatsApp."
+        imagePosition="left"
+        image="ph-4"
+        imageCaption="Trust & Safety operations · Lagos"
+        body={
+          <>
+            <p>
+              We staff our Trust &amp; Safety operations 24/7 across Lagos and Abuja. Report a
+              problem via the in-app shield icon, WhatsApp <span className="mono">+234 802
+              COMPASS</span>, or email <span className="mono">trust@computicket.ng</span>.
+            </p>
+            <p className="mt-4">
+              Our median first-response time on WhatsApp is 4 minutes 20 seconds. Median resolution
+              time is 12 hours for ticket issues, 48 hours for refund cases.
+            </p>
+            <p className="mt-4">
+              If we cannot resolve your issue, the Lagos State Consumer Protection Council and the
+              FCCPC have escalation paths we proactively support.
+            </p>
+          </>
+        }
+      />
 
-      <section className="wrap" style={{ paddingBottom: 96 }}>
-        <div className="card" style={{ padding: 32 }}>
-          <div className="row gap-3">
-            <Icon name="info" size={18} />
-            <div>
-              <div className="h-4">Responsible disclosure</div>
-              <p
-                className="muted mt-2"
-                style={{ fontSize: 14, lineHeight: 1.7 }}
-              >
-                Security researchers — we run a private bug bounty. Critical findings paid within 14 days,
-                tiered up to ₦5,000,000 for remote code execution or full account takeover.
-                Mail{' '}
-                <a href="mailto:security@computicket.ng" className="accent-text">
-                  security@computicket.ng
-                </a>{' '}
-                with your PGP key.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <FAQBlock
+        eyebrow="Frequently asked"
+        title="Common questions about safety."
+        items={[
+          {
+            q: 'How do I know a ticket is real?',
+            a: (
+              <>
+                Every Computicket ticket has a rotating QR that only validates against our server
+                in real time. If you bought outside Computicket, look for the green verification
+                badge in the wallet — if it&apos;s missing, the ticket is not legitimate.
+                We&apos;ll never charge you to &ldquo;verify&rdquo; a ticket.
+              </>
+            ),
+          },
+          {
+            q: "What happens if my QR doesn't scan at the gate?",
+            a: (
+              <>
+                Open your ticket in the app — the QR auto-refreshes every 30 seconds. If it still
+                won&apos;t scan, the gate staff have a backup lookup via your phone number. Worst
+                case, our 24/7 WhatsApp line will release a one-time bypass code in under 60
+                seconds.
+              </>
+            ),
+          },
+          {
+            q: 'Are organizer payouts safe?',
+            a: (
+              <>
+                Yes. All organizer revenue sits in NDIC-insured escrow with Wema Bank until the
+                event delivers. Payouts release automatically 24 hours after gates close, after we
+                reconcile scan counts. This protects buyers from fly-by-night operators.
+              </>
+            ),
+          },
+          {
+            q: 'How is my personal data used?',
+            a: (
+              <>
+                We use your data only to power your bookings and personalisation. We never sell it.
+                You can export everything we hold on you from Settings → Privacy → Export, and
+                delete your account permanently from the same screen. We are registered with the
+                NDPB (registration #NDPB-2023-04812).
+              </>
+            ),
+          },
+          {
+            q: "What if I'm scammed off-platform?",
+            a: (
+              <>
+                If someone sells you a ticket via DM, WhatsApp or social media claiming it&apos;s a
+                Computicket ticket — it almost certainly isn&apos;t. Send us a screenshot via the
+                in-app shield and we&apos;ll investigate. Note: tickets bought off-platform
+                aren&apos;t covered by Buyer Protection.
+              </>
+            ),
+          },
+        ]}
+      />
+
+      <ContentCTA
+        eyebrow="Report something"
+        title="See something off? Tell us in one tap."
+        sub="Suspicious organizer, fake ticket on social media, account compromise — we move fast and we keep you informed every step."
+        primary={{ label: 'Report on WhatsApp', href: '/contact' }}
+        secondary={{ label: 'Email Trust & Safety', href: 'mailto:trust@computicket.ng' }}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Icon } from '@/components/Icon';
 import { CategoryHero } from '@/components/marketplace/CategoryHero';
+import { HeroSearchBadges } from '@/components/marketplace/HeroSearchBadges';
 import { SectionHead } from '@/components/marketplace/SectionHead';
 import { formatNaira } from '@/lib/design-data';
 
@@ -40,6 +41,15 @@ export default function CinemaPage() {
         badges={[
           { icon: 'film', label: 'IMAX · 3D · 2D' },
           { icon: 'pin', label: '24 screens in NG' },
+        ]}
+      />
+
+      <HeroSearchBadges
+        specs={[
+          { key: 'q',      icon: 'search',   prefix: 'Movie:' },
+          { key: 'city',   icon: 'pin' },
+          { key: 'date',   icon: 'calendar' },
+          { key: 'format', icon: 'film' },
         ]}
       />
 

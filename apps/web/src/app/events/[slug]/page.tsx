@@ -102,9 +102,9 @@ export default async function EventDetailPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section style={{ position: 'relative', overflow: 'hidden' }}>
+      <section className="event-hero-section" style={{ position: 'relative', overflow: 'hidden' }}>
         <div
-          className={`ph ${ph} ph-noise`}
+          className={`ph ${ph} ph-noise event-hero-photo`}
           style={{ position: 'absolute', inset: 0, height: 640 }}
         />
         <div
@@ -116,8 +116,21 @@ export default async function EventDetailPage({ params }: PageProps) {
               'linear-gradient(180deg, oklch(0.06 0.03 285 / .4), oklch(0.06 0.03 285 / .95) 80%, var(--bg-void))',
           }}
         />
+        <div className="event-hero-actions" aria-hidden="false">
+          <a href="/events" aria-label="Back to events" className="blur-btn">
+            <Icon name="chevron" size={20} style={{ transform: 'scaleX(-1)' }} />
+          </a>
+          <div className="row gap-2" style={{ pointerEvents: 'auto' }}>
+            <button type="button" aria-label="Save event" className="blur-btn">
+              <Icon name="heart" size={16} />
+            </button>
+            <button type="button" aria-label="Share event" className="blur-btn">
+              <Icon name="send" size={16} />
+            </button>
+          </div>
+        </div>
         <div
-          className="wrap"
+          className="wrap event-hero-wrap"
           style={{ position: 'relative', paddingTop: 80, paddingBottom: 60, minHeight: 640 }}
         >
           <div className="row gap-2 mb-6">
@@ -135,12 +148,12 @@ export default async function EventDetailPage({ params }: PageProps) {
             {dateLabel} · {timeLabel} · {event.city.toUpperCase()}
           </div>
           <h1
-            className="h-1"
+            className="h-1 event-hero-title"
             style={{ margin: '14px 0 8px', maxWidth: 920, fontSize: 88, color: 'white' }}
           >
             {event.title}
           </h1>
-          <div className="row gap-4" style={{ color: 'oklch(1 0 0 / .85)' }}>
+          <div className="row gap-4 event-hero-meta" style={{ color: 'oklch(1 0 0 / .85)' }}>
             <span>
               <Icon name="pin" size={14} /> {event.venue}
             </span>
@@ -163,7 +176,7 @@ export default async function EventDetailPage({ params }: PageProps) {
               gap: 32,
             }}
           >
-            <div className="card glass" style={{ padding: 24, color: 'white' }}>
+            <div className="card glass event-hero-primary" style={{ padding: 24, color: 'white' }}>
               <div className="between mb-4">
                 <div className="row gap-3">
                   <span
@@ -188,7 +201,7 @@ export default async function EventDetailPage({ params }: PageProps) {
                 </button>
               </div>
               <div className="hr" />
-              <div className="row gap-6 mt-4" style={{ flexWrap: 'wrap' }}>
+              <div className="row gap-6 mt-4 event-hero-stats" style={{ flexWrap: 'wrap' }}>
                 <Stat label="Attending" value={sold.toLocaleString()} />
                 <Stat label="Capacity" value={capacity.toLocaleString()} />
                 <Stat label="Sold" value={`${pctSold}%`} />
@@ -196,7 +209,7 @@ export default async function EventDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="card glass" style={{ padding: 20, color: 'white' }}>
+            <div className="card glass event-hero-secondary" style={{ padding: 20, color: 'white' }}>
               <div className="eyebrow mb-3" style={{ color: 'oklch(1 0 0 / .7)' }}>
                 Why book on Computicket
               </div>

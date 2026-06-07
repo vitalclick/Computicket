@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
+import { AuthDivider, SocialAuthButtons } from '@/components/auth/SocialAuthButtons';
 import { api } from '@/lib/api';
 import { setToken } from '@/lib/auth';
 
@@ -31,44 +33,78 @@ function SignUpForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-16">
-      <h1 className="text-2xl font-bold">Create an account</h1>
-      <p className="mt-2 text-sm text-gray-600">Track your tickets and bookings in one place.</p>
-      <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
-        <div>
+    <div className="auth-shell">
+      <div className="auth-card">
+        <h1 className="auth-card-title">Create an account</h1>
+        <p className="auth-card-sub">Track your tickets and bookings in one place.</p>
+        <div className="mt-6">
+          <SocialAuthButtons next={next} onSuccess={(n) => router.push(n)} />
+          <AuthDivider label="or use email" />
+        </div>
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
           <label htmlFor="signup-name" className="sr-only">Your name</label>
-          <input id="signup-name" type="text" placeholder="Your name" autoComplete="name"
-            value={name} onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2" />
-        </div>
-        <div>
+          <input
+            id="signup-name"
+            type="text"
+            placeholder="Your name"
+            autoComplete="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="input"
+          />
           <label htmlFor="signup-email" className="sr-only">Email address</label>
-          <input id="signup-email" type="email" required placeholder="Email"
-            autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2" />
-        </div>
-        <div>
+          <input
+            id="signup-email"
+            type="email"
+            required
+            placeholder="Email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input"
+          />
           <label htmlFor="signup-password" className="sr-only">Password</label>
-          <input id="signup-password" type="password" required minLength={8}
-            placeholder="Password (8+ characters)" autoComplete="new-password"
-            value={password} onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2" />
+          <input
+            id="signup-password"
+            type="password"
+            required
+            minLength={8}
+            placeholder="Password (8+ characters)"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input"
+          />
+          {error ? (
+            <div
+              className="text-sm"
+              role="alert"
+              aria-live="polite"
+              style={{ color: 'var(--danger)' }}
+            >
+              {error}
+            </div>
+          ) : null}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn btn-accent btn-lg"
+            style={{ width: '100%', justifyContent: 'center' }}
+          >
+            {submitting ? 'Creating…' : 'Create account'}
+          </button>
+        </form>
+        <div className="mt-6">
+          <AuthDivider label="passwordless" />
+          <div className="mt-3">
+            <MagicLinkForm />
+          </div>
         </div>
-        {error && (
-          <div className="text-sm text-red-600" role="alert" aria-live="polite">{error}</div>
-        )}
-        <button type="submit" disabled={submitting}
-          className="w-full bg-brand text-white font-medium py-2.5 rounded-md hover:bg-brand-dark disabled:bg-gray-300">
-          {submitting ? 'Creating…' : 'Create account'}
-        </button>
-      </form>
-      <p className="mt-6 text-sm text-gray-600">
-        {/* Underline always: the brand-dark vs gray-600 contrast is only
-            1.1:1, well below the WCAG 3:1 threshold for "link distinguishable
-            from surrounding text by colour alone". Underline restores
-            discoverability without a colour-contrast dependency. */}
-        Already have an account? <Link href="/signin" className="text-brand-dark underline">Sign in</Link>
-      </p>
+        <div className="auth-card-foot" style={{ justifyContent: 'flex-start', gap: 4 }}>
+          <span>Already have an account?</span>
+          <Link href="/signin" className="accent-text">Sign in</Link>
+        </div>
+      </div>
     </div>
   );
 }

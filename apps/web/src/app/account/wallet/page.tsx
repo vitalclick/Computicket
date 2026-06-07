@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { api, formatNgn } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
@@ -52,57 +53,168 @@ export default function WalletPage() {
     }
   }
 
-  if (error) return <div className="max-w-2xl mx-auto px-4 py-16 text-red-600">{error}</div>;
-  if (!data) return <div className="max-w-2xl mx-auto px-4 py-16 text-gray-500">Loading…</div>;
+  if (error) {
+    return (
+      <div className="wrap" style={{ paddingTop: 48, paddingBottom: 96, maxWidth: 680 }}>
+        <p style={{ color: 'var(--danger)' }}>{error}</p>
+      </div>
+    );
+  }
+  if (!data) {
+    return (
+      <div className="wrap" style={{ paddingTop: 48, paddingBottom: 96, maxWidth: 680 }}>
+        <p className="muted">Loading…</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <Link href="/account" className="text-sm text-gray-500 hover:text-brand-dark">← Account</Link>
-      <h1 className="mt-2 text-2xl font-bold">Wallet</h1>
+    <div className="page-enter wrap" style={{ paddingTop: 32, paddingBottom: 96, maxWidth: 680 }}>
+      <Link
+        href="/account"
+        className="row gap-1 text-sm muted"
+        style={{ alignItems: 'center', textDecoration: 'none' }}
+      >
+        <Icon name="chevron" size={12} style={{ transform: 'rotate(180deg)' }} />
+        <span>Account</span>
+      </Link>
+      <h1 className="h-2 mt-2" style={{ margin: '8px 0 0' }}>
+        Wallet
+      </h1>
 
-      <div className="mt-6 rounded-lg bg-brand text-white p-6">
-        <div className="text-sm uppercase tracking-wide ">Balance</div>
-        <div className="mt-2 text-4xl font-bold">{formatNgn(data.balanceKobo)}</div>
+      <div
+        className="card mt-6"
+        style={{
+          padding: 28,
+          background:
+            'linear-gradient(135deg, oklch(0.45 0.18 152), oklch(0.40 0.16 180))',
+          border: 0,
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div className="stars" style={{ opacity: 0.4 }} />
+        <div style={{ position: 'relative' }}>
+          <div className="eyebrow" style={{ color: 'oklch(1 0 0 / .7)' }}>
+            Balance
+          </div>
+          <div
+            className="h-1 tnum mt-2"
+            style={{ fontSize: 42, lineHeight: 1, color: 'white' }}
+          >
+            {formatNgn(data.balanceKobo)}
+          </div>
+        </div>
       </div>
 
-      <form onSubmit={topUp} className="mt-6 border border-gray-200 rounded-lg p-4 bg-white">
-        <h2 className="font-semibold">Add funds</h2>
-        <p className="text-xs text-gray-500 mt-1">
-          Top up via Paystack. The credit lands in your wallet as soon as we receive the payment confirmation.
+      <form onSubmit={topUp} className="card mt-6" style={{ padding: 22 }}>
+        <h2 className="h-4">Add funds</h2>
+        <p className="text-xs muted mt-2" style={{ lineHeight: 1.55 }}>
+          Top up via Paystack. The credit lands in your wallet as soon as we
+          receive the payment confirmation.
         </p>
-        <div className="mt-3 flex gap-2">
+        <div className="row gap-2 mt-3" style={{ alignItems: 'stretch' }}>
           <input
-            type="number" min="100" step="100" required placeholder="Amount (NGN)"
-            value={topUpAmount} onChange={(e) => setTopUpAmount(e.target.value)}
-            className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm"
+            type="number"
+            min="100"
+            step="100"
+            required
+            placeholder="Amount (NGN)"
+            value={topUpAmount}
+            onChange={(e) => setTopUpAmount(e.target.value)}
+            className="input"
+            style={{ flex: 1 }}
+            aria-label="Top-up amount in NGN"
           />
-          <button type="submit" disabled={busy}
-            className="bg-brand text-white px-4 py-2 rounded-md hover:bg-brand-dark disabled:bg-gray-300 text-sm">
+          <button
+            type="submit"
+            disabled={busy}
+            className="btn btn-accent"
+            style={{ flexShrink: 0 }}
+          >
             {busy ? 'Redirecting…' : 'Top up'}
           </button>
         </div>
       </form>
 
-      <h2 className="mt-10 text-lg font-semibold">Recent activity</h2>
+      <div className="between mt-8 mb-3">
+        <h2 className="h-3" style={{ margin: 0 }}>
+          Recent activity
+        </h2>
+        <span className="text-sm muted">{data.transactions.length} entries</span>
+      </div>
       {data.transactions.length === 0 ? (
-        <p className="mt-3 text-sm text-gray-500">No transactions yet.</p>
+        <div
+          className="card"
+          style={{ padding: 32, textAlign: 'center', color: 'var(--ink-3)' }}
+        >
+          No transactions yet.
+        </div>
       ) : (
-        <ul className="mt-3 divide-y divide-gray-200 border border-gray-200 rounded-lg bg-white">
-          {data.transactions.map((t) => (
-            <li key={t.id} className="px-4 py-3 flex items-center justify-between text-sm">
-              <div>
-                <div className="font-medium">{labelForType(t.type)}</div>
-                {t.note && <div className="text-xs text-gray-500">{t.note}</div>}
-                <div className="text-xs text-gray-400">{new Date(t.createdAt).toLocaleString('en-NG')}</div>
-              </div>
-              <div className="text-right">
-                <div className={`font-semibold ${t.amountKobo > 0 ? 'text-green-700' : 'text-red-700'}`}>
-                  {t.amountKobo > 0 ? '+' : ''}{formatNgn(t.amountKobo)}
+        <ul
+          className="card col"
+          style={{
+            padding: 0,
+            listStyle: 'none',
+            margin: 0,
+          }}
+        >
+          {data.transactions.map((t, i) => {
+            const positive = t.amountKobo > 0;
+            return (
+              <li
+                key={t.id}
+                style={{
+                  padding: '14px 18px',
+                  borderTop: i === 0 ? 0 : '1px solid var(--line)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: positive ? 'var(--accent-soft)' : 'var(--surface-2)',
+                    color: positive ? 'var(--accent)' : 'var(--ink-3)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon name={positive ? 'arrowDown' : 'arrowUp'} size={13} />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="fw-600 text-sm">{labelForType(t.type)}</div>
+                  {t.note ? (
+                    <div className="text-xs muted mt-1">{t.note}</div>
+                  ) : null}
+                  <div className="text-xs muted-2 mt-1">
+                    {new Date(t.createdAt).toLocaleString('en-NG')}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">Balance: {formatNgn(t.balanceAfterKobo)}</div>
-              </div>
-            </li>
-          ))}
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div
+                    className="fw-600 tnum"
+                    style={{
+                      color: positive ? 'var(--accent)' : 'var(--danger)',
+                      fontSize: 14,
+                    }}
+                  >
+                    {positive ? '+' : ''}
+                    {formatNgn(t.amountKobo)}
+                  </div>
+                  <div className="text-xs muted">
+                    Bal {formatNgn(t.balanceAfterKobo)}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
