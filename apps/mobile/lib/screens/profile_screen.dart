@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../state/auth_store.dart';
+
+const _webBase = String.fromEnvironment(
+  'WEB_BASE_URL',
+  defaultValue: 'https://computicket.ng',
+);
+
+Future<void> _openLink(String path) async {
+  final uri = Uri.parse('$_webBase$path');
+  await launchUrl(uri, mode: LaunchMode.externalApplication);
+}
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -65,6 +76,33 @@ class ProfileScreen extends StatelessWidget {
             onTap: () => context.go('/scanner'),
           ),
           const Divider(),
+          // Legal links required by both App Store and Play Store
+          // reviewer checklists. Each opens in the system browser.
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: const Text('Privacy policy'),
+            trailing: const Icon(Icons.open_in_new, size: 16),
+            onTap: () => _openLink('/privacy'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.description_outlined),
+            title: const Text('Terms of service'),
+            trailing: const Icon(Icons.open_in_new, size: 16),
+            onTap: () => _openLink('/terms'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.help_outline),
+            title: const Text('Help & support'),
+            trailing: const Icon(Icons.open_in_new, size: 16),
+            onTap: () => _openLink('/help'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.shield_outlined),
+            title: const Text('Buyer protection'),
+            trailing: const Icon(Icons.open_in_new, size: 16),
+            onTap: () => _openLink('/buyer-protection'),
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Sign out', style: TextStyle(color: Colors.red)),
@@ -73,6 +111,16 @@ class ProfileScreen extends StatelessWidget {
               if (context.mounted) context.go('/events');
             },
           ),
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Computicket Nigeria · v0.1.0',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, fontSize: 11),
+            ),
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );

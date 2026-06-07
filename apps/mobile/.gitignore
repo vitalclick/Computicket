@@ -17,9 +17,14 @@ ios/*
 !ios/Runner/
 ios/Runner/*
 !ios/Runner/Info.plist
+!ios/Runner/Runner.entitlements
+!ios/Runner/PrivacyInfo.xcprivacy
 android/*
 !android/app/
+!android/settings.gradle
 android/app/*
+!android/app/build.gradle
+!android/app/proguard-rules.pro
 !android/app/src/
 android/app/src/*
 !android/app/src/main/
@@ -29,6 +34,13 @@ web/
 linux/
 macos/
 windows/
+
+# Per-project secrets — Codemagic injects these at build time.
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
 
 # IDE
 .idea/

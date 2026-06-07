@@ -1,0 +1,89 @@
+/*
+  Tracked because flutter create regenerates it with placeholder
+  values — applicationId, signing config, SDK pins, FCM plugin
+  application. Codemagic runs `flutter create --no-overwrite` so this
+  file survives, the same pattern as ios/Runner/Info.plist and
+  android/app/src/main/AndroidManifest.xml.
+*/
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+    // FCM expects this plugin so the google-services.json is parsed
+    // into BuildConfig + R.string entries at build time. Codemagic
+    // drops google-services.json into android/app/ via the
+    // GOOGLE_SERVICES_JSON env var; in local dev without the file,
+    // Gradle's resolver no-ops and the app builds without push.
+    id "com.google.gms.google-services"
+}
+
+android {
+    namespace = "ng.computicket.app"
+    compileSdk = 34
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    defaultConfig {
+        // Matches /.well-known/assetlinks.json + the iOS bundle ID. Do
+        // not change without updating both, or App Links break.
+        applicationId = "ng.computicket.app"
+        // Firebase Messaging 15.x requires API 23 minimum. Below 23
+        // the Gradle resolver throws AAPT errors during build.
+        minSdk = 23
+        // Google Play requires targetSdk 34+ for new submissions since
+        // August 2024. Pin to 34 (Android 14) to avoid surprise bumps
+        // when the Flutter SDK rev rolls forward.
+        targetSdk = 34
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    signingConfigs {
+        // Release signing. Codemagic injects the keystore at
+        // $CM_KEYSTORE_PATH and the passwords as env vars; locally
+        // they're read from `android/key.properties` (gitignored).
+        release {
+            def keystoreProperties = new Properties()
+            def keystorePropertiesFile = rootProject.file("key.properties")
+            if (keystorePropertiesFile.exists()) {
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+                keyAlias = keystoreProperties["keyAlias"]
+                keyPassword = keystoreProperties["keyPassword"]
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"]
+            } else if (System.getenv("CM_KEYSTORE_PATH")) {
+                keyAlias = System.getenv("CM_KEY_ALIAS")
+                keyPassword = System.getenv("CM_KEY_PASSWORD")
+                storeFile = file(System.getenv("CM_KEYSTORE_PATH"))
+                storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Fall back to the debug key when no release keystore is
+            // configured so `flutter run --release` keeps working on
+            // contributor laptops.
+            signingConfig = signingConfigs.release.storeFile != null
+                ? signingConfigs.release
+                : signingConfigs.debug
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}

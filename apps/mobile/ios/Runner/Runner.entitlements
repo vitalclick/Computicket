@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+      Push notifications. `development` lets TestFlight + dev builds
+      hit Apple's sandbox APNs; the production profile flips to
+      `production` automatically when Xcode builds for App Store
+      distribution. Don't hardcode `production` here — debug builds on
+      a real device would silently fail to deliver pushes.
+    -->
+    <key>aps-environment</key>
+    <string>development</string>
+
+    <!--
+      Universal links. Each entry tells iOS to fetch
+      /.well-known/apple-app-site-association from the domain and let
+      taps on https://computicket.ng/... open this app. The web app
+      already serves the matching AASA via a route handler.
+
+      mode=developer disables AASA caching on dev devices so you can
+      test changes without waiting for Apple's CDN to refresh —
+      strip that suffix before App Store submission or attach a
+      production profile that doesn't include it.
+    -->
+    <key>com.apple.developer.associated-domains</key>
+    <array>
+        <string>applinks:computicket.ng</string>
+        <string>applinks:www.computicket.ng</string>
+        <string>webcredentials:computicket.ng</string>
+    </array>
+</dict>
+</plist>

@@ -52,5 +52,27 @@
 	-->
 	<key>NSCameraUsageDescription</key>
 	<string>Used to scan ticket QR codes at the gate. Computicket only uses the camera while the Scan Tickets screen is open.</string>
+	<!--
+	  Export compliance. We use TLS but no custom encryption — Apple's
+	  pre-approved exemption applies. Declaring `false` here skips the
+	  Export Compliance prompt on every App Store Connect upload. If
+	  you ever add end-to-end encryption beyond TLS, flip to `true`
+	  and complete the annual self-classification with the BIS.
+	-->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!--
+	  Universal links. The web app serves the matching AASA at
+	  /.well-known/apple-app-site-association — set IOS_APP_TEAM_ID on
+	  Vercel to thread the real team ID in. Without that env var, the
+	  AASA still returns 200 but with a placeholder appID that won't
+	  match anything iOS verifies.
+	-->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>tel</string>
+		<string>mailto</string>
+	</array>
 </dict>
 </plist>

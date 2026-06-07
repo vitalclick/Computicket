@@ -37,35 +37,64 @@ cd apps/mobile
 flutter create --no-overwrite --org ng.computicket --project-name computicket_mobile .
 flutter pub get
 dart run flutter_launcher_icons
+bash scripts/codemagic_setup.sh
 ```
 
 The third command reads the `flutter_launcher_icons:` block in
 `pubspec.yaml` and rasters `assets/icon.png` into every Android density
 bucket, the iOS asset catalogue, and the web `favicon.png`. Re-run it
-whenever `assets/icon.png` changes. The CI workflow at
-`.github/workflows/mobile.yml` does both steps automatically.
+whenever `assets/icon.png` changes.
+
+The fourth command patches the regenerated Xcode project to point at
+the right bundle identifier (`ng.computicket.app`) and wires
+`Runner.entitlements` so push + universal links work. CI
+(`.github/workflows/mobile.yml`) and Codemagic (`codemagic.yaml`) both
+invoke the same script — keep it that way so green CI guarantees
+green release builds.
+
+### Store deployment via Codemagic
+
+The repo root carries a `codemagic.yaml` with three workflows:
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `pr-check` | every PR to `main` | `flutter analyze` + `flutter test`, no signing |
+| `ios-testflight` | push/tag to `main` | builds + uploads to TestFlight |
+| `android-internal` | push/tag to `main` | builds AAB + uploads to Play Internal Testing |
+
+Before the first store build, wire these secrets in Codemagic (Teams
+→ Settings → Environment variables, grouped names below):
+
+- **`apple`** — App Store Connect API key. Use Codemagic's built-in
+  App Store Connect integration; provides `APP_STORE_CONNECT_*` vars
+  automatically. Replace `REPLACE_WITH_APP_STORE_CONNECT_NUMERIC_ID`
+  in `codemagic.yaml` with the app's numeric ID from App Store Connect
+  (URL: `apps/{ID}/...`).
+- **`google_play`** — `GCLOUD_SERVICE_ACCOUNT_CREDENTIALS` (Play API
+  JSON). Generate via Play Console → Setup → API access → Create
+  service account, then grant Release Manager role.
+- **`firebase`** — `GOOGLE_SERVICES_JSON_B64` and
+  `GOOGLE_SERVICE_INFO_PLIST_B64`. Base64 the Firebase console downloads
+  with `base64 -w0 google-services.json` and paste each.
+- **`app_config`** — `API_URL_PROD` (`https://api.computicket.ng/v1`),
+  `API_URL_STAGING` for the preview workflow if you add one.
+
+Code signing identities (keystore for Android, certs for iOS) are
+managed by Codemagic's Code signing integrations UI; the yaml
+references them by name only.
 
 ### Universal links
 
-The Android Manifest already declares an `autoVerify="true"` intent
-filter for `https://computicket.ng` and `www.computicket.ng`. Android
-fetches `/.well-known/assetlinks.json` from the web app at install
-time — see `apps/web/src/app/.well-known/assetlinks.json/route.ts`.
+The web app already serves `/.well-known/assetlinks.json` and
+`/.well-known/apple-app-site-association` from
+`apps/web/src/app/.well-known/`. The mobile side is wired:
 
-For iOS, add the **Associated Domains** capability after the first
-`flutter create .` regenerates the Xcode project:
-
-1. Open `ios/Runner.xcworkspace` in Xcode.
-2. Select the **Runner** target → **Signing & Capabilities**.
-3. Click **+ Capability** → **Associated Domains**.
-4. Add two entries:
-   - `applinks:computicket.ng`
-   - `applinks:www.computicket.ng`
-
-Xcode writes these to `ios/Runner/Runner.entitlements`. That file
-isn't checked in (the regen ignores it), so the step has to be
-repeated after a clean checkout. Alternatively, configure it once via
-`fastlane match` or a CI step that injects the entitlement.
+- **Android**: AndroidManifest declares an `autoVerify="true"` intent
+  filter for `https://computicket.ng` and `www.computicket.ng`.
+- **iOS**: `Runner.entitlements` declares Associated Domains for
+  `applinks:computicket.ng`, `applinks:www.computicket.ng`, and
+  `webcredentials:computicket.ng`. The codemagic_setup.sh patch wires
+  the file into `project.pbxproj` after every `flutter create`.
 
 The web side is already wired:
 `apps/web/src/app/.well-known/apple-app-site-association/route.ts`

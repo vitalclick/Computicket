@@ -1,0 +1,207 @@
+# Codemagic build pipeline for the Computicket Flutter app.
+#
+# Three workflows:
+#   ios-testflight      : every push to main, builds + submits to TestFlight
+#   android-internal    : every push to main, builds + submits to Play Internal Testing
+#   pr-check            : runs on PRs, flutter analyze + test only (no signing)
+#
+# Required Codemagic env groups (set under Teams -> Settings -> Code signing
+# integrations + Environment variables):
+#
+#   group: apple
+#     APP_STORE_CONNECT_KEY_IDENTIFIER     (10-char key ID)
+#     APP_STORE_CONNECT_ISSUER_ID          (UUID)
+#     APP_STORE_CONNECT_PRIVATE_KEY        (.p8 contents, multi-line)
+#     CERTIFICATE_PRIVATE_KEY              (managed by Codemagic if you use code-signing identities)
+#
+#   group: google_play
+#     GCLOUD_SERVICE_ACCOUNT_CREDENTIALS   (Play API JSON)
+#     CM_KEYSTORE_PATH                     (auto-set by code_signing_identities)
+#     CM_KEYSTORE_PASSWORD
+#     CM_KEY_PASSWORD
+#     CM_KEY_ALIAS
+#
+#   group: firebase
+#     GOOGLE_SERVICES_JSON_B64             (base64 of android/google-services.json)
+#     GOOGLE_SERVICE_INFO_PLIST_B64        (base64 of ios/GoogleService-Info.plist)
+#
+#   group: app_config
+#     API_URL_PROD                         https://api.computicket.ng/v1
+#     API_URL_STAGING                      https://api.staging.computicket.ng/v1
+
+definitions:
+  cache: &cache
+    cache_paths:
+      - $HOME/.pub-cache
+      - $HOME/Library/Caches/CocoaPods
+
+  flutter_setup: &flutter_setup
+    name: Set up Flutter project
+    script: |
+      set -e
+      cd apps/mobile
+      # Regenerate the platform shells we deliberately don't track.
+      # --no-overwrite leaves our pinned Info.plist + AndroidManifest +
+      # build.gradle + entitlements + privacy manifest alone.
+      flutter create --no-overwrite \
+        --org ng.computicket \
+        --project-name computicket_mobile \
+        --platforms=android,ios .
+      flutter pub get
+      dart run flutter_launcher_icons || true
+      # Patch project.pbxproj bundle id + entitlements wiring, drop
+      # Firebase secrets, write key.properties from env.
+      bash scripts/codemagic_setup.sh
+
+  test_step: &test_step
+    name: Static analysis + unit tests
+    script: |
+      cd apps/mobile
+      flutter analyze
+      flutter test
+
+workflows:
+  pr-check:
+    name: PR check (analyze + test)
+    instance_type: linux_x2
+    max_build_duration: 30
+    triggering:
+      events: [pull_request]
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+    environment:
+      flutter: 3.27.x
+    <<: *cache
+    scripts:
+      - *flutter_setup
+      - *test_step
+
+  ios-testflight:
+    name: iOS — TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: codemagic
+    environment:
+      groups: [apple, firebase, app_config]
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: ng.computicket.app
+      vars:
+        XCODE_WORKSPACE: 'apps/mobile/ios/Runner.xcworkspace'
+        XCODE_SCHEME: 'Runner'
+        APP_STORE_APP_ID: REPLACE_WITH_APP_STORE_CONNECT_NUMERIC_ID
+      flutter: 3.27.x
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events: [push, tag]
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+    <<: *cache
+    scripts:
+      - *flutter_setup
+      - *test_step
+      - name: Use App Store Connect API key
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files \
+            "$(xcode-project detect-bundle-id --workspace $XCODE_WORKSPACE --scheme $XCODE_SCHEME)" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Bump build number
+        script: |
+          cd apps/mobile
+          # Pull the highest TestFlight build number for this app and add 1.
+          BUILD_NUM=$(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo 0) + 1))
+          echo "Build number: $BUILD_NUM"
+          # `flutter build` reads --build-number into CFBundleVersion.
+          echo "FLUTTER_BUILD_NUMBER=$BUILD_NUM" >> $CM_ENV
+      - name: Build IPA
+        script: |
+          cd apps/mobile
+          flutter build ipa \
+            --release \
+            --build-number=${FLUTTER_BUILD_NUMBER:-1} \
+            --dart-define=API_URL=$API_URL_PROD \
+            --dart-define=FIREBASE_ENABLED=true \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - apps/mobile/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - apps/mobile/flutter_drive.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # Beta groups to push to once the build is processed. Configure
+        # under TestFlight -> Internal Testing first.
+        beta_groups:
+          - Internal team
+        # Skip the App Store review submission — TestFlight only by
+        # default. Flip to true once you're ready for App Store review.
+        submit_to_app_store: false
+      email:
+        recipients:
+          - engineering@computicket.ng
+        notify:
+          success: true
+          failure: true
+
+  android-internal:
+    name: Android — Play Internal
+    instance_type: linux_x2
+    max_build_duration: 60
+    environment:
+      groups: [google_play, firebase, app_config]
+      android_signing:
+        - keystore_reference
+      vars:
+        PACKAGE_NAME: 'ng.computicket.app'
+        GOOGLE_PLAY_TRACK: 'internal'
+      flutter: 3.27.x
+      java: 17
+    triggering:
+      events: [push, tag]
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+    <<: *cache
+    scripts:
+      - *flutter_setup
+      - *test_step
+      - name: Bump build number
+        script: |
+          cd apps/mobile
+          # Pull the highest production+internal build number from Play
+          # and add 1 so re-uploads never collide.
+          BUILD_NUM=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks internal production 2>/dev/null || echo 0) + 1))
+          echo "Build number: $BUILD_NUM"
+          echo "FLUTTER_BUILD_NUMBER=$BUILD_NUM" >> $CM_ENV
+      - name: Build AAB
+        script: |
+          cd apps/mobile
+          flutter build appbundle \
+            --release \
+            --build-number=${FLUTTER_BUILD_NUMBER:-1} \
+            --dart-define=API_URL=$API_URL_PROD \
+            --dart-define=FIREBASE_ENABLED=true
+    artifacts:
+      - apps/mobile/build/**/outputs/bundle/**/*.aab
+      - apps/mobile/build/**/outputs/mapping/release/mapping.txt
+      - apps/mobile/flutter_drive.log
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: $GOOGLE_PLAY_TRACK
+        submit_as_draft: false
+      email:
+        recipients:
+          - engineering@computicket.ng
+        notify:
+          success: true
+          failure: true

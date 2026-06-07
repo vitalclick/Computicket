@@ -26,10 +26,13 @@ jobs:
       # Regenerate the platform shells we deliberately don't track.
       # `create .` is idempotent and writes ios/, android/, web/ alongside
       # the existing lib/ + pubspec.yaml without touching our source files.
-      - run: flutter create --no-overwrite --org ng.computicket --project-name computicket_mobile .
+      - run: flutter create --no-overwrite --org ng.computicket --project-name computicket_mobile --platforms=android,ios .
       - run: flutter pub get
       # Regenerate launcher icons from assets/icon.png — guards the
       # icon plumbing as part of the build, not just at release time.
       - run: dart run flutter_launcher_icons
+      # Patch bundle id + entitlements wiring the same way Codemagic
+      # does, so PR builds catch regressions in the patch script.
+      - run: bash scripts/codemagic_setup.sh
       - run: flutter analyze
       - run: flutter test
