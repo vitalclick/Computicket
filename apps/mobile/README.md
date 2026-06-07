@@ -45,6 +45,33 @@ bucket, the iOS asset catalogue, and the web `favicon.png`. Re-run it
 whenever `assets/icon.png` changes. The CI workflow at
 `.github/workflows/mobile.yml` does both steps automatically.
 
+### Universal links
+
+The Android Manifest already declares an `autoVerify="true"` intent
+filter for `https://computicket.ng` and `www.computicket.ng`. Android
+fetches `/.well-known/assetlinks.json` from the web app at install
+time — see `apps/web/src/app/.well-known/assetlinks.json/route.ts`.
+
+For iOS, add the **Associated Domains** capability after the first
+`flutter create .` regenerates the Xcode project:
+
+1. Open `ios/Runner.xcworkspace` in Xcode.
+2. Select the **Runner** target → **Signing & Capabilities**.
+3. Click **+ Capability** → **Associated Domains**.
+4. Add two entries:
+   - `applinks:computicket.ng`
+   - `applinks:www.computicket.ng`
+
+Xcode writes these to `ios/Runner/Runner.entitlements`. That file
+isn't checked in (the regen ignores it), so the step has to be
+repeated after a clean checkout. Alternatively, configure it once via
+`fastlane match` or a CI step that injects the entitlement.
+
+The web side is already wired:
+`apps/web/src/app/.well-known/apple-app-site-association/route.ts`
+returns the AASA JSON with the right Content-Type. Set
+`IOS_APP_TEAM_ID` on Vercel so the `appID` resolves to your real team.
+
 ### Platform manifests we track by hand
 
 Two files inside the otherwise-ignored platform shells are checked

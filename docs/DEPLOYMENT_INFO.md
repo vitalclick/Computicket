@@ -102,6 +102,35 @@ Setup details in [§5](#5-social-login-setup-google--apple) below. Leave
 all four unset to silently disable the social buttons (the UI hides
 them; the API rejects the endpoints with `400`).
 
+### 2.6.5 Mobile universal links — *new in this release*
+
+Served by the Next.js app at `/.well-known/...` via the route handlers
+in `apps/web/src/app/.well-known/`. Set these so email/SMS links open
+the Flutter app on a device with it installed; the website serves as
+fallback when the app isn't installed.
+
+| Var | Where | Notes |
+|---|---|---|
+| `IOS_APP_TEAM_ID` | Web | Apple Developer team ID (10-char alphanumeric, e.g. `ABCD123456`). Find in App Store Connect → Membership. |
+| `IOS_APP_BUNDLE_ID` | Web | Defaults to `ng.computicket.app`. Override only if you ship under a different identifier. |
+| `ANDROID_APP_PACKAGE` | Web | Defaults to `ng.computicket.app`. |
+| `ANDROID_APP_SHA256_FINGERPRINTS` | Web | Comma-separated upper-case SHA-256 cert fingerprints for *each* signing cert you want Android to trust. Get the Play App Signing cert from Play Console → Setup → App integrity → App signing key. List the upload cert too if you deploy debug builds with deep links. |
+
+Without these set the routes still return well-formed JSON with
+placeholder values — useful for staging deploys before App Store
+Connect + Play Console are wired, but the OS will not verify the
+association and links won't open the app yet.
+
+Validate after deploy:
+```sh
+# AASA — Apple's CDN re-crawls every few hours after the first download
+curl -i https://computicket.ng/.well-known/apple-app-site-association
+
+# Android assetlinks — Google's verifier:
+# https://developers.google.com/digital-asset-links/tools/generator
+curl -i https://computicket.ng/.well-known/assetlinks.json
+```
+
 ### 2.7 Travel inventory (optional)
 
 | Var | Where | Notes |

@@ -31,6 +31,22 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!--
+              Android App Links — autoVerify makes Android download our
+              `/.well-known/assetlinks.json` at install time and route
+              https://computicket.ng/* deep links straight into the app
+              without the "Open with..." disambiguation sheet. The web
+              app serves the file via a route handler that takes the
+              package + cert fingerprints from env vars.
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"/>
+                <data android:host="computicket.ng"/>
+                <data android:host="www.computicket.ng"/>
+            </intent-filter>
         </activity>
         <meta-data
             android:name="flutterEmbedding"
