@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
+import { useModalA11y } from '@/components/useModalA11y';
 import { Wordmark } from '@/components/Wordmark';
 import { API_URL, api } from '@/lib/api';
 import { getToken } from '@/lib/auth';
@@ -374,6 +375,7 @@ function TransferButton({ code }: { code: string }) {
   const [link, setLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const transferModalRef = useModalA11y(open, () => setOpen(false));
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
@@ -424,7 +426,7 @@ function TransferButton({ code }: { code: string }) {
             if (e.target === e.currentTarget) setOpen(false);
           }}
         >
-          <div className="transfer-modal-card">
+          <div ref={transferModalRef} tabIndex={-1} className="transfer-modal-card" style={{ outline: 'none' }}>
             <div className="between" style={{ alignItems: 'center' }}>
               <h2 id="transfer-dialog-title" className="h-4" style={{ margin: 0 }}>
                 Transfer this ticket
@@ -529,6 +531,10 @@ function ResellButton({ code, ticketType }: { code: string; ticketType: string }
   const [busy, setBusy] = useState(false);
   const [listed, setListed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const resellModalRef = useModalA11y(open, () => {
+    setOpen(false);
+    setListed(false);
+  });
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -577,7 +583,7 @@ function ResellButton({ code, ticketType }: { code: string; ticketType: string }
             }
           }}
         >
-          <div className="transfer-modal-card">
+          <div ref={resellModalRef} tabIndex={-1} className="transfer-modal-card" style={{ outline: 'none' }}>
             <div className="between" style={{ alignItems: 'center' }}>
               <h2 id="resell-dialog-title" className="h-4" style={{ margin: 0 }}>
                 List this ticket for resale

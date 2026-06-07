@@ -374,6 +374,60 @@ class ApiClient {
     await _send('DELETE', '/tickets/$code/transfer', token: token);
   }
 
+  /// Public — describe a transfer by token so the recipient sees what
+  /// they're claiming before signing in.
+  Future<TransferDescribe> describeTicketTransfer(String token) async {
+    final raw = await _send('GET', '/tickets/transfer/$token');
+    final ticket = (raw['ticket'] ?? const {}) as Map<String, dynamic>;
+    final event = (ticket['event'] ?? const {}) as Map<String, dynamic>;
+    return TransferDescribe(
+      state: raw['state'] as String,
+      expiresAt: DateTime.parse(raw['expiresAt'] as String),
+      recipientEmail: raw['recipientEmail'] as String?,
+      ticketCode: ticket['code'] as String? ?? '',
+      ticketTypeName: ticket['ticketTypeName'] as String? ?? '',
+      eventTitle: event['title'] as String? ?? '',
+      eventVenue: event['venue'] as String? ?? '',
+      eventCity: event['city'] as String? ?? '',
+      startsAt: DateTime.tryParse(event['startsAt'] as String? ?? '') ??
+          DateTime.now(),
+    );
+  }
+
+  /// Claim a transfer with the signed-in user's bearer token.
+  Future<TransferClaim> claimTicketTransfer({
+    required String authToken,
+    required String transferToken,
+  }) async {
+    final raw = await _send(
+      'POST',
+      '/tickets/transfer/claim',
+      token: authToken,
+      body: {'token': transferToken},
+    );
+    return TransferClaim(
+      ticketCode: raw['ticketCode'] as String,
+      eventTitle: raw['eventTitle'] as String?,
+      alreadyClaimed: raw['alreadyClaimed'] as bool? ?? false,
+    );
+  }
+
+  /// The signed-in user's own resale listings (sold + cancelled
+  /// included so the UI can render history).
+  Future<List<ResaleListing>> listMyResale(String token) async {
+    final raw = await _send('GET', '/resale/mine', token: token);
+    return ((raw['data'] ?? const <dynamic>[]) as List<dynamic>)
+        .map((m) => ResaleListing.fromJson(m as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<void> cancelResaleListing({
+    required String token,
+    required String listingId,
+  }) async {
+    await _send('DELETE', '/resale/$listingId', token: token);
+  }
+
   // ---------- Resale marketplace ----------
 
   Future<List<ResaleListing>> listResale() async {
@@ -411,6 +465,41 @@ class TicketTransferTicket {
   final String token;
   final String link;
   final DateTime expiresAt;
+}
+
+class TransferDescribe {
+  TransferDescribe({
+    required this.state,
+    required this.expiresAt,
+    required this.recipientEmail,
+    required this.ticketCode,
+    required this.ticketTypeName,
+    required this.eventTitle,
+    required this.eventVenue,
+    required this.eventCity,
+    required this.startsAt,
+  });
+  /// One of 'pending', 'expired', 'claimed', 'cancelled'.
+  final String state;
+  final DateTime expiresAt;
+  final String? recipientEmail;
+  final String ticketCode;
+  final String ticketTypeName;
+  final String eventTitle;
+  final String eventVenue;
+  final String eventCity;
+  final DateTime startsAt;
+}
+
+class TransferClaim {
+  TransferClaim({
+    required this.ticketCode,
+    required this.eventTitle,
+    required this.alreadyClaimed,
+  });
+  final String ticketCode;
+  final String? eventTitle;
+  final bool alreadyClaimed;
 }
 
 class ResaleListing {

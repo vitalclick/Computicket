@@ -14,6 +14,7 @@ import 'screens/shell.dart';
 import 'screens/signin_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/ticket_detail_screen.dart';
+import 'screens/transfer_claim_screen.dart';
 import 'screens/wallet_screen.dart';
 import 'state/auth_store.dart';
 
@@ -77,6 +78,13 @@ GoRouter buildRouter(AuthStore auth) {
       ),
       GoRoute(path: '/scanner', builder: (_, __) => const ScannerScreen()),
       GoRoute(path: '/resale', builder: (_, __) => const ResaleScreen()),
+      GoRoute(
+        // Universal-link landing: https://computicket.ng/transfer/<token>
+        // opens the app here so the recipient can claim without leaving.
+        path: '/transfer/:token',
+        builder: (_, st) =>
+            TransferClaimScreen(token: st.pathParameters['token']!),
+      ),
       GoRoute(
         path: '/dashboard',
         builder: (_, __) => const DashboardScreen(),

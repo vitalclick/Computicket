@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Icon } from './Icon';
+import { useModalA11y } from './useModalA11y';
 import { api } from '@/lib/api';
 
 interface Props {
@@ -34,6 +35,7 @@ export function SeatPicker({
   const [seats, setSeats] = useState<Seat[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>(initialSelected);
+  const containerRef = useModalA11y(true, onClose);
 
   useEffect(() => {
     api
@@ -86,8 +88,10 @@ export function SeatPicker({
       }}
     >
       <div
+        ref={containerRef}
+        tabIndex={-1}
         className="transfer-modal-card"
-        style={{ maxWidth: 560, padding: 24 }}
+        style={{ maxWidth: 560, padding: 24, outline: 'none' }}
       >
         <div className="between" style={{ alignItems: 'flex-start' }}>
           <div>

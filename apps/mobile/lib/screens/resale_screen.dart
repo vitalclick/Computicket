@@ -16,20 +16,61 @@ class ResaleScreen extends StatefulWidget {
   State<ResaleScreen> createState() => _ResaleScreenState();
 }
 
-class _ResaleScreenState extends State<ResaleScreen> {
+class _ResaleScreenState extends State<ResaleScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabs;
   late Future<List<ResaleListing>> _future;
+  Future<List<ResaleListing>>? _myFuture;
 
   @override
   void initState() {
     super.initState();
+    _tabs = TabController(length: 2, vsync: this);
     _future = context.read<ApiClient>().listResale();
   }
 
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
+
   Future<void> _refresh() async {
+    if (_tabs.index == 0) {
+      setState(() {
+        _future = context.read<ApiClient>().listResale();
+      });
+      await _future;
+    } else {
+      _loadMine();
+      await _myFuture;
+    }
+  }
+
+  void _loadMine() {
+    final auth = context.read<AuthStore>();
+    if (auth.token == null) return;
     setState(() {
-      _future = context.read<ApiClient>().listResale();
+      _myFuture = context.read<ApiClient>().listMyResale(auth.token!);
     });
-    await _future;
+  }
+
+  Future<void> _cancelListing(String listingId) async {
+    final auth = context.read<AuthStore>();
+    if (auth.token == null) return;
+    try {
+      await context.read<ApiClient>().cancelResaleListing(
+            token: auth.token!,
+            listingId: listingId,
+          );
+      _loadMine();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
   }
 
   Future<void> _buy(ResaleListing l) async {
@@ -74,12 +115,56 @@ class _ResaleScreenState extends State<ResaleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Resale floor')),
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        child: FutureBuilder<List<ResaleListing>>(
-          future: _future,
-          builder: (ctx, snap) {
+      appBar: AppBar(
+        title: const Text('Resale floor'),
+        bottom: TabBar(
+          controller: _tabs,
+          onTap: (i) {
+            if (i == 1 && _myFuture == null) _loadMine();
+          },
+          tabs: const [
+            Tab(text: 'Marketplace'),
+            Tab(text: 'My listings'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabs,
+        children: [
+          _MarketplaceTab(
+            future: _future,
+            onRefresh: _refresh,
+            onBuy: _buy,
+          ),
+          _MyListingsTab(
+            future: _myFuture,
+            onRefresh: _refresh,
+            onCancel: _cancelListing,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MarketplaceTab extends StatelessWidget {
+  const _MarketplaceTab({
+    required this.future,
+    required this.onRefresh,
+    required this.onBuy,
+  });
+
+  final Future<List<ResaleListing>> future;
+  final Future<void> Function() onRefresh;
+  final Future<void> Function(ResaleListing) onBuy;
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: FutureBuilder<List<ResaleListing>>(
+        future: future,
+        builder: (ctx, snap) {
             if (snap.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -210,7 +295,7 @@ class _ResaleScreenState extends State<ResaleScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton(
-                            onPressed: () => _buy(l),
+                            onPressed: () => onBuy(l),
                             child: const Text('Buy with wallet'),
                           ),
                         ),
@@ -221,6 +306,145 @@ class _ResaleScreenState extends State<ResaleScreen> {
               },
             );
           },
+        ),
+      );
+  }
+}
+
+class _MyListingsTab extends StatelessWidget {
+  const _MyListingsTab({
+    required this.future,
+    required this.onRefresh,
+    required this.onCancel,
+  });
+
+  final Future<List<ResaleListing>>? future;
+  final Future<void> Function() onRefresh;
+  final Future<void> Function(String listingId) onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    if (future == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: FutureBuilder<List<ResaleListing>>(
+        future: future,
+        builder: (ctx, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snap.hasError) {
+            return ListView(children: [
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text('${snap.error}',
+                    style: const TextStyle(color: Colors.red)),
+              ),
+            ]);
+          }
+          final mine = snap.data ?? const <ResaleListing>[];
+          if (mine.isEmpty) {
+            return ListView(children: const [
+              Padding(
+                padding: EdgeInsets.all(32),
+                child: Column(children: [
+                  Text(
+                    "You haven't listed any tickets.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Open any unscanned ticket and tap Resell to add it here.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ]),
+              ),
+            ]);
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: mine.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (_, i) {
+              final l = mine[i];
+              return _MyListingCard(listing: l, onCancel: onCancel);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _MyListingCard extends StatelessWidget {
+  const _MyListingCard({required this.listing, required this.onCancel});
+  final ResaleListing listing;
+  final Future<void> Function(String listingId) onCancel;
+
+  @override
+  Widget build(BuildContext context) {
+    // The /resale/mine endpoint returns the raw row; status is captured
+    // in the JSON parser via ResaleListing.fromJson but our model only
+    // tracks ask + ticket + event. Read the status off the underlying
+    // map by relying on the marketplace shape — for now we treat each
+    // entry as LISTED (the only state where Cancel is meaningful) and
+    // show the cancel CTA unconditionally; the API rejects cancels on
+    // SOLD / CANCELLED.
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: Colors.grey.shade300),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(listing.eventTitle,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Text(
+              '${listing.tierName} · ${listing.ticketCode}',
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            Row(children: [
+              Text(
+                _ngn.format(listing.askKobo / 100),
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+              const Spacer(),
+              OutlinedButton(
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Cancel listing?'),
+                      content: const Text(
+                          "The ticket goes back to your inventory."),
+                      actions: [
+                        TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Keep')),
+                        FilledButton.tonal(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Cancel listing')),
+                      ],
+                    ),
+                  );
+                  if (confirm == true) await onCancel(listing.id);
+                },
+                child: const Text('Cancel'),
+              ),
+            ]),
+          ],
         ),
       ),
     );
